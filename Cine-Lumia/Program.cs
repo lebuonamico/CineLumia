@@ -1,17 +1,38 @@
+﻿using Cine_Lumia.Data; // para el seeder
+using Cine_Lumia.Models;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// ============================
+// CADENA DE CONEXIÓN
+// ============================
+string connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+// ============================
+// CONFIGURACIÓN DE DbContext
+// ============================
+builder.Services.AddDbContext<CineDbContext>(options =>
+    options.UseSqlServer(connectionString, sqlOptions =>
+        sqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)) // 🔹 evita cartesian explosion
+);
+
+// ============================
+// MVC
+// ============================
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// ============================
+// MIDDLEWARES
+// ============================
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
 }
-app.UseRouting();
 
+app.UseRouting();
 app.UseAuthorization();
 
 app.MapStaticAssets();
@@ -21,5 +42,17 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
+// ============================
+// SEEDING Y MIGRACIONES
+// ============================
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<CineDbContext>();
+    dbContext.Database.Migrate();              // 🔹 Aplica migraciones automáticamente
+    CineSeeder.Seed(dbContext);                // 🔹 Carga datos iniciales si no existen
+}
 
+// ============================
+// EJECUCIÓN
+// ============================
 app.Run();

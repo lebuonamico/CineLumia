@@ -1,32 +1,64 @@
-using System.Diagnostics;
-using Cine_Lumia.Models;
+﻿using Cine_Lumia.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Cine_Lumia.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+        private readonly CineDbContext _context;
 
-        public HomeController(ILogger<HomeController> logger)
+        // Inyección de dependencia del DbContext
+        public HomeController(CineDbContext context)
         {
-            _logger = logger;
+            _context = context;
         }
 
         public IActionResult Index()
         {
-            return View();
-        }
+            // =====================
+            // Cargar toda la información con relaciones
+            // =====================
 
-        public IActionResult Privacy()
-        {
-            return View();
-        }
+            // Empresas con sus Cines, Salas y Asientos
+            var empresas = _context.Empresas
+                .Include(e => e.Cines)
+                    .ThenInclude(c => c.Salas)
+                        .ThenInclude(s => s.Asientos)
+                .ToList();
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            // Peliculas con Géneros y Proyecciones con Entradas y Espectadores
+            var peliculas = _context.Peliculas
+                .Include(p => p.PeliculaGeneros)
+                    .ThenInclude(pg => pg.Genero)
+                .Include(p => p.Proyecciones)
+                    .ThenInclude(pr => pr.Entradas)
+                        .ThenInclude(en => en.Espectador)
+                .ToList();
+
+            // CineConsumibles
+            var cineConsumibles = _context.CineConsumibles
+                .Include(cc => cc.Cine)
+                .Include(cc => cc.Consumible)
+                .ToList();
+
+            // Compras de Espectadores
+            var compras = _context.EspectadorConsumibles
+                .Include(ec => ec.Espectador)
+                .Include(ec => ec.Cine)
+                .Include(ec => ec.Consumible)
+                .ToList();
+
+            // Pasamos todo a un ViewModel
+            var viewModel = new DashboardViewModel
+            {
+                Empresas = empresas,
+                Peliculas = peliculas,
+                CineConsumibles = cineConsumibles,
+                Compras = compras
+            };
+
+            return View(viewModel);
         }
     }
 }

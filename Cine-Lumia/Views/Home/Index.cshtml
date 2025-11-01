@@ -1,8 +1,107 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
-}
+﻿@model Cine_Lumia.Models.DashboardViewModel
 
-<div class="text-center">
-    <h1 class="display-4">Hola Cine Lumia, esto es una prueba.</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container my-4">
+    <h1 class="text-center mb-4">🎬 Dashboard Cine Lumia</h1>
+
+    <!-- Empresas y Cines -->
+    <section class="mb-5">
+        <h2 class="mb-3">🏢 Empresas y Cines</h2>
+        @foreach (var empresa in Model.Empresas)
+        {
+            <div class="card mb-3 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">@empresa.Nombre</h3>
+                </div>
+                <div class="card-body">
+                    @foreach (var cine in empresa.Cines)
+                    {
+                        <div class="card mb-2 border-info">
+                            <div class="card-header bg-info text-white">
+                                <strong>@cine.Nombre</strong> - @cine.Direccion
+                            </div>
+                            <div class="card-body">
+                                <h5>Salas:</h5>
+                                <ul class="list-group list-group-flush">
+                                    @foreach (var sala in cine.Salas)
+                                    {
+                                        <li class="list-group-item">
+                                            Sala: <strong>@sala.Id_Sala</strong> | Butacas: @sala.Cant_Butacas | Filas: @sala.Cant_Filas | Capacidad: @sala.Capacidad
+                                            <ul class="mt-2">
+                                                @foreach (var asiento in sala.Asientos)
+                                                {
+                                                    <li>
+                                                        Asiento: @asiento.Id_Asiento | Fila: @asiento.Fila | Col: @asiento.Columna | Disponible: @(asiento.Disponible ? "✅" : "❌")
+                                                    </li>
+                                                }
+                                            </ul>
+                                        </li>
+                                    }
+                                </ul>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </section>
+
+    <!-- Películas y Proyecciones -->
+    <section class="mb-5">
+        <h2 class="mb-3">🎞 Películas y Proyecciones</h2>
+        @foreach (var pelicula in Model.Peliculas)
+        {
+            <div class="card mb-3 shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0">@pelicula.Nombre (@pelicula.Duracion min) - Estreno: @pelicula.Fecha_Estreno.ToShortDateString()</h3>
+                </div>
+                <div class="card-body">
+                    <p><strong>Géneros:</strong> @string.Join(", ", pelicula.PeliculaGeneros.Select(pg => pg.Genero.GeneroNombre))</p>
+                    <h5>Proyecciones:</h5>
+                    <ul class="list-group">
+                        @foreach (var proyeccion in pelicula.Proyecciones)
+                        {
+                            <li class="list-group-item">
+                                Fecha: @proyeccion.Fecha.ToShortDateString() | Hora: @proyeccion.Hora.ToShortTimeString()
+                                <ul class="mt-2">
+                                    @foreach (var entrada in proyeccion.Entradas)
+                                    {
+                                        <li>Entrada: @entrada.Id_Entrada | Espectador: @entrada.Espectador.Email | Asiento: @entrada.Id_Asiento</li>
+                                    }
+                                </ul>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        }
+    </section>
+
+    <!-- Consumibles por Cine -->
+    <section class="mb-5">
+        <h2 class="mb-3">🍿 Consumibles por Cine</h2>
+        <ul class="list-group">
+            @foreach (var cc in Model.CineConsumibles)
+            {
+                <li class="list-group-item">
+                    Cine: <strong>@cc.Cine.Nombre</strong> | Consumible: @cc.Consumible.Nombre | Stock: @cc.Stock
+                </li>
+            }
+        </ul>
+    </section>
+
+    <!-- Compras de Espectadores -->
+    <section class="mb-5">
+        <h2 class="mb-3">🛒 Compras de Espectadores</h2>
+        <ul class="list-group">
+            @foreach (var compra in Model.Compras)
+            {
+                <li class="list-group-item">
+                    Espectador: <strong>@compra.Espectador.Email</strong> | Cine: @compra.Cine.Nombre | Consumible: @compra.Consumible.Nombre | Cantidad: @compra.Cantidad | Fecha: @compra.Fecha.ToShortDateString()
+                </li>
+            }
+        </ul>
+    </section>
 </div>
+
+<!-- Bootstrap (si no lo tenés ya en tu layout) -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">

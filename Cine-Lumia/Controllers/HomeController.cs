@@ -1,6 +1,8 @@
 ﻿using Cine_Lumia.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Cine_Lumia.Controllers
 {
@@ -8,54 +10,32 @@ namespace Cine_Lumia.Controllers
     {
         private readonly CineDbContext _context;
 
-        // Inyección de dependencia del DbContext
         public HomeController(CineDbContext context)
         {
             _context = context;
         }
 
-        public IActionResult Index()
+        // GET: / or /Home/Index
+        public async Task<IActionResult> Index()
         {
-            // =====================
-            // Cargar toda la información con relaciones
-            // =====================
-
-            // Empresas con sus Cines, Salas y Asientos
-            var empresas = _context.Empresas
-                .Include(e => e.Cines)
-                    .ThenInclude(c => c.Salas)
-                        .ThenInclude(s => s.Asientos)
-                .ToList();
-
-            // Peliculas con Géneros y Proyecciones con Entradas y Espectadores
-            var peliculas = _context.Peliculas
+            var peliculasQuery = _context.Peliculas
                 .Include(p => p.PeliculaGeneros)
-                    .ThenInclude(pg => pg.Genero)
-                .Include(p => p.Proyecciones)
-                    .ThenInclude(pr => pr.Entradas)
-                        .ThenInclude(en => en.Espectador)
-                .ToList();
+                .ThenInclude(pg => pg.Genero)
+                .AsQueryable();
 
-            // CineConsumibles
-            var cineConsumibles = _context.CineConsumibles
-                .Include(cc => cc.Cine)
-                .Include(cc => cc.Consumible)
-                .ToList();
+            var destacadas = await peliculasQuery
+                .OrderByDescending(p => p.Fecha_Estreno)
+                .Take(4)
+                .ToListAsync();
 
-            // Compras de Espectadores
-            var compras = _context.EspectadorConsumibles
-                .Include(ec => ec.Espectador)
-                .Include(ec => ec.Cine)
-                .Include(ec => ec.Consumible)
-                .ToList();
+            var cartelera = await peliculasQuery
+                .OrderByDescending(p => p.Fecha_Estreno)
+                .ToListAsync();
 
-            // Pasamos todo a un ViewModel
-            var viewModel = new DashboardViewModel
+            var viewModel = new HomeViewModel
             {
-                Empresas = empresas,
-                Peliculas = peliculas,
-                CineConsumibles = cineConsumibles,
-                Compras = compras
+                Destacadas = destacadas,
+                Cartelera = cartelera
             };
 
             return View(viewModel);

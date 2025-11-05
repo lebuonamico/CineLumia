@@ -19,6 +19,7 @@ html {
 
 body {
   margin-bottom: 60px;
+  padding-top: 70px; /* Espacio para la barra de navegación fija */
 }
 
 .form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {

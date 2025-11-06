@@ -15,6 +15,7 @@ namespace Cine_Lumia.Entities
         [ForeignKey("Cine")]
         public int Id_Cine { get; set; }
         public Cine Cine { get; set; } = null!;
+        public string Formato { get; set; } = "";
 
         // Relaciones
         public ICollection<Asiento> Asientos { get; set; } = new HashSet<Asiento>();

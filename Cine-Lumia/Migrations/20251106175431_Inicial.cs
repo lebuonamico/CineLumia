@@ -75,7 +75,8 @@ namespace Cine_Lumia.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Duracion = table.Column<int>(type: "int", nullable: false),
                     Nombre = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Fecha_Estreno = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Fecha_Estreno = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    PosterUrl = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -196,7 +197,8 @@ namespace Cine_Lumia.Migrations
                     Cant_Butacas = table.Column<int>(type: "int", nullable: false),
                     Cant_Filas = table.Column<int>(type: "int", nullable: false),
                     Capacidad = table.Column<int>(type: "int", nullable: false),
-                    Id_Cine = table.Column<int>(type: "int", nullable: false)
+                    Id_Cine = table.Column<int>(type: "int", nullable: false),
+                    Formato = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {

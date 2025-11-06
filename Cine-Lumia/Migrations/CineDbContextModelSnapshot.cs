@@ -267,6 +267,10 @@ namespace Cine_Lumia.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<string>("PosterUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id_Pelicula");
 
                     b.ToTable("Peliculas");
@@ -332,6 +336,10 @@ namespace Cine_Lumia.Migrations
 
                     b.Property<int>("Capacidad")
                         .HasColumnType("int");
+
+                    b.Property<string>("Formato")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Id_Cine")
                         .HasColumnType("int");

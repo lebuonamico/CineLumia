@@ -1,0 +1,248 @@
+﻿@model Cine_Lumia.Models.ViewModel.FuncionesViewModel
+
+<style>
+    body {
+        background: #0d0d0d !important;
+        color: #fff !important;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .backdrop {
+        position: fixed;
+        inset: 0;
+        background-size: cover;
+        background-position: center;
+        filter: blur(40px) brightness(.25);
+        z-index: -1;
+    }
+
+    .movie-wrap {
+        display: flex;
+        gap: 40px;
+        margin-top: 50px;
+    }
+
+    .movie-poster {
+        width: 340px;
+        height: 510px;
+        border-radius: 14px;
+        object-fit: cover;
+        box-shadow: 0 0 50px rgba(0,0,0,.9);
+    }
+
+    .movie-title {
+        font-size: 2.6rem;
+        font-weight: 700;
+    }
+
+    .details {
+        margin-top: 8px;
+        color: #cfcfcf;
+    }
+
+    .date-selector a {
+        padding: 10px 18px;
+        border-radius: 8px;
+        text-decoration: none;
+        border: 1px solid #ff253c;
+        color: #ff253c;
+        font-weight: 600;
+        transition: .25s;
+        display: inline-block;
+        margin: 4px;
+    }
+
+        .date-selector a.active,
+        .date-selector a:hover {
+            background: #ff253c;
+            color: #fff;
+        }
+
+    .sala-title {
+        font-size: 1.4rem;
+        font-weight: 600;
+        margin-top: 45px;
+        margin-bottom: 12px;
+        text-transform: uppercase;
+    }
+
+    .horarios-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 20px;
+    }
+
+    .hour-button {
+        padding: 12px 24px;
+        border-radius: 40px;
+        border: 1px solid #ff253c;
+        font-weight: 600;
+        background: #0a0a0a;
+        color: #ffffff;
+        cursor: pointer;
+        transition: .25s;
+    }
+
+        .hour-button:hover,
+        .hour-button.selected {
+            background: #ff253c;
+            color: #fff;
+            transform: scale(1.08);
+        }
+
+    hr {
+        border-color: #ffffff35;
+        margin-top: 40px;
+    }
+
+    .buy-button {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        padding: 18px 0;
+        background: #ff253c;
+        color: #fff;
+        text-align: center;
+        font-size: 1.4rem;
+        font-weight: 700;
+        border: none;
+        cursor: pointer;
+        display: none;
+        transition: .25s;
+        z-index: 999;
+    }
+
+        .buy-button:hover {
+            background: #e81e34;
+            transform: none;
+        }
+
+    .container {
+        padding: 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+</style>
+
+<!-- Fondo -->
+<div class="backdrop" style="background-image: url('@Model.Pelicula.PosterUrl')"></div>
+
+<div class="container">
+
+    <div class="movie-wrap">
+        <img src="@Model.Pelicula.PosterUrl" class="movie-poster" />
+
+        <div class="movie-info">
+            <div class="movie-title">@Model.Pelicula.Nombre</div>
+            <div class="details">@Model.Cine.Nombre – @Model.Cine.Direccion</div>
+            <div class="details">@Model.Pelicula.Duracion min</div>
+
+            <!-- Selector de fechas -->
+            <div class="date-selector d-flex gap-2 mt-4 flex-wrap">
+                @foreach (var f in Model.FechasDisponibles)
+                {
+                    <a href="javascript:void(0);"
+                       class="date-link"
+                       data-fecha="@f">@DateTime.Parse(f).ToString("dd/MM")</a>
+                }
+
+            </div>
+        </div>
+    </div>
+
+    <hr />
+
+    <!-- Contenedor dinámico de horarios -->
+    <div id="horariosContainer"></div>
+
+</div>
+
+<!-- Botón Comprar Entrada -->
+<button id="buyButton" class="buy-button">Comprar Entrada</button>
+
+<script>
+        let proyeccionesPorFecha = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ProyeccionesPorFecha));
+    let fechaSeleccionada = null; // inicialmente ninguna
+    let horaSeleccionada = null;
+    let idProyeccionSeleccionado = null;
+
+    function renderHorarios(fecha) {
+        const container = document.getElementById('horariosContainer');
+        container.innerHTML = '';
+
+        const salas = proyeccionesPorFecha[fecha] || [];
+
+        salas.forEach(sala => {
+            const salaTitle = document.createElement('div');
+            salaTitle.className = 'sala-title';
+            salaTitle.innerText = sala.Sala;
+            container.appendChild(salaTitle);
+
+            const horariosDiv = document.createElement('div');
+            horariosDiv.className = 'horarios-container';
+
+            sala.Horarios.forEach(h => {
+                const btn = document.createElement('button');
+                btn.className = 'hour-button';
+                btn.innerText = h.Hora;
+                btn.dataset.idproyeccion = h.IdProyeccion;
+
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.hour-button').forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                    horaSeleccionada = h.Hora;
+                    idProyeccionSeleccionado = h.IdProyeccion;
+                    checkShowBuyButton();
+                });
+
+                horariosDiv.appendChild(btn);
+            });
+
+            container.appendChild(horariosDiv);
+        });
+
+        checkShowBuyButton(); // inicializa oculto
+    }
+
+        document.querySelectorAll('.date-link').forEach(link => {
+        link.addEventListener('click', () => {
+            // Marcar la fecha seleccionada
+            document.querySelectorAll('.date-link').forEach(l => l.classList.remove('active'));
+            link.classList.add('active');
+
+            // Actualizar variables
+            fechaSeleccionada = link.dataset.fecha;
+            horaSeleccionada = null;
+            idProyeccionSeleccionado = null;
+
+            // Renderizar salas y horarios solo ahora
+            renderHorarios(fechaSeleccionada);
+        });
+    });
+
+
+    document.querySelectorAll('.date-link').forEach(link => {
+        link.addEventListener('click', () => {
+            document.querySelectorAll('.date-link').forEach(l => l.classList.remove('active'));
+            link.classList.add('active');
+
+            fechaSeleccionada = link.dataset.fecha;
+            horaSeleccionada = null;
+            idProyeccionSeleccionado = null;
+            renderHorarios(fechaSeleccionada);
+        });
+    });
+
+    function checkShowBuyButton() {
+        const btn = document.getElementById('buyButton');
+        btn.style.display = (fechaSeleccionada && horaSeleccionada) ? 'block' : 'none';
+    }
+
+    document.getElementById('buyButton').addEventListener('click', () => {
+        if (!idProyeccionSeleccionado) return;
+        window.location.href = `/VentaEntradas/Index?idProyeccion=${idProyeccionSeleccionado}`;
+    });
+
+</script>

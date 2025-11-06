@@ -14,6 +14,7 @@ namespace Cine_Lumia.Entities
 
         [DataType(DataType.Date)]
         public DateTime Fecha_Estreno { get; set; }
+        public string PosterUrl { get; set; } = "";
 
         // Relaciones
         public ICollection<PeliculaGenero> PeliculaGeneros { get; set; } = new HashSet<PeliculaGenero>();

@@ -1,0 +1,72 @@
+﻿@{
+    ViewData["Title"] = "Elegí tu Cine";
+}
+
+<!-- Botón para abrir el panel lateral -->
+<div class="text-center mt-5">
+    <button class="btn btn-outline-light bg-dark px-4 py-2"
+            type="button"
+            data-bs-toggle="offcanvas"
+            data-bs-target="#offcanvasCines"
+            aria-controls="offcanvasCines">
+        🎬 Elegí Cine
+    </button>
+</div>
+
+<!-- Panel lateral (offcanvas) -->
+<div class="offcanvas offcanvas-end text-bg-dark" tabindex="-1" id="offcanvasCines" aria-labelledby="offcanvasCinesLabel">
+    <div class="offcanvas-header border-bottom">
+        <h5 class="offcanvas-title fw-bold" id="offcanvasCinesLabel">Elegí tu cine principal</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
+    </div>
+
+    <div class="offcanvas-body d-flex flex-column justify-content-between">
+        <!-- Contenedor donde se cargan los cines -->
+        <div id="listaCines" class="mb-3">
+            <div class="text-secondary small mb-3">Ordenado alfabéticamente</div>
+            <!-- Acá se insertan los cines dinámicamente -->
+        </div>
+
+        <!-- Botón inferior -->
+        <div class="mt-4 border-top pt-3 text-end">
+            <button class="btn btn-danger px-4" id="btnSeleccionar" data-bs-dismiss="offcanvas">Seleccionar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Script para cargar dinámicamente los cines -->
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        const contenedor = document.getElementById('listaCines');
+
+        try {
+            const response = await fetch('/Cines/Listar');
+            const cines = await response.json();
+
+            contenedor.innerHTML = cines.map(c => `
+                <div class="list-group-item bg-dark text-light d-flex justify-content-between align-items-start border-0 py-3">
+                    <div>
+                        <div class="fw-semibold">${c.nombre}</div>
+                        <small class="text-secondary">${c.direccion}</small>
+                        
+                    </div>
+                    <input type="radio" name="cine" value="${c.id}" class="form-check-input bg-secondary border-0">
+                </div>
+            `).join('');
+
+        } catch (error) {
+            contenedor.innerHTML = '<p class="text-danger">Error al cargar los cines.</p>';
+        }
+    });
+
+    document.getElementById('btnSeleccionar').addEventListener('click', () => {
+        const seleccionado = document.querySelector('input[name="cine"]:checked');
+        if (seleccionado) {
+            alert(`Seleccionaste el cine con ID ${seleccionado.value}`);
+            // Si querés redirigir:
+            // window.location.href = `/Cines/Detalle/${seleccionado.value}`;
+        } else {
+            alert('Por favor seleccioná un cine.');
+        }
+    });
+</script>

@@ -24,6 +24,11 @@ namespace Cine_Lumia.Models
         public DbSet<CineConsumible> CineConsumibles { get; set; }
         public DbSet<EspectadorConsumible> EspectadorConsumibles { get; set; }
 
+        public DbSet<TipoEntrada> TipoEntrada { get; set; }
+        public DbSet<Formato> Formato { get; set; }
+
+
+
         // =====================
         // Configuración de relaciones y claves compuestas
         // =====================
@@ -121,6 +126,26 @@ namespace Cine_Lumia.Models
                 .HasOne(ec => ec.Cine)
                 .WithMany(c => c.EspectadorConsumibles)
                 .HasForeignKey(ec => ec.Id_Cine);
+            // Formato - Sala
+            modelBuilder.Entity<Sala>()
+                .HasOne(s => s.Formato)
+                .WithMany(f => f.Salas)
+                .HasForeignKey(s => s.Id_Formato)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Formato - TipoEntrada
+            modelBuilder.Entity<TipoEntrada>()
+                .HasOne(t => t.Formato)
+                .WithMany(f => f.TipoEntradas)
+                .HasForeignKey(t => t.Id_Formato)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // TipoEntrada - Entrada
+            modelBuilder.Entity<Entrada>()
+                .HasOne(e => e.TipoEntrada)
+                .WithMany(t => t.Entradas)
+                .HasForeignKey(e => e.Id_TipoEntrada)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

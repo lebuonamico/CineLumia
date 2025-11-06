@@ -1,0 +1,237 @@
+﻿@model Cine_Lumia.Models.ViewModel.VentaEntradasViewModel
+
+<style>
+    body {
+        background: #0d0d0d;
+        color: #fff;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .container-resumen {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        max-width: 1200px;
+        margin: 40px auto;
+        gap: 40px;
+    }
+
+    /* ---- IZQUIERDA ---- */
+    .left {
+        flex: 1;
+    }
+
+    .section-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+    }
+
+    .entrada-card {
+        background: #1a1a1a;
+        border-radius: 12px;
+        padding: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        transition: .25s;
+    }
+
+        .entrada-card:hover {
+            background: #2a2a2a;
+        }
+
+    .entrada-info {
+        flex: 1;
+    }
+
+        .entrada-info h4 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        .entrada-info span {
+            color: #ccc;
+        }
+
+    .entrada-precio {
+        font-weight: 700;
+        color: #ff253c;
+    }
+
+    .entrada-cantidad {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+        .entrada-cantidad button {
+            background: #ff253c;
+            color: #fff;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: .25s;
+        }
+
+            .entrada-cantidad button:hover {
+                background: #e01d32;
+            }
+
+        .entrada-cantidad span {
+            min-width: 24px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+    /* ---- DERECHA ---- */
+    .right {
+        width: 360px;
+        background: #141414;
+        border-radius: 12px;
+        padding: 24px;
+    }
+
+    .resumen-titulo {
+        font-size: 1.6rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+    }
+
+    .pelicula-info {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+        .pelicula-info img {
+            width: 70px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+    .detalle-item {
+        margin-bottom: 10px;
+    }
+
+        .detalle-item strong {
+            color: #ff253c;
+        }
+
+    .total-box {
+        margin-top: 30px;
+        font-size: 1.3rem;
+        font-weight: 700;
+        text-align: right;
+        color: #fff;
+    }
+
+    .btn-continuar {
+        margin-top: 25px;
+        width: 100%;
+        padding: 14px;
+        background: #ff253c;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: .25s;
+    }
+
+        .btn-continuar:hover {
+            background: #e81e34;
+        }
+
+</style>
+
+<div class="container-resumen">
+    <!-- IZQUIERDA -->
+    <div class="left">
+        <div class="section-title">ELEGÍ LAS ENTRADAS</div>
+
+        @foreach (var tipo in Model.TiposEntrada)
+        {
+            <div class="entrada-card" data-id="@tipo.Id_TipoEntrada" data-precio="@tipo.Precio">
+                <div class="entrada-info">
+                    <h4>@tipo.Formato.Nombre</h4>
+                    <span>@String.Format("${0:N0}", tipo.Precio)</span>
+                </div>
+                <div class="entrada-cantidad">
+                    <button class="btn-restar">-</button>
+                    <span class="cantidad">0</span>
+                    <button class="btn-sumar">+</button>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- DERECHA -->
+    <div class="right">
+        <div class="resumen-titulo">RESUMEN</div>
+
+        <div class="pelicula-info">
+            <img src="@Model.Proyeccion.Pelicula.PosterUrl" />
+            <div>
+                <div><strong>@Model.Proyeccion.Pelicula.Nombre</strong></div>
+                <div>@Model.Proyeccion.Sala.Formato.Nombre</div>
+            </div>
+        </div>
+
+        <div class="detalle-item">
+            <strong>@Model.Proyeccion.Sala.Cine.Nombre</strong><br />
+            Sala @Model.Proyeccion.Sala.Formato.Nombre<br />
+            @Model.Proyeccion.Fecha.ToString("dd/MM") – @Model.Proyeccion.Hora.ToString("HH:mm")
+        </div>
+
+        <hr style="border-color:#ffffff25; margin:20px 0;" />
+
+        <div class="total-box">
+            Total: $<span id="total">0</span>
+        </div>
+
+        <button class="btn-continuar" id="btnContinuar" disabled>Continuar</button>
+    </div>
+</div>
+
+<script>
+    const cards = document.querySelectorAll('.entrada-card');
+    const totalSpan = document.getElementById('total');
+    const btnContinuar = document.getElementById('btnContinuar');
+
+    function calcularTotal() {
+        let total = 0;
+        cards.forEach(card => {
+            const precio = parseFloat(card.dataset.precio);
+            const cantidad = parseInt(card.querySelector('.cantidad').innerText);
+            total += precio * cantidad;
+        });
+        totalSpan.textContent = total.toLocaleString('es-AR');
+        btnContinuar.disabled = total === 0;
+    }
+
+    cards.forEach(card => {
+        const btnSumar = card.querySelector('.btn-sumar');
+        const btnRestar = card.querySelector('.btn-restar');
+        const cantidadSpan = card.querySelector('.cantidad');
+
+        btnSumar.addEventListener('click', () => {
+            cantidadSpan.innerText = parseInt(cantidadSpan.innerText) + 1;
+            calcularTotal();
+        });
+
+        btnRestar.addEventListener('click', () => {
+            let valor = parseInt(cantidadSpan.innerText);
+            if (valor > 0) {
+                cantidadSpan.innerText = valor - 1;
+                calcularTotal();
+            }
+        });
+    });
+</script>

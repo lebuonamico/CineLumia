@@ -19,5 +19,12 @@ namespace Cine_Lumia.Entities
         [ForeignKey("Asiento")]
         public int Id_Asiento { get; set; }
         public Asiento Asiento { get; set; } = null!;
+
+        // FK a TipoEntrada
+        [ForeignKey("TipoEntrada")]
+        public int Id_TipoEntrada { get; set; }
+        public TipoEntrada TipoEntrada { get; set; } = null!;
+
+        public DateTime FechaCompra { get; set; } = DateTime.Now;
     }
 }

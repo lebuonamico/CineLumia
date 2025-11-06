@@ -1,5 +1,6 @@
 ﻿using Cine_Lumia.Entities;
 using Cine_Lumia.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Cine_Lumia.Data
 {
@@ -27,16 +28,23 @@ namespace Cine_Lumia.Data
             var cine3 = new Cine { Nombre = "Lumia Sur", Direccion = "Av. San Martín 8900", Empresa = empresa };
             context.Cines.AddRange(cine1, cine2, cine3);
             context.SaveChanges();
-
+            // FORMATOS
+            var formato2D = new Formato { Nombre = "2D" };
+            var formato3D = new Formato { Nombre = "3D" };
+            var formato4D = new Formato { Nombre = "4D" };
+            var formatoXD = new Formato { Nombre = "XD" };
+            context.Formato.AddRange(formato2D, formato3D, formato4D, formatoXD);
+            context.SaveChanges();
             // =====================
-            // SALAS
+            // SALAS con Formato
             // =====================
-            var sala1 = new Sala { Cant_Butacas = 10, Cant_Filas = 10, Capacidad = 100, Cine = cine1 };
-            var sala2 = new Sala { Cant_Butacas = 10, Cant_Filas = 8, Capacidad = 80, Cine = cine1 };
-            var sala3 = new Sala { Cant_Butacas = 12, Cant_Filas = 10, Capacidad = 120, Cine = cine2 };
-            var sala4 = new Sala { Cant_Butacas = 8, Cant_Filas = 8, Capacidad = 64, Cine = cine2 };
-            var sala5 = new Sala { Cant_Butacas = 15, Cant_Filas = 10, Capacidad = 150, Cine = cine3 };
-            context.Salas.AddRange(sala1, sala2, sala3, sala4, sala5);
+            var sala1 = new Sala { Cant_Butacas = 10, Cant_Filas = 10, Capacidad = 100, Cine = cine1, Id_Formato = formato2D.Id_Formato };
+            var sala2 = new Sala { Cant_Butacas = 10, Cant_Filas = 8, Capacidad = 80, Cine = cine1, Id_Formato = formato3D.Id_Formato };
+            var sala3 = new Sala { Cant_Butacas = 12, Cant_Filas = 10, Capacidad = 120, Cine = cine2, Id_Formato = formato2D.Id_Formato };
+            var sala4 = new Sala { Cant_Butacas = 12, Cant_Filas = 10, Capacidad = 120, Cine = cine2, Id_Formato = formatoXD.Id_Formato };
+            var sala5 = new Sala { Cant_Butacas = 8, Cant_Filas = 8, Capacidad = 64, Cine = cine2, Id_Formato = formato4D.Id_Formato };
+            var sala6 = new Sala { Cant_Butacas = 12, Cant_Filas = 10, Capacidad = 120, Cine = cine3, Id_Formato = formato2D.Id_Formato };
+            context.Salas.AddRange(sala1, sala2, sala3, sala4, sala5, sala6);
             context.SaveChanges();
 
             // =====================
@@ -59,6 +67,14 @@ namespace Cine_Lumia.Data
             context.Asientos.AddRange(asientos);
             context.SaveChanges();
 
+            // TIPOS DE ENTRADA (solo precio por formato)
+            var tipo2D = new TipoEntrada { Id_Formato = formato2D.Id_Formato, Precio = 3500m };
+            var tipo3D = new TipoEntrada { Id_Formato = formato3D.Id_Formato, Precio = 4800m };
+            var tipo4D = new TipoEntrada { Id_Formato = formato4D.Id_Formato, Precio = 6000m };
+            var tipoXD = new TipoEntrada { Id_Formato = formatoXD.Id_Formato, Precio = 5500m };
+            context.TipoEntrada.AddRange(tipo2D, tipo3D, tipo4D, tipoXD);
+            context.SaveChanges();
+
             // =====================
             // GENEROS
             // =====================
@@ -72,29 +88,71 @@ namespace Cine_Lumia.Data
             // =====================
             // PELICULAS
             // =====================
-            var peli1 = new Pelicula { Nombre = "Ecos del Pasado", Duracion = 120, Fecha_Estreno = new DateTime(2025, 10, 1) };
-            var peli2 = new Pelicula { Nombre = "Risas en el Metro", Duracion = 95, Fecha_Estreno = new DateTime(2025, 8, 15) };
-            var peli3 = new Pelicula { Nombre = "Sombras de Medianoche", Duracion = 110, Fecha_Estreno = new DateTime(2025, 9, 10) };
-            context.Peliculas.AddRange(peli1, peli2, peli3);
+            var peliculas = new List<Pelicula>
+            {
+                new Pelicula { Nombre = "Avatar", Duracion = 162, PosterUrl = "/images/peliculas/avatar.jpg" },
+                new Pelicula { Nombre = "Avengers: Endgame", Duracion = 181, PosterUrl = "/images/peliculas/avengers_endgame.jpg" },
+                new Pelicula { Nombre = "The Dark Knight", Duracion = 152, PosterUrl = "/images/peliculas/batman_dark_knight.jpg" },
+                new Pelicula { Nombre = "Dune", Duracion = 155, PosterUrl = "/images/peliculas/dune.jpg" },
+                new Pelicula { Nombre = "Frozen", Duracion = 102, PosterUrl = "/images/peliculas/frozen.jpg" }
+            };
+            context.Peliculas.AddRange(peliculas);
             context.SaveChanges();
 
             // =====================
             // PELICULA_GENERO
             // =====================
             context.PeliculaGeneros.AddRange(
-                new PeliculaGenero { Pelicula = peli1, Genero = genero4 },
-                new PeliculaGenero { Pelicula = peli2, Genero = genero2 },
-                new PeliculaGenero { Pelicula = peli3, Genero = genero3 }
+                new PeliculaGenero { Pelicula = peliculas[0], Genero = genero1 },
+                new PeliculaGenero { Pelicula = peliculas[1], Genero = genero1 },
+                new PeliculaGenero { Pelicula = peliculas[2], Genero = genero4 },
+                new PeliculaGenero { Pelicula = peliculas[3], Genero = genero1 },
+                new PeliculaGenero { Pelicula = peliculas[4], Genero = genero2 }
             );
             context.SaveChanges();
 
             // =====================
             // PROYECCIONES
             // =====================
-            var proy1 = new Proyeccion { Fecha = new DateTime(2025, 10, 30), Hora = new DateTime(2025, 10, 30, 19, 30, 0), Sala = sala1, Pelicula = peli1 };
-            var proy2 = new Proyeccion { Fecha = new DateTime(2025, 10, 30), Hora = new DateTime(2025, 10, 30, 21, 0, 0), Sala = sala2, Pelicula = peli2 };
-            var proy3 = new Proyeccion { Fecha = new DateTime(2025, 10, 30), Hora = new DateTime(2025, 10, 30, 22, 15, 0), Sala = sala3, Pelicula = peli3 };
-            context.Proyecciones.AddRange(proy1, proy2, proy3);
+            var horarios = new List<TimeSpan>
+            {
+                new TimeSpan(15, 45, 00),
+                new TimeSpan(18, 15, 00),
+                new TimeSpan(22, 30, 00)
+            };
+
+            var proyecciones = new List<Proyeccion>();
+
+            // Para cada cine
+            foreach (var cine in context.Cines.Include(c => c.Salas))
+            {
+                // Para cada película
+                foreach (var peli in peliculas)
+                {
+                    // Para los próximos 7 días (hoy + 6)
+                    for (int d = 0; d < 7; d++)
+                    {
+                        var fecha = DateTime.Today.AddDays(d);
+
+                        // Para cada sala del cine
+                        foreach (var sala in cine.Salas)
+                        {
+                            // 3 horarios por día
+                            foreach (var h in horarios)
+                            {
+                                proyecciones.Add(new Proyeccion
+                                {
+                                    Pelicula = peli,
+                                    Sala = sala,
+                                    Fecha = fecha,
+                                    Hora = fecha.Add(h)
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            context.Proyecciones.AddRange(proyecciones);
             context.SaveChanges();
 
             // =====================
@@ -102,17 +160,28 @@ namespace Cine_Lumia.Data
             // =====================
             var espect1 = new Espectador { Dni = 40123123, Email = "espectador1@example.com", Password = "password123" };
             var espect2 = new Espectador { Dni = 39222444, Email = "espectador2@example.com", Password = "password123" };
-            var espect3 = new Espectador { Dni = 41555777, Email = "espectador3@example.com", Password = "password123" };
-            context.Espectadores.AddRange(espect1, espect2, espect3);
+            context.Espectadores.AddRange(espect1, espect2);
             context.SaveChanges();
 
             // =====================
-            // ENTRADAS
+            // ENTRADAS (ejemplo)
             // =====================
+            // ENTRADAS de ejemplo
             context.Entradas.AddRange(
-                new Entrada { Proyeccion = proy1, Espectador = espect1, Asiento = asientos[0] },
-                new Entrada { Proyeccion = proy2, Espectador = espect2, Asiento = asientos[4] },
-                new Entrada { Proyeccion = proy3, Espectador = espect3, Asiento = asientos[6] }
+                new Entrada
+                {
+                    Proyeccion = proyecciones[0],
+                    Espectador = espect1,
+                    Asiento = asientos[0],
+                    Id_TipoEntrada = tipo2D.Id_TipoEntrada,
+                },
+                new Entrada
+                {
+                    Proyeccion = proyecciones[1],
+                    Espectador = espect2,
+                    Asiento = asientos[4],
+                    Id_TipoEntrada = tipo3D.Id_TipoEntrada,
+                }
             );
             context.SaveChanges();
 
@@ -122,9 +191,7 @@ namespace Cine_Lumia.Data
             var c1 = new Consumible { Nombre = "Pochoclos", Descripcion = "Pochoclos salados tamaño grande", Precio = 3500 };
             var c2 = new Consumible { Nombre = "Gaseosa", Descripcion = "Coca-Cola 500ml", Precio = 2500 };
             var c3 = new Consumible { Nombre = "Nachos", Descripcion = "Con queso cheddar", Precio = 3000 };
-            var c4 = new Consumible { Nombre = "Agua", Descripcion = "Agua mineral 500ml", Precio = 1800 };
-            var c5 = new Consumible { Nombre = "Chocolate", Descripcion = "Barra de chocolate 80g", Precio = 2200 };
-            context.Consumibles.AddRange(c1, c2, c3, c4, c5);
+            context.Consumibles.AddRange(c1, c2, c3);
             context.SaveChanges();
 
             // =====================
@@ -132,24 +199,8 @@ namespace Cine_Lumia.Data
             // =====================
             context.CineConsumibles.AddRange(
                 new CineConsumible { Cine = cine1, Consumible = c1, Stock = 200 },
-                new CineConsumible { Cine = cine1, Consumible = c2, Stock = 150 },
-                new CineConsumible { Cine = cine1, Consumible = c3, Stock = 100 },
-                new CineConsumible { Cine = cine2, Consumible = c1, Stock = 180 },
-                new CineConsumible { Cine = cine2, Consumible = c4, Stock = 120 },
-                new CineConsumible { Cine = cine3, Consumible = c1, Stock = 160 },
-                new CineConsumible { Cine = cine3, Consumible = c2, Stock = 130 },
-                new CineConsumible { Cine = cine3, Consumible = c5, Stock = 90 }
-            );
-            context.SaveChanges();
-
-            // =====================
-            // ESPECTADOR_CONSUMIBLE
-            // =====================
-            context.EspectadorConsumibles.AddRange(
-                new EspectadorConsumible { Espectador = espect1, Consumible = c1, Cine = cine1, Cantidad = 2, Fecha = new DateTime(2025, 10, 30) },
-                new EspectadorConsumible { Espectador = espect1, Consumible = c2, Cine = cine1, Cantidad = 1, Fecha = new DateTime(2025, 10, 30) },
-                new EspectadorConsumible { Espectador = espect2, Consumible = c4, Cine = cine2, Cantidad = 1, Fecha = new DateTime(2025, 10, 30) },
-                new EspectadorConsumible { Espectador = espect3, Consumible = c3, Cine = cine3, Cantidad = 2, Fecha = new DateTime(2025, 10, 30) }
+                new CineConsumible { Cine = cine2, Consumible = c2, Stock = 150 },
+                new CineConsumible { Cine = cine3, Consumible = c3, Stock = 100 }
             );
             context.SaveChanges();
         }

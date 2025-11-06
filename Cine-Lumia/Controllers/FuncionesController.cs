@@ -30,8 +30,10 @@ namespace Cine_Lumia.Controllers
 
             // Proyecciones del cine y película
             var proyeccionesQuery = _context.Proyecciones
-                .Include(p => p.Sala)
-                .Where(p => p.Id_Pelicula == peliculaId && p.Sala.Id_Cine == cineId);
+    .Include(p => p.Sala)
+        .ThenInclude(s => s.Formato)
+    .Where(p => p.Id_Pelicula == peliculaId && p.Sala.Id_Cine == cineId);
+
 
             var proyeccionesList = await proyeccionesQuery.ToListAsync();
 
@@ -43,7 +45,8 @@ namespace Cine_Lumia.Controllers
                     g => g.GroupBy(p => p.Sala)
                           .Select(s => new SalaConHorarios
                           {
-                              Sala = "Sala " + s.Key.Formato,
+
+                              Sala = "Sala " + s.Key.Formato.Nombre,
                               Horarios = s.Select(h => new HorarioProyeccion
                               {
                                   IdProyeccion = h.Id_Proyeccion,

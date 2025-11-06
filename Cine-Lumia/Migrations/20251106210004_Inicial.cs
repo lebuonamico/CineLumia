@@ -55,6 +55,19 @@ namespace Cine_Lumia.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Formato",
+                columns: table => new
+                {
+                    Id_Formato = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Nombre = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Formato", x => x.Id_Formato);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Generos",
                 columns: table => new
                 {
@@ -101,6 +114,26 @@ namespace Cine_Lumia.Migrations
                         column: x => x.Id_Empresa,
                         principalTable: "Empresas",
                         principalColumn: "Id_Empresa",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TipoEntrada",
+                columns: table => new
+                {
+                    Id_TipoEntrada = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Id_Formato = table.Column<int>(type: "int", nullable: false),
+                    Precio = table.Column<decimal>(type: "decimal(10,2)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TipoEntrada", x => x.Id_TipoEntrada);
+                    table.ForeignKey(
+                        name: "FK_TipoEntrada_Formato_Id_Formato",
+                        column: x => x.Id_Formato,
+                        principalTable: "Formato",
+                        principalColumn: "Id_Formato",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -198,7 +231,7 @@ namespace Cine_Lumia.Migrations
                     Cant_Filas = table.Column<int>(type: "int", nullable: false),
                     Capacidad = table.Column<int>(type: "int", nullable: false),
                     Id_Cine = table.Column<int>(type: "int", nullable: false),
-                    Formato = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Id_Formato = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -209,6 +242,12 @@ namespace Cine_Lumia.Migrations
                         principalTable: "Cines",
                         principalColumn: "Id_Cine",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Salas_Formato_Id_Formato",
+                        column: x => x.Id_Formato,
+                        principalTable: "Formato",
+                        principalColumn: "Id_Formato",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -269,7 +308,9 @@ namespace Cine_Lumia.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Id_Proyeccion = table.Column<int>(type: "int", nullable: false),
                     Id_Espectador = table.Column<int>(type: "int", nullable: false),
-                    Id_Asiento = table.Column<int>(type: "int", nullable: false)
+                    Id_Asiento = table.Column<int>(type: "int", nullable: false),
+                    Id_TipoEntrada = table.Column<int>(type: "int", nullable: false),
+                    FechaCompra = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -291,6 +332,12 @@ namespace Cine_Lumia.Migrations
                         column: x => x.Id_Proyeccion,
                         principalTable: "Proyecciones",
                         principalColumn: "Id_Proyeccion",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Entradas_TipoEntrada_Id_TipoEntrada",
+                        column: x => x.Id_TipoEntrada,
+                        principalTable: "TipoEntrada",
+                        principalColumn: "Id_TipoEntrada",
                         onDelete: ReferentialAction.Restrict);
                 });
 
@@ -323,6 +370,11 @@ namespace Cine_Lumia.Migrations
                 name: "IX_Entradas_Id_Proyeccion",
                 table: "Entradas",
                 column: "Id_Proyeccion");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Entradas_Id_TipoEntrada",
+                table: "Entradas",
+                column: "Id_TipoEntrada");
 
             migrationBuilder.CreateIndex(
                 name: "IX_EspectadorConsumibles_Id_Cine",
@@ -358,6 +410,16 @@ namespace Cine_Lumia.Migrations
                 name: "IX_Salas_Id_Cine",
                 table: "Salas",
                 column: "Id_Cine");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Salas_Id_Formato",
+                table: "Salas",
+                column: "Id_Formato");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TipoEntrada_Id_Formato",
+                table: "TipoEntrada",
+                column: "Id_Formato");
         }
 
         /// <inheritdoc />
@@ -382,6 +444,9 @@ namespace Cine_Lumia.Migrations
                 name: "Proyecciones");
 
             migrationBuilder.DropTable(
+                name: "TipoEntrada");
+
+            migrationBuilder.DropTable(
                 name: "Consumibles");
 
             migrationBuilder.DropTable(
@@ -398,6 +463,9 @@ namespace Cine_Lumia.Migrations
 
             migrationBuilder.DropTable(
                 name: "Cines");
+
+            migrationBuilder.DropTable(
+                name: "Formato");
 
             migrationBuilder.DropTable(
                 name: "Empresas");

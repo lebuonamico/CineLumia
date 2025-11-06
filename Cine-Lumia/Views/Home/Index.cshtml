@@ -1,106 +1,96 @@
-﻿@model Cine_Lumia.Models.DashboardViewModel
+@model Cine_Lumia.Models.HomeViewModel
 
-<div class="container my-4">
-    <h1 class="text-center mb-4">🎬 Dashboard Cine Lumia</h1>
-    <!-- Empresas y Cines -->
-    <section class="mb-5">
-        <h2 class="mb-3">🏢 Empresas y Cines</h2>
-        @foreach (var empresa in Model.Empresas)
-        {
-            <div class="card mb-3 shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h3 class="mb-0">@empresa.Nombre</h3>
-                </div>
-                <div class="card-body">
-                    @foreach (var cine in empresa.Cines)
-                    {
-                        <div class="card mb-2 border-info">
-                            <div class="card-header bg-info text-white">
-                                <strong>@cine.Nombre</strong> - @cine.Direccion
-                            </div>
-                            <div class="card-body">
-                                <h5>Salas:</h5>
-                                <ul class="list-group list-group-flush">
-                                    @foreach (var sala in cine.Salas)
-                                    {
-                                        <li class="list-group-item">
-                                            Sala: <strong>@sala.Id_Sala</strong> | Butacas: @sala.Cant_Butacas | Filas: @sala.Cant_Filas | Capacidad: @sala.Capacidad
-                                            <ul class="mt-2">
-                                                @foreach (var asiento in sala.Asientos)
-                                                {
-                                                    <li>
-                                                        Asiento: @asiento.Id_Asiento | Fila: @asiento.Fila | Col: @asiento.Columna | Disponible: @(asiento.Disponible ? "✅" : "❌")
-                                                    </li>
-                                                }
-                                            </ul>
-                                        </li>
-                                    }
-                                </ul>
+@{
+    ViewData["Title"] = "Inicio - Cine Lumia";
+}
+
+<div class="container">
+    <!-- HERO / SLIDER -->
+    <div id="carouselDestacadas" class="carousel slide mb-5" data-bs-ride="carousel">
+        <div class="carousel-indicators">
+            @for (int i = 0; i < Model.Destacadas.Count; i++)
+            {
+                <button type="button" data-bs-target="#carouselDestacadas" data-bs-slide-to="@i"
+                        class="@(i == 0 ? "active" : "")"
+                        aria-current="@(i == 0 ? "true" : "false")"
+                        aria-label="Slide @(i + 1)"></button>
+            }
+        </div>
+        <div class="carousel-inner rounded shadow-sm">
+            @for (int i = 0; i < Model.Destacadas.Count; i++)
+            {
+                var pelicula = Model.Destacadas[i];
+                <div class="carousel-item @(i == 0 ? "active" : "")">
+                    <div class="row g-0 align-items-center">
+                        <div class="col-md-5">
+                            <img src="@Url.Content(string.Format("~/images/movies/{0}.jpg", pelicula.Id_Pelicula))"
+                                 onerror="this.onerror=null;this.src='@Url.Content("~/images/placeholder-movie.png")';"
+                                 class="d-block w-100" alt="@pelicula.Nombre"
+                                 style="max-height:420px; object-fit:cover;"/>
+                        </div>
+                        <div class="col-md-7">
+                            <div class="carousel-caption text-start text-dark p-4">
+                                <h2>@pelicula.Nombre</h2>
+                                <p class="lead">@string.Join(", ", pelicula.PeliculaGeneros.Select(pg => pg.Genero.GeneroNombre))
+                                </p>
+                                <p><strong>Duraci�n:</strong> @pelicula.Duracion min �
+                                    <strong>Estreno:</strong> @pelicula.Fecha_Estreno.ToShortDateString()
+                                </p>
+                                <a class="btn btn-primary" asp-controller="Peliculas" asp-action="Detalle"
+                                   asp-route-id="@pelicula.Id_Pelicula">Ver m�s</a>
                             </div>
                         </div>
-                    }
+                    </div>
                 </div>
-            </div>
-        }
-    </section>
-
-    <!-- Películas y Proyecciones -->
-    <section class="mb-5">
-        <h2 class="mb-3">🎞 Películas y Proyecciones</h2>
-        @foreach (var pelicula in Model.Peliculas)
-        {
-            <div class="card mb-3 shadow-sm">
-                <div class="card-header bg-success text-white">
-                    <h3 class="mb-0">@pelicula.Nombre (@pelicula.Duracion min) - Estreno: @pelicula.Fecha_Estreno.ToShortDateString()</h3>
-                </div>
-                <div class="card-body">
-                    <p><strong>Géneros:</strong> @string.Join(", ", pelicula.PeliculaGeneros.Select(pg => pg.Genero.GeneroNombre))</p>
-                    <h5>Proyecciones:</h5>
-                    <ul class="list-group">
-                        @foreach (var proyeccion in pelicula.Proyecciones)
-                        {
-                            <li class="list-group-item">
-                                Fecha: @proyeccion.Fecha.ToShortDateString() | Hora: @proyeccion.Hora.ToShortTimeString()
-                                <ul class="mt-2">
-                                    @foreach (var entrada in proyeccion.Entradas)
-                                    {
-                                        <li>Entrada: @entrada.Id_Entrada | Espectador: @entrada.Espectador.Email | Asiento: @entrada.Id_Asiento</li>
-                                    }
-                                </ul>
-                            </li>
-                        }
-                    </ul>
-                </div>
-            </div>
-        }
-    </section>
-
-    <!-- Consumibles por Cine -->
-    <section class="mb-5">
-        <h2 class="mb-3">🍿 Consumibles por Cine</h2>
-        <ul class="list-group">
-            @foreach (var cc in Model.CineConsumibles)
-            {
-                <li class="list-group-item">
-                    Cine: <strong>@cc.Cine.Nombre</strong> | Consumible: @cc.Consumible.Nombre | Stock: @cc.Stock
-                </li>
             }
-        </ul>
-    </section>
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselDestacadas" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Anterior</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselDestacadas" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Siguiente</span>
+        </button>
+    </div>
 
-    <!-- Compras de Espectadores -->
-    <section class="mb-5">
-        <h2 class="mb-3">🛒 Compras de Espectadores</h2>
-        <ul class="list-group">
-            @foreach (var compra in Model.Compras)
+    <!-- CARTELERA -->
+    <section class="mt-5">
+        <h3 class="mb-4">Cartelera</h3>
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+            @foreach (var pelicula in Model.Cartelera)
             {
-                <li class="list-group-item">
-                    Espectador: <strong>@compra.Espectador.Email</strong> | Cine: @compra.Cine.Nombre | Consumible: @compra.Consumible.Nombre | Cantidad: @compra.Cantidad | Fecha: @compra.Fecha.ToShortDateString()
-                </li>
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <img src="@Url.Content(string.Format("~/images/movies/{0}.jpg", pelicula.Id_Pelicula))"
+                             onerror="this.onerror=null;this.src='@Url.Content("~/images/placeholder-movie.png")';"
+                             class="card-img-top" alt="@pelicula.Nombre"
+                             style="height:300px; object-fit:cover;"/>
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">@pelicula.Nombre</h5>
+                            <p class="card-text text-muted">@string.Join(", ", pelicula.PeliculaGeneros.Select(pg => pg.Genero.GeneroNombre))
+                            </p>
+                            <p class="text-muted small">@pelicula.Fecha_Estreno.ToShortDateString() � @pelicula.Duracion
+                                min</p>
+                            <div class="mt-auto">
+                                <a class="btn btn-outline-primary w-100" asp-controller="Peliculas" asp-action="Detalle"
+                                   asp-route-id="@pelicula.Id_Pelicula">Ver m�s</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             }
-        </ul>
+        </div>
     </section>
 </div>
 
-<!-- Bootstrap (si no lo tenés ya en tu layout) -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+@section Scripts {
+    <script>
+        var myCarousel = document.querySelector('#carouselDestacadas');
+        if (myCarousel) {
+            var carousel = new bootstrap.Carousel(myCarousel, {
+                interval: 5000
+            });
+        }
+    </script>
+}

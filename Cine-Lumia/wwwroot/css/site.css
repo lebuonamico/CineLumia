@@ -1,33 +1,70 @@
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@600&display=swap');
+
 html {
-  font-size: 14px;
+ font-size:14px;
 }
 
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+@media (min-width:768px) {
+ html { font-size:16px; }
 }
 
+/* Focus outlines */
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+ box-shadow:0000.1rem white,0000.25rem #258cfb;
 }
 
-html {
-  position: relative;
-  min-height: 100%;
-}
+html { position: relative; min-height:100%; }
 
 body {
-  margin-bottom: 60px;
-  padding-top: 70px; /* Espacio para la barra de navegación fija */
+ margin-bottom:60px;
+ background-color: #000000; /* fondo negro */
+ color: #ffffff; /* texto en blanco */
+ font-family: 'Oswald', sans-serif; /* fuente Oswald */
+ font-weight:600; /* peso600 */
 }
 
+/* Navbar should match page background */
+.navbar {
+ background-color: #000000 !important;
+}
+.navbar .navbar-brand,
+.navbar .nav-link {
+ color: #ffffff !important;
+}
+
+/* Buttons: white background, black text, hover -> red text with transition */
+.btn {
+ background-color: #ffffff !important;
+ color: #000000 !important;
+ border: none !important;
+ transition: color0.25s ease, background-color0.25s ease;
+}
+
+.btn:hover, .btn:focus {
+ color: #ff0000 !important; /* hover: texto rojo */
+ text-decoration: none;
+}
+
+/* Card background requested */
+.card {
+ background-color: #23211E !important; /* fondo de las cards */
+ color: #ffffff; /* texto en blanco dentro de card */
+ border:0;
+}
+.card .text-muted { color: #bdb6b0 !important; }
+
+/* Footer text color (ensure links readable) */
+footer, .footer { color: #ffffff !important; }
+footer a, .footer a { color: #ffffff !important; }
+
 .form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
-  text-align: end;
+ color: var(--bs-secondary-color);
+ text-align: end;
 }
 
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
+ text-align: start;
+}
   text-align: start;
 }
 

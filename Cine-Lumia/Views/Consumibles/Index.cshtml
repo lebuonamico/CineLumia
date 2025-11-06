@@ -1,0 +1,150 @@
+@model IEnumerable<Cine_Lumia.Entities.CineConsumible>
+
+@{
+    ViewData["Title"] = "Snacks disponibles por cine";
+    var agrupado = Model.GroupBy(c => c.Cine.Nombre);
+}
+
+<h2 class="mt-4 mb-4 text-center">🍿 Snacks disponibles por cine</h2>
+
+@foreach (var grupo in agrupado)
+{
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">🎬 @grupo.Key</h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                @foreach (var item in grupo)
+                {
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100 text-center border-0 shadow-sm bg-light">
+                            <div class="card-body d-flex flex-column justify-content-between">
+                                <div>
+                                    <h5 class="card-title">@item.Consumible.Nombre</h5>
+                                    <p class="card-text text-muted">Stock disponible: <strong>@item.Stock</strong></p>
+                                </div>
+                                <div>
+                                    <button class="btn btn-sm btn-success mt-3 w-75 mx-auto"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#comprarModal"
+                                            data-cine="@item.Cine.Nombre"
+                                            data-snack="@item.Consumible.Nombre"
+                                            data-stock="@item.Stock"
+                                            data-cine-id="@item.Id_Cine"
+                                            data-consumible-id="@item.Id_Consumible">
+                                        🛒 Comprar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+<div class="modal fade" id="comprarModal" tabindex="-1" aria-labelledby="comprarModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="comprarModalLabel">🛒 Comprar Snack</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formCompra">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" id="modalCineId" />
+                    <input type="hidden" id="modalConsumibleId" />
+                    <div class="mb-3">
+                        <label class="form-label">Cine:</label>
+                        <input type="text" class="form-control" id="modalCine" readonly />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Snack:</label>
+                        <input type="text" class="form-control" id="modalSnack" readonly />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Cantidad:</label>
+                        <input type="number" class="form-control" id="modalCantidad" min="1" value="1" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Stock disponible:</label>
+                        <input type="text" class="form-control" id="modalStock" readonly />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" id="btnConfirmarCompra">Confirmar compra</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var comprarModal = document.getElementById('comprarModal');
+        comprarModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var cine = button.getAttribute('data-cine');
+            var snack = button.getAttribute('data-snack');
+            var stock = button.getAttribute('data-stock');
+            var cineId = button.getAttribute('data-cine-id');
+            var consumibleId = button.getAttribute('data-consumible-id');
+
+            document.getElementById('modalCine').value = cine;
+            document.getElementById('modalSnack').value = snack;
+            document.getElementById('modalStock').value = stock;
+            document.getElementById('modalCineId').value = cineId;
+            document.getElementById('modalConsumibleId').value = consumibleId;
+        });
+
+        document.getElementById('btnConfirmarCompra').addEventListener('click', function () {
+            var cantidad = parseInt(document.getElementById('modalCantidad').value);
+            var stock = parseInt(document.getElementById('modalStock').value);
+            var snack = document.getElementById('modalSnack').value;
+            var cineId = parseInt(document.getElementById('modalCineId').value);
+            var consumibleId = parseInt(document.getElementById('modalConsumibleId').value);
+
+            if (cantidad > stock) {
+                alert('❌ No hay suficiente stock disponible.');
+                return;
+            }
+
+            fetch('/Consumibles/Comprar', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.getElementsByName('__RequestVerificationToken')[0].value
+                },
+                body: JSON.stringify({ 
+                    cineId: cineId, 
+                    consumibleId: consumibleId, 
+                    cantidad: cantidad 
+                })
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                }
+                throw new Error('Error en la compra.');
+            })
+            .then(data => {
+                alert('✅ Compra realizada con éxito: ' + cantidad + 'x ' + snack);
+                var modal = bootstrap.Modal.getInstance(document.getElementById('comprarModal'));
+                modal.hide();
+                location.reload(); // Recargar la página para ver el stock actualizado
+            })
+            .catch(error => {
+                if (error.message.includes('401')) {
+                    alert('🔐 Debes iniciar sesión para comprar.');
+                } else {
+                    alert('❌ Error al realizar la compra.');
+                }
+                console.error('Error:', error);
+            });
+        });
+    </script>
+}

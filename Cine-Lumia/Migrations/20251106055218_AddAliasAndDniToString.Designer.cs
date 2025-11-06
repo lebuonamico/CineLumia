@@ -4,6 +4,7 @@ using Cine_Lumia.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Cine_Lumia.Migrations
 {
     [DbContext(typeof(CineDbContext))]
-    partial class CineDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251106055218_AddAliasAndDniToString")]
+    partial class AddAliasAndDniToString
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -150,9 +153,6 @@ namespace Cine_Lumia.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id_Entrada"));
 
-                    b.Property<DateTime>("FechaCompra")
-                        .HasColumnType("datetime2");
-
                     b.Property<int>("Id_Asiento")
                         .HasColumnType("int");
 
@@ -162,9 +162,6 @@ namespace Cine_Lumia.Migrations
                     b.Property<int>("Id_Proyeccion")
                         .HasColumnType("int");
 
-                    b.Property<int>("Id_TipoEntrada")
-                        .HasColumnType("int");
-
                     b.HasKey("Id_Entrada");
 
                     b.HasIndex("Id_Asiento");
@@ -172,8 +169,6 @@ namespace Cine_Lumia.Migrations
                     b.HasIndex("Id_Espectador");
 
                     b.HasIndex("Id_Proyeccion");
-
-                    b.HasIndex("Id_TipoEntrada");
 
                     b.ToTable("Entradas");
                 });
@@ -242,24 +237,6 @@ namespace Cine_Lumia.Migrations
                     b.ToTable("EspectadorConsumibles");
                 });
 
-            modelBuilder.Entity("Cine_Lumia.Entities.Formato", b =>
-                {
-                    b.Property<int>("Id_Formato")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id_Formato"));
-
-                    b.Property<string>("Nombre")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("Id_Formato");
-
-                    b.ToTable("Formato");
-                });
-
             modelBuilder.Entity("Cine_Lumia.Entities.Genero", b =>
                 {
                     b.Property<int>("Id_Genero")
@@ -296,10 +273,6 @@ namespace Cine_Lumia.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("PosterUrl")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id_Pelicula");
 
@@ -370,37 +343,11 @@ namespace Cine_Lumia.Migrations
                     b.Property<int>("Id_Cine")
                         .HasColumnType("int");
 
-                    b.Property<int>("Id_Formato")
-                        .HasColumnType("int");
-
                     b.HasKey("Id_Sala");
 
                     b.HasIndex("Id_Cine");
 
-                    b.HasIndex("Id_Formato");
-
                     b.ToTable("Salas");
-                });
-
-            modelBuilder.Entity("Cine_Lumia.Entities.TipoEntrada", b =>
-                {
-                    b.Property<int>("Id_TipoEntrada")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id_TipoEntrada"));
-
-                    b.Property<int>("Id_Formato")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("Precio")
-                        .HasColumnType("decimal(10,2)");
-
-                    b.HasKey("Id_TipoEntrada");
-
-                    b.HasIndex("Id_Formato");
-
-                    b.ToTable("TipoEntrada");
                 });
 
             modelBuilder.Entity("Cine_Lumia.Entities.Asiento", b =>
@@ -464,19 +411,11 @@ namespace Cine_Lumia.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Cine_Lumia.Entities.TipoEntrada", "TipoEntrada")
-                        .WithMany("Entradas")
-                        .HasForeignKey("Id_TipoEntrada")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.Navigation("Asiento");
 
                     b.Navigation("Espectador");
 
                     b.Navigation("Proyeccion");
-
-                    b.Navigation("TipoEntrada");
                 });
 
             modelBuilder.Entity("Cine_Lumia.Entities.EspectadorConsumible", b =>
@@ -552,26 +491,7 @@ namespace Cine_Lumia.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Cine_Lumia.Entities.Formato", "Formato")
-                        .WithMany("Salas")
-                        .HasForeignKey("Id_Formato")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.Navigation("Cine");
-
-                    b.Navigation("Formato");
-                });
-
-            modelBuilder.Entity("Cine_Lumia.Entities.TipoEntrada", b =>
-                {
-                    b.HasOne("Cine_Lumia.Entities.Formato", "Formato")
-                        .WithMany("TipoEntradas")
-                        .HasForeignKey("Id_Formato")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Formato");
                 });
 
             modelBuilder.Entity("Cine_Lumia.Entities.Asiento", b =>
@@ -607,13 +527,6 @@ namespace Cine_Lumia.Migrations
                     b.Navigation("EspectadorConsumibles");
                 });
 
-            modelBuilder.Entity("Cine_Lumia.Entities.Formato", b =>
-                {
-                    b.Navigation("Salas");
-
-                    b.Navigation("TipoEntradas");
-                });
-
             modelBuilder.Entity("Cine_Lumia.Entities.Genero", b =>
                 {
                     b.Navigation("PeliculaGeneros");
@@ -636,11 +549,6 @@ namespace Cine_Lumia.Migrations
                     b.Navigation("Asientos");
 
                     b.Navigation("Proyecciones");
-                });
-
-            modelBuilder.Entity("Cine_Lumia.Entities.TipoEntrada", b =>
-                {
-                    b.Navigation("Entradas");
                 });
 #pragma warning restore 612, 618
         }

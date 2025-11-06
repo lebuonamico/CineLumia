@@ -19,6 +19,7 @@ html {
 
 body {
   margin-bottom: 60px;
+  padding-top: 70px; /* Espacio para la barra de navegación fija */
 }
 
 .form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
@@ -28,4 +29,55 @@ body {
 
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
+}
+
+.profile-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+@media (min-width: 768px) {
+    .profile-info-container {
+        flex-direction: column;
+    }
+
+    .profile-avatar {
+        width: 180px;
+        height: 180px;
+        margin-right: 0;
+        margin-bottom: 15px;
+    }
+}
+
+.avatar-carousel {
+    position: relative;
+    display: inline-block;
+}
+
+.avatar-nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    font-size: 18px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.avatar-carousel:hover .avatar-nav-btn {
+    opacity: 1;
+}
+
+.avatar-nav-btn.prev {
+    left: 10px;
+}
+
+.avatar-nav-btn.next {
+    right: 10px;
 }

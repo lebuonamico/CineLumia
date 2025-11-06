@@ -17,7 +17,7 @@
 
   <ItemGroup>
     <Folder Include="Views\Account\" />
-    <Folder Include="wwwroot\img\" />
+    <Folder Include="wwwroot\img\avatar\" />
   </ItemGroup>
 
 </Project>

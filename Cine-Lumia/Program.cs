@@ -22,6 +22,27 @@ builder.Services.AddDbContext<CineDbContext>(options =>
 // ============================
 builder.Services.AddControllersWithViews();
 
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
+builder.Services.AddHttpContextAccessor();
+
+// ============================
+// AUTENTICACIÓN Y COOKIES
+// ============================
+builder.Services.AddAuthentication("LumiaCookieAuth")
+    .AddCookie("LumiaCookieAuth", options =>
+    {
+        options.Cookie.Name = "LumiaCookieAuth";
+        options.LoginPath = "/Account/Login";
+        options.AccessDeniedPath = "/Account/AccessDenied";
+        options.ExpireTimeSpan = TimeSpan.FromDays(1); 
+    });
+
 var app = builder.Build();
 
 // ============================
@@ -33,6 +54,8 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseRouting();
+app.UseSession();
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();

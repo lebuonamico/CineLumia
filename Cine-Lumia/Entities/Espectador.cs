@@ -7,7 +7,10 @@ namespace Cine_Lumia.Entities
         [Key]
         public int Id_Espectador { get; set; }
 
-        public int Dni { get; set; }
+        public string? Dni { get; set; }
+
+        [StringLength(255)]
+        public string? Alias { get; set; }
 
         [Required, EmailAddress, StringLength(255)]
         public string Email { get; set; } = string.Empty;

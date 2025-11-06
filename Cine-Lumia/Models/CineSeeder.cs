@@ -67,7 +67,7 @@ namespace Cine_Lumia.Data
             context.Asientos.AddRange(asientos);
             context.SaveChanges();
 
-            // TIPOS DE ENTRADA (solo precio por formato)
+            // TIPOS DE ENTRADA (solo precio por formato) 
             var tipo2D = new TipoEntrada { Id_Formato = formato2D.Id_Formato, Precio = 3500m };
             var tipo3D = new TipoEntrada { Id_Formato = formato3D.Id_Formato, Precio = 4800m };
             var tipo4D = new TipoEntrada { Id_Formato = formato4D.Id_Formato, Precio = 6000m };

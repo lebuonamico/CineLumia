@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Cine_Lumia.Migrations
 {
     /// <inheritdoc />
-    public partial class Inicia : Migration
+    public partial class Inicial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -280,7 +280,7 @@ namespace Cine_Lumia.Migrations
                     Id_Proyeccion = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Fecha = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Hora = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Hora = table.Column<TimeSpan>(type: "time", nullable: false),
                     Id_Sala = table.Column<int>(type: "int", nullable: false),
                     Id_Pelicula = table.Column<int>(type: "int", nullable: false)
                 },

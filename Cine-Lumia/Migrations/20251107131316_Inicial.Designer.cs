@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Cine_Lumia.Migrations
 {
     [DbContext(typeof(CineDbContext))]
-    [Migration("20251107002855_Inicia")]
-    partial class Inicia
+    [Migration("20251107131316_Inicial")]
+    partial class Inicial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -335,8 +335,8 @@ namespace Cine_Lumia.Migrations
                     b.Property<DateTime>("Fecha")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("Hora")
-                        .HasColumnType("datetime2");
+                    b.Property<TimeSpan>("Hora")
+                        .HasColumnType("time");
 
                     b.Property<int>("Id_Pelicula")
                         .HasColumnType("int");

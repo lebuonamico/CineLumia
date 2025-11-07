@@ -11,8 +11,8 @@ namespace Cine_Lumia.Entities
         [Required, DataType(DataType.Date)]
         public DateTime Fecha { get; set; }
 
-        [Required, DataType(DataType.Time)]
-        public DateTime Hora { get; set; }
+        [Required]
+        public TimeSpan Hora { get; set; }
 
         [ForeignKey("Sala")]
         public int Id_Sala { get; set; }

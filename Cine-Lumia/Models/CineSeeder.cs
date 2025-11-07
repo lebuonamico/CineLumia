@@ -116,6 +116,7 @@ namespace Cine_Lumia.Data
             // =====================
             var horarios = new List<TimeSpan>
             {
+                new TimeSpan(08, 00, 00),
                 new TimeSpan(15, 45, 00),
                 new TimeSpan(18, 15, 00),
                 new TimeSpan(22, 30, 00)
@@ -145,7 +146,7 @@ namespace Cine_Lumia.Data
                                     Pelicula = peli,
                                     Sala = sala,
                                     Fecha = fecha,
-                                    Hora = fecha.Add(h)
+                                    Hora = h
                                 });
                             }
                         }

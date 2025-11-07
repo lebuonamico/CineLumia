@@ -8,6 +8,7 @@ namespace Cine_Lumia.Controllers
     public class FuncionesController : Controller
     {
         private readonly CineDbContext _context;
+
         public FuncionesController(CineDbContext context)
         {
             _context = context;
@@ -28,14 +29,24 @@ namespace Cine_Lumia.Controllers
 
             string fechaSeleccionada = fecha ?? DateTime.Today.ToString("yyyy-MM-dd");
 
-            // Proyecciones del cine y película
-            var proyeccionesQuery = _context.Proyecciones
-    .Include(p => p.Sala)
-        .ThenInclude(s => s.Formato)
-    .Where(p => p.Id_Pelicula == peliculaId && p.Sala.Id_Cine == cineId);
+            // Fecha y hora actual
+            var ahora = DateTime.Now;
 
+            // Consulta base
+            var proyeccionesQuery = _context.Proyecciones
+                .Include(p => p.Sala)
+                    .ThenInclude(s => s.Formato)
+                .Where(p => p.Id_Pelicula == peliculaId && p.Sala.Id_Cine == cineId);
 
             var proyeccionesList = await proyeccionesQuery.ToListAsync();
+
+            // 🔹 Filtrar horarios pasados solo si la fecha es hoy
+            proyeccionesList = proyeccionesList
+                .Where(p =>
+                    p.Fecha.Date > DateTime.Today ||
+                    (p.Fecha.Date == DateTime.Today && p.Hora > ahora.TimeOfDay)
+                )
+                .ToList();
 
             // Agrupar por fecha y sala
             var proyeccionesPorFecha = proyeccionesList
@@ -45,12 +56,11 @@ namespace Cine_Lumia.Controllers
                     g => g.GroupBy(p => p.Sala)
                           .Select(s => new SalaConHorarios
                           {
-
                               Sala = "Sala " + s.Key.Formato.Nombre,
                               Horarios = s.Select(h => new HorarioProyeccion
                               {
                                   IdProyeccion = h.Id_Proyeccion,
-                                  Hora = h.Hora.ToString("HH:mm")
+                                  Hora = h.Hora.ToString(@"hh\:mm")
                               }).OrderBy(h => h.Hora).ToList()
                           }).ToList()
                 );

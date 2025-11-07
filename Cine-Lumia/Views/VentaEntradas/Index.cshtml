@@ -165,7 +165,7 @@
                 </div>
                 <div class="entrada-cantidad">
                     <button class="btn-restar">-</button>
-                    <span class="cantidad">0</span>
+                    <span class="cantidad">1</span>
                     <button class="btn-sumar">+</button>
                 </div>
             </div>
@@ -187,7 +187,7 @@
         <div class="detalle-item">
             <strong>@Model.Proyeccion.Sala.Cine.Nombre</strong><br />
             Sala @Model.Proyeccion.Sala.Formato.Nombre<br />
-            @Model.Proyeccion.Fecha.ToString("dd/MM") – @Model.Proyeccion.Hora.ToString("HH:mm")
+            @Model.Proyeccion.Fecha.ToString("dd/MM") – @Model.Proyeccion.Hora.ToString(@"hh\:mm")
         </div>
 
         <hr style="border-color:#ffffff25; margin:20px 0;" />
@@ -234,4 +234,5 @@
             }
         });
     });
+    calcularTotal();
 </script>

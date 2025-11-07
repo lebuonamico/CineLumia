@@ -332,8 +332,8 @@ namespace Cine_Lumia.Migrations
                     b.Property<DateTime>("Fecha")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("Hora")
-                        .HasColumnType("datetime2");
+                    b.Property<TimeSpan>("Hora")
+                        .HasColumnType("time");
 
                     b.Property<int>("Id_Pelicula")
                         .HasColumnType("int");

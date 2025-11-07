@@ -2,57 +2,59 @@
 
 @{
     ViewData["Title"] = "Inicio - Cine Lumia";
+
+    // Helper para resolver la URL del poster (acepta rutas que empiecen con ~ o / o rutas completas)
+    Func<string, string> ResolvePoster = path =>
+    {
+        var placeholder = Url.Content("~/images/placeholder-movie.png");
+        if (string.IsNullOrWhiteSpace(path)) return placeholder;
+        if (path.StartsWith("~")) return Url.Content(path);
+        return path; // ya es /ruta o url absoluta
+    };
+
+    // Usar los banners provistos por el controlador (Model.BannerUrls) — mostrar como máximo3
+    var banners = Model.BannerUrls ?? new List<string>();
+    var bannerCount = Math.Min(3, banners.Count);
 }
 
 <div class="container">
-    <!-- HERO / SLIDER -->
-    <div id="carouselDestacadas" class="carousel slide mb-5" data-bs-ride="carousel">
-        <div class="carousel-indicators">
-            @for (int i = 0; i < Model.Destacadas.Count; i++)
-            {
-                <button type="button" data-bs-target="#carouselDestacadas" data-bs-slide-to="@i"
-                        class="@(i == 0 ? "active" : "")"
-                        aria-current="@(i == 0 ? "true" : "false")"
-                        aria-label="Slide @(i + 1)"></button>
-            }
-        </div>
-        <div class="carousel-inner rounded shadow-sm">
-            @for (int i = 0; i < Model.Destacadas.Count; i++)
-            {
-                var pelicula = Model.Destacadas[i];
-                <div class="carousel-item @(i == 0 ? "active" : "")">
-                    <div class="row g-0 align-items-center">
-                        <div class="col-md-5">
-                            <img src="@Url.Content(string.Format("~/images/movies/{0}.jpg", pelicula.Id_Pelicula))"
-                                 onerror="this.onerror=null;this.src='@Url.Content("~/images/placeholder-movie.png")';"
-                                 class="d-block w-100" alt="@pelicula.Nombre"
-                                 style="max-height:420px; object-fit:cover;"/>
-                        </div>
-                        <div class="col-md-7">
-                            <div class="carousel-caption text-start text-dark p-4">
-                                <h2>@pelicula.Nombre</h2>
-                                <p class="lead">@string.Join(", ", pelicula.PeliculaGeneros.Select(pg => pg.Genero.GeneroNombre))
-                                </p>
-                                <p><strong>Duración:</strong> @pelicula.Duracion min •
-                                    <strong>Estreno:</strong> @pelicula.Fecha_Estreno.ToShortDateString()
-                                </p>
-                                <a class="btn btn-primary" asp-controller="Peliculas" asp-action="Detalle"
-                                   asp-route-id="@pelicula.Id_Pelicula">Ver más</a>
-                            </div>
-                        </div>
+    <!-- BANNERS / SLIDER (publicidad) -->
+    @if (bannerCount >0)
+    {
+        <div id="carouselBanner" class="carousel slide mb-5" data-bs-ride="carousel">
+            <div class="carousel-indicators">
+                @for (int i =0; i < bannerCount; i++)
+                {
+                    <button type="button" data-bs-target="#carouselBanner" data-bs-slide-to="@i"
+                            class="@(i ==0 ? "active" : "")"
+                            aria-current="@(i ==0 ? "true" : "false")"
+                            aria-label="Banner @(i +1)"></button>
+                }
+            </div>
+
+            <div class="carousel-inner rounded shadow-sm">
+                @for (int i =0; i < bannerCount; i++)
+                {
+                    var src = banners[i];
+                    <div class="carousel-item @(i ==0 ? "active" : "")">
+                        <img src="@Url.Content(src)"
+                             onerror="this.onerror=null;this.src='@Url.Content("~/images/placeholder-movie.png")';"
+                             class="d-block w-100" alt="Banner @(i +1)"
+                             style="max-height:420px; object-fit:cover;" />
                     </div>
-                </div>
-            }
+                }
+            </div>
+
+            <button class="carousel-control-prev" type="button" data-bs-target="#carouselBanner" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Anterior</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#carouselBanner" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Siguiente</span>
+            </button>
         </div>
-        <button class="carousel-control-prev" type="button" data-bs-target="#carouselDestacadas" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Anterior</span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#carouselDestacadas" data-bs-slide="next">
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Siguiente</span>
-        </button>
-    </div>
+    }
 
     <!-- CARTELERA -->
     <section class="mt-5">
@@ -60,9 +62,10 @@
         <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
             @foreach (var pelicula in Model.Cartelera)
             {
+                var posterUrl = ResolvePoster(pelicula.PosterUrl);
                 <div class="col">
                     <div class="card h-100 shadow-sm">
-                        <img src="@Url.Content(string.Format("~/images/movies/{0}.jpg", pelicula.Id_Pelicula))"
+                        <img src="@posterUrl"
                              onerror="this.onerror=null;this.src='@Url.Content("~/images/placeholder-movie.png")';"
                              class="card-img-top" alt="@pelicula.Nombre"
                              style="height:300px; object-fit:cover;"/>
@@ -86,10 +89,10 @@
 
 @section Scripts {
     <script>
-        var myCarousel = document.querySelector('#carouselDestacadas');
+        var myCarousel = document.querySelector('#carouselBanner');
         if (myCarousel) {
             var carousel = new bootstrap.Carousel(myCarousel, {
-                interval: 5000
+                interval:5000
             });
         }
     </script>

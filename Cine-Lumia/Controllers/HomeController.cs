@@ -3,16 +3,19 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 
 namespace Cine_Lumia.Controllers
 {
     public class HomeController : Controller
     {
         private readonly CineDbContext _context;
+        private readonly IWebHostEnvironment _env;
 
-        public HomeController(CineDbContext context)
+        public HomeController(CineDbContext context, IWebHostEnvironment env)
         {
             _context = context;
+            _env = env;
         }
 
         // GET: / or /Home/Index
@@ -37,6 +40,26 @@ namespace Cine_Lumia.Controllers
                 Destacadas = destacadas,
                 Cartelera = cartelera
             };
+
+            // Leer banners desde wwwroot/images/banner
+            try
+            {
+                var bannerDir = System.IO.Path.Combine(_env.ContentRootPath, "wwwroot", "images", "banner");
+                if (System.IO.Directory.Exists(bannerDir))
+                {
+                    var files = System.IO.Directory.GetFiles(bannerDir)
+                        .Where(f => new[] { ".png", ".jpg", ".jpeg", ".webp", ".gif" }
+                        .Contains(System.IO.Path.GetExtension(f).ToLowerInvariant()))
+                        .Select(f => "/images/banner/" + System.IO.Path.GetFileName(f))
+                        .ToList();
+
+                    viewModel.BannerUrls = files;
+                }
+            }
+            catch
+            {
+                // ignorar errores de I/O
+            }
 
             return View(viewModel);
         }

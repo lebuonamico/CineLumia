@@ -132,9 +132,9 @@
                 throw new Error('Error en la compra.');
             })
             .then(data => {
-                alert('✅ Compra realizada con éxito: ' + cantidad + 'x ' + snack);
-                var modal = bootstrap.Modal.getInstance(document.getElementById('comprarModal'));
-                modal.hide();
+            alert('✅ Compra realizada con éxito: ' + cantidad + 'x ' + snack);
+            var modal = bootstrap.Modal.getInstance(document.getElementById('comprarModal'));
+            modal.hide();
                 location.reload(); // Recargar la página para ver el stock actualizado
             })
             .catch(error => {

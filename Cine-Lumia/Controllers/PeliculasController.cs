@@ -1,4 +1,5 @@
-using Cine_Lumia.Models;
+using Microsoft.AspNetCore.Mvc;
+using Cine_Lumia.Models;  
 using Cine_Lumia.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -21,7 +22,8 @@ namespace Cine_Lumia.Controllers
                 .Include(p => p.PeliculaGeneros)
                 .ThenInclude(pg => pg.Genero)
                 .ToListAsync();
-
+             
+            var peliculas = _context.Peliculas.ToList();
             return View(peliculas);
         }
     }

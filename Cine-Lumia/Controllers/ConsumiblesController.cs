@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Cine_Lumia.Models;
 using Microsoft.EntityFrameworkCore;
 using Cine_Lumia.Models;
 using System.Linq;

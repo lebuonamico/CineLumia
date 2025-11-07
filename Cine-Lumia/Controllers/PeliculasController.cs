@@ -23,7 +23,7 @@ namespace Cine_Lumia.Controllers
                 .ThenInclude(pg => pg.Genero)
                 .ToListAsync();
              
-            var peliculas = _context.Peliculas.ToList();
+            //var peliculas = _context.Peliculas.ToList();
             return View(peliculas);
         }
     }

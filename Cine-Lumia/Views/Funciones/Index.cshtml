@@ -124,12 +124,51 @@
         max-width: 1200px;
         margin: 0 auto;
     }
+
+    .btn-volver-top {
+        position: fixed;
+        top: 90px; /* se baja un poco para no quedar debajo del navbar */
+        left: 40px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(0, 0, 0, 0.75);
+        border: 1px solid #ff253c;
+        color: #ff253c;
+        font-weight: 600;
+        font-size: 1rem;
+        padding: 10px 22px;
+        border-radius: 40px;
+        cursor: pointer;
+        z-index: 1050; /* más alto que el navbar y el backdrop */
+        transition: all 0.25s ease;
+        backdrop-filter: blur(6px);
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    }
+
+        .btn-volver-top:hover {
+            background: #ff253c;
+            color: #fff;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255, 37, 60, 0.4);
+        }
+
+        .btn-volver-top i {
+            font-size: 1.2rem;
+        }
+
+
 </style>
 
 <!-- Fondo -->
 <div class="backdrop" style="background-image: url('@Model.Pelicula.PosterUrl')"></div>
-
+<!-- Botón Volver -->
+<button class="btn-volver-top" onclick="window.history.back()">
+    <i class="bi bi-arrow-left"></i> Volver
+</button>
 <div class="container">
+    
+
 
     <div class="movie-wrap">
         <img src="@Model.Pelicula.PosterUrl" class="movie-poster" />

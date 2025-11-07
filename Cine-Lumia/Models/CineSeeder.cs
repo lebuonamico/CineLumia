@@ -8,9 +8,6 @@ namespace Cine_Lumia.Data
     {
         public static void Seed(CineDbContext context)
         {
-            // =====================
-            // Evitar duplicados
-            // =====================
             if (context.Empresas.Any()) return;
 
             // =====================
@@ -28,15 +25,19 @@ namespace Cine_Lumia.Data
             var cine3 = new Cine { Nombre = "Lumia Sur", Direccion = "Av. San Martín 8900", Empresa = empresa };
             context.Cines.AddRange(cine1, cine2, cine3);
             context.SaveChanges();
+
+            // =====================
             // FORMATOS
+            // =====================
             var formato2D = new Formato { Nombre = "2D" };
             var formato3D = new Formato { Nombre = "3D" };
             var formato4D = new Formato { Nombre = "4D" };
             var formatoXD = new Formato { Nombre = "XD" };
             context.Formato.AddRange(formato2D, formato3D, formato4D, formatoXD);
             context.SaveChanges();
+
             // =====================
-            // SALAS con Formato
+            // SALAS
             // =====================
             var sala1 = new Sala { Cant_Butacas = 10, Cant_Filas = 10, Capacidad = 100, Cine = cine1, Id_Formato = formato2D.Id_Formato };
             var sala2 = new Sala { Cant_Butacas = 10, Cant_Filas = 8, Capacidad = 80, Cine = cine1, Id_Formato = formato3D.Id_Formato };
@@ -48,26 +49,32 @@ namespace Cine_Lumia.Data
             context.SaveChanges();
 
             // =====================
-            // ASIENTOS (solo algunos)
+            // ASIENTOS
             // =====================
-            var asientos = new List<Asiento>
+            var asientos = new List<Asiento>();
+            var salas = new[] { sala1, sala2, sala3, sala4, sala5, sala6 };
+            foreach (var s in salas)
             {
-                new Asiento { Fila = "A", Columna = 1, Disponible = true, Sala = sala1 },
-                new Asiento { Fila = "A", Columna = 2, Disponible = true, Sala = sala1 },
-                new Asiento { Fila = "A", Columna = 3, Disponible = true, Sala = sala1 },
-                new Asiento { Fila = "B", Columna = 1, Disponible = true, Sala = sala2 },
-                new Asiento { Fila = "B", Columna = 2, Disponible = true, Sala = sala2 },
-                new Asiento { Fila = "C", Columna = 1, Disponible = true, Sala = sala3 },
-                new Asiento { Fila = "C", Columna = 2, Disponible = true, Sala = sala3 },
-                new Asiento { Fila = "D", Columna = 1, Disponible = true, Sala = sala4 },
-                new Asiento { Fila = "D", Columna = 2, Disponible = true, Sala = sala4 },
-                new Asiento { Fila = "E", Columna = 1, Disponible = true, Sala = sala5 },
-                new Asiento { Fila = "E", Columna = 2, Disponible = true, Sala = sala5 },
-            };
+                for (int f = 1; f <= s.Cant_Filas; f++)
+                {
+                    for (int c = 1; c <= s.Cant_Butacas; c++)
+                    {
+                        asientos.Add(new Asiento
+                        {
+                            Fila = ((char)('A' + f - 1)).ToString(),
+                            Columna = c,
+                            Disponible = true,
+                            Sala = s
+                        });
+                    }
+                }
+            }
             context.Asientos.AddRange(asientos);
             context.SaveChanges();
 
-            // TIPOS DE ENTRADA (solo precio por formato) 
+            // =====================
+            // TIPOS DE ENTRADA
+            // =====================
             var tipo2D = new TipoEntrada { Id_Formato = formato2D.Id_Formato, Precio = 3500m };
             var tipo3D = new TipoEntrada { Id_Formato = formato3D.Id_Formato, Precio = 4800m };
             var tipo4D = new TipoEntrada { Id_Formato = formato4D.Id_Formato, Precio = 6000m };
@@ -100,7 +107,7 @@ namespace Cine_Lumia.Data
             context.SaveChanges();
 
             // =====================
-            // PELICULA_GENERO
+            // PELICULA-GENERO
             // =====================
             context.PeliculaGeneros.AddRange(
                 new PeliculaGenero { Pelicula = peliculas[0], Genero = genero1 },
@@ -114,31 +121,38 @@ namespace Cine_Lumia.Data
             // =====================
             // PROYECCIONES
             // =====================
-            var horarios = new List<TimeSpan>
-            {
-                new TimeSpan(08, 00, 00),
-                new TimeSpan(15, 45, 00),
-                new TimeSpan(18, 15, 00),
-                new TimeSpan(22, 30, 00)
-            };
+            var baseHorarios = new List<TimeSpan>
+{
+    new TimeSpan(8, 0, 0),
+    new TimeSpan(15, 45, 0),
+    new TimeSpan(18, 15, 0),
+    new TimeSpan(23, 30, 0) // todas las salas deben tener esta
+};
 
             var proyecciones = new List<Proyeccion>();
+            var random = new Random();
 
-            // Para cada cine
             foreach (var cine in context.Cines.Include(c => c.Salas))
             {
-                // Para cada película
+                int salaIndex = 0;
+
                 foreach (var peli in peliculas)
                 {
-                    // Para los próximos 7 días (hoy + 6)
                     for (int d = 0; d < 7; d++)
                     {
                         var fecha = DateTime.Today.AddDays(d);
 
-                        // Para cada sala del cine
                         foreach (var sala in cine.Salas)
                         {
-                            // 3 horarios por día
+                            // Variación según sala (0 a 45 min) para los horarios que NO son 23:30
+                            int variacion = (salaIndex * 15) % 60; // 15 min entre salas
+                            var horarios = baseHorarios
+                                .Select(h =>
+                                    h == new TimeSpan(23, 30, 0)
+                                        ? h // la última siempre igual
+                                        : h.Add(TimeSpan.FromMinutes(variacion)))
+                                .ToList();
+
                             foreach (var h in horarios)
                             {
                                 proyecciones.Add(new Proyeccion
@@ -149,12 +163,17 @@ namespace Cine_Lumia.Data
                                     Hora = h
                                 });
                             }
+
+                            salaIndex++;
                         }
                     }
                 }
             }
+
             context.Proyecciones.AddRange(proyecciones);
             context.SaveChanges();
+
+
 
             // =====================
             // ESPECTADORES
@@ -166,25 +185,29 @@ namespace Cine_Lumia.Data
             context.SaveChanges();
 
             // =====================
-            // ENTRADAS (ejemplo)
+            // ENTRADAS (proyecciones de 23:30 → dejar 10 disponibles)
             // =====================
-            // ENTRADAS de ejemplo
-            context.Entradas.AddRange(
-                new Entrada
+            var entradas = new List<Entrada>();
+            foreach (var p in proyecciones.Where(p => p.Hora.Hours == 23 && p.Hora.Minutes == 30))
+            {
+                var sala = context.Salas.Include(s => s.Asientos).FirstOrDefault(s => s.Id_Sala == p.Id_Sala);
+                if (sala == null) continue;
+
+                int ocupadas = Math.Max(0, sala.Capacidad - 10);
+                var asientosSala = context.Asientos.Where(a => a.Id_Sala == sala.Id_Sala).Take(ocupadas).ToList();
+
+                foreach (var a in asientosSala)
                 {
-                    Proyeccion = proyecciones[0],
-                    Espectador = espect1,
-                    Asiento = asientos[0],
-                    Id_TipoEntrada = tipo2D.Id_TipoEntrada,
-                },
-                new Entrada
-                {
-                    Proyeccion = proyecciones[1],
-                    Espectador = espect2,
-                    Asiento = asientos[4],
-                    Id_TipoEntrada = tipo3D.Id_TipoEntrada,
+                    entradas.Add(new Entrada
+                    {
+                        Proyeccion = p,
+                        Espectador = espect1,
+                        Asiento = a,
+                        Id_TipoEntrada = context.TipoEntrada.FirstOrDefault(t => t.Id_Formato == sala.Id_Formato)!.Id_TipoEntrada
+                    });
                 }
-            );
+            }
+            context.Entradas.AddRange(entradas);
             context.SaveChanges();
 
             // =====================

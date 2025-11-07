@@ -149,6 +149,26 @@
             background: #e81e34;
         }
 
+    .btn-volver {
+        margin-top: 10px;
+        width: 100%;
+        padding: 12px;
+        background: transparent;
+        color: #ff253c;
+        border: 2px solid #ff253c;
+        border-radius: 8px;
+        font-size: 1.05rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: 0.25s;
+    }
+
+        .btn-volver:hover {
+            background: #ff253c;
+            color: #fff;
+        }
+
+
 </style>
 
 <div class="container-resumen">
@@ -170,6 +190,7 @@
                 </div>
             </div>
         }
+
     </div>
 
     <!-- DERECHA -->
@@ -187,7 +208,8 @@
         <div class="detalle-item">
             <strong>@Model.Proyeccion.Sala.Cine.Nombre</strong><br />
             Sala @Model.Proyeccion.Sala.Formato.Nombre<br />
-            @Model.Proyeccion.Fecha.ToString("dd/MM") – @Model.Proyeccion.Hora.ToString(@"hh\:mm")
+            @Model.Proyeccion.Fecha.ToString("dd/MM") – @Model.Proyeccion.Hora.ToString(@"hh\:mm")<br />
+            <small style="color:#aaa;">Asientos disponibles: @Model.AsientosDisponibles</small>
         </div>
 
         <hr style="border-color:#ffffff25; margin:20px 0;" />
@@ -197,6 +219,8 @@
         </div>
 
         <button class="btn-continuar" id="btnContinuar" disabled>Continuar</button>
+        <button class="btn-volver" onclick="window.history.back()">Volver</button>
+
     </div>
 </div>
 
@@ -204,16 +228,21 @@
     const cards = document.querySelectorAll('.entrada-card');
     const totalSpan = document.getElementById('total');
     const btnContinuar = document.getElementById('btnContinuar');
+    const maxEntradas = @Model.AsientosDisponibles; // 🔸 límite máximo
+    const minEntradas = 1; // 🔸 mínimo 1
 
     function calcularTotal() {
         let total = 0;
+        let totalEntradas = 0;
         cards.forEach(card => {
             const precio = parseFloat(card.dataset.precio);
             const cantidad = parseInt(card.querySelector('.cantidad').innerText);
             total += precio * cantidad;
+            totalEntradas += cantidad;
         });
         totalSpan.textContent = total.toLocaleString('es-AR');
-        btnContinuar.disabled = total === 0;
+        btnContinuar.disabled = totalEntradas === 0;
+        return totalEntradas;
     }
 
     cards.forEach(card => {
@@ -222,17 +251,46 @@
         const cantidadSpan = card.querySelector('.cantidad');
 
         btnSumar.addEventListener('click', () => {
-            cantidadSpan.innerText = parseInt(cantidadSpan.innerText) + 1;
-            calcularTotal();
+            const totalActual = calcularTotal();
+            if (totalActual < maxEntradas) {
+                cantidadSpan.innerText = parseInt(cantidadSpan.innerText) + 1;
+                calcularTotal();
+            } else {
+                Swal.fire({
+                    icon: 'warning',
+                    title: '¡Casi completo!',
+                    text: 'No hay más asientos disponibles para esta función.',
+                    confirmButtonText: 'Entendido',
+                    background: '#111',
+                    color: '#fff',
+                    confirmButtonColor: '#e50914',
+                    iconColor: '#e50914'
+                });
+            }
         });
 
         btnRestar.addEventListener('click', () => {
             let valor = parseInt(cantidadSpan.innerText);
-            if (valor > 0) {
+            if (valor > minEntradas) {
                 cantidadSpan.innerText = valor - 1;
                 calcularTotal();
+            } else {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Cantidad mínima alcanzada',
+                    text: 'Debes seleccionar al menos una entrada.',
+                    confirmButtonText: 'Entendido',
+                    background: '#111',
+                    color: '#fff',
+                    confirmButtonColor: '#e50914',
+                    iconColor: '#e50914'
+                });
             }
         });
     });
+
     calcularTotal();
 </script>
+
+
+

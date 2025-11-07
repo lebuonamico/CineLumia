@@ -14,5 +14,7 @@ namespace Cine_Lumia.Models.ViewModel
 
         // Total calculado (se puede actualizar en JS)
         public decimal Total { get; set; }
+        public int TotalAsientos { get; set; }
+        public int AsientosDisponibles { get; set; }
     }
 }

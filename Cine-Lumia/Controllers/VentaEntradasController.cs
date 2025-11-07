@@ -24,18 +24,26 @@ namespace Cine_Lumia.Controllers
             if (proyeccion == null)
                 return NotFound();
 
-            // Traer los tipos de entrada que coincidan con el formato de la sala
+            // Traer los tipos de entrada según formato
             var tiposEntrada = await _context.TipoEntrada
                 .Where(t => t.Id_Formato == proyeccion.Sala.Id_Formato)
                 .ToListAsync();
 
+            // 🔸 Calcular asientos disponibles para esta proyección
+            var totalAsientos = proyeccion.Sala.Capacidad;
+            var entradasVendidas = await _context.Entradas.CountAsync(e => e.Id_Proyeccion == idProyeccion);
+            var asientosDisponibles = totalAsientos - entradasVendidas;
+
             var vm = new VentaEntradasViewModel
             {
                 Proyeccion = proyeccion,
-                TiposEntrada = tiposEntrada
+                TiposEntrada = tiposEntrada,
+                TotalAsientos = totalAsientos,
+                AsientosDisponibles = asientosDisponibles
             };
 
             return View(vm);
         }
+
     }
 }

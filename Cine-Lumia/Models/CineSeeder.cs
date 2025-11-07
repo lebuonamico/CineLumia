@@ -185,28 +185,73 @@ namespace Cine_Lumia.Data
             context.SaveChanges();
 
             // =====================
-            // ENTRADAS (proyecciones de 23:30 → dejar 10 disponibles)
+            // ENTRADAS (proyecciones de 23:30 → dejar 10 libres aleatorios y dispersos)
             // =====================
             var entradas = new List<Entrada>();
+            var random2 = new Random();
+
             foreach (var p in proyecciones.Where(p => p.Hora.Hours == 23 && p.Hora.Minutes == 30))
             {
                 var sala = context.Salas.Include(s => s.Asientos).FirstOrDefault(s => s.Id_Sala == p.Id_Sala);
                 if (sala == null) continue;
 
-                int ocupadas = Math.Max(0, sala.Capacidad - 10);
-                var asientosSala = context.Asientos.Where(a => a.Id_Sala == sala.Id_Sala).Take(ocupadas).ToList();
+                var asientosSala = context.Asientos
+                    .Where(a => a.Id_Sala == sala.Id_Sala)
+                    .OrderBy(a => a.Fila)
+                    .ThenBy(a => a.Columna)
+                    .ToList();
 
-                foreach (var a in asientosSala)
+                int totalAsientos = asientosSala.Count;
+                int libres = 30;
+
+                // 1️⃣ Elijo 10 asientos distintos para dejar libres
+                var indicesLibres = new HashSet<int>();
+                while (indicesLibres.Count < libres)
                 {
-                    entradas.Add(new Entrada
+                    indicesLibres.Add(random2.Next(0, totalAsientos));
+                }
+
+                // 2️⃣ Genero algunos "bloques" de dispersión (simular agrupaciones)
+                int cantidadBloques = random2.Next(1, 5); // de 1 a 4 grupos
+                var asientosLibresExtra = new List<int>();
+
+                for (int b = 0; b < cantidadBloques; b++)
+                {
+                    var baseIndex = random2.Next(0, totalAsientos);
+                    int bloqueSize = random2.Next(1, 3); // tamaño 1 o 2
+                    for (int i = 0; i < bloqueSize; i++)
                     {
-                        Proyeccion = p,
-                        Espectador = espect1,
-                        Asiento = a,
-                        Id_TipoEntrada = context.TipoEntrada.FirstOrDefault(t => t.Id_Formato == sala.Id_Formato)!.Id_TipoEntrada
-                    });
+                        int idx = baseIndex + i;
+                        if (idx < totalAsientos)
+                            asientosLibresExtra.Add(idx);
+                    }
+                }
+
+                // Combino ambos métodos y me aseguro de tener 10 libres únicos
+                var asientosLibres = indicesLibres
+                    .Concat(asientosLibresExtra)
+                    .Distinct()
+                    .Take(libres)
+                    .ToList();
+
+                // 3️⃣ Los demás se marcan como ocupados
+                foreach (var (asiento, index) in asientosSala.Select((a, i) => (a, i)))
+                {
+                    if (!asientosLibres.Contains(index))
+                    {
+                        entradas.Add(new Entrada
+                        {
+                            Proyeccion = p,
+                            Espectador = espect1,
+                            Asiento = asiento,
+                            Id_TipoEntrada = context.TipoEntrada
+                                .First(t => t.Id_Formato == sala.Id_Formato)
+                                .Id_TipoEntrada
+                        });
+                    }
                 }
             }
+
             context.Entradas.AddRange(entradas);
             context.SaveChanges();
 

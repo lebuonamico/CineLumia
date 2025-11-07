@@ -1,0 +1,359 @@
+﻿@model Cine_Lumia.Models.ViewModel.SeleccionAsientoViewModel
+@using System.Globalization
+
+@{
+    ViewData["Title"] = "Seleccioná tu butaca";
+}
+
+<style>
+    body {
+        background-color: #0d0d0d;
+        color: #fff;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .container {
+        display: flex;
+        justify-content: center;
+        gap: 40px;
+        max-width: 1200px;
+        margin: 40px auto;
+    }
+
+    /* ---- IZQUIERDA: pantalla + matriz ---- */
+    .seat-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    /* Pantalla */
+    .screen-wrapper {
+        width: 700px;
+        margin-bottom: 40px;
+        perspective: 1000px;
+    }
+
+    .screen {
+        width: 100%;
+        height: auto;
+        transform: rotateX(20deg);
+        display: block;
+    }
+
+    .screen-label {
+        text-align: center;
+        color: #ccc;
+        font-weight: bold;
+        margin-top: 10px;
+        letter-spacing: 2px;
+    }
+
+    /* Asientos */
+    .seat-grid {
+        display: grid;
+        grid-template-columns: 40px repeat( @Model.Columnas, 1fr);
+        gap: 6px;
+    }
+
+    .row-label {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: #ccc;
+    }
+
+    .seat {
+        width: 30px;
+        height: 30px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+
+        .seat:hover {
+            transform: scale(1.1);
+        }
+
+        .seat.disponible {
+            background-color: #fff;
+        }
+
+        .seat.ocupado {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+
+        .seat.seleccionado {
+            background-color: #00c853;
+        }
+
+    /* Leyenda */
+    .legend {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+        gap: 20px;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.9rem;
+        color: #ccc;
+    }
+
+    .legend-box {
+        width: 18px;
+        height: 18px;
+        border-radius: 4px;
+    }
+
+    /* ---- DERECHA: resumen ---- */
+    .resumen {
+        width: 360px;
+        background: #141414;
+        border-radius: 12px;
+        padding: 24px;
+        flex-shrink: 0;
+    }
+
+    .resumen-titulo {
+        font-size: 1.6rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+    }
+
+    .detalle-item {
+        margin-bottom: 10px;
+    }
+
+        .detalle-item strong {
+            color: #ff253c;
+        }
+
+    .total-box {
+        margin-top: 30px;
+        font-size: 1.3rem;
+        font-weight: 700;
+        text-align: right;
+        color: #fff;
+    }
+
+    .btn-continuar {
+        margin-top: 25px;
+        width: 100%;
+        padding: 14px;
+        background: #ff253c;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: .25s;
+    }
+
+        .btn-continuar:disabled {
+            background: #444;
+            cursor: not-allowed;
+        }
+
+        .btn-continuar:hover:not(:disabled) {
+            background: #e81e34;
+        }
+
+</style>
+
+<div class="container">
+    <!-- IZQUIERDA: pantalla + matriz -->
+    <div class="seat-container">
+        <div class="screen-wrapper">
+            <svg class="screen" viewBox="0 0 320 25" preserveAspectRatio="none">
+                <defs>
+                    <linearGradient id="paint0_linear_1_3" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#b0b0b0" />
+                        <stop offset="60%" stop-color="#808080" />
+                        <stop offset="100%" stop-color="#4a4a4a" />
+                    </linearGradient>
+                </defs>
+                <path d="M4.08767 12.3643C3.05435 12.4761 2.84608 13.8907 3.80678 14.2788L28.9715 24.4462C29.1387 24.5138 29.3133 24.5359 29.4923 24.5092C34.7903 23.7181 119.512 11.6812 289.929 24.1612C290.078 24.1722 290.232 24.1497 290.372 24.0949L314.674 14.5699C315.646 14.189 315.478 12.7841 314.443 12.6761C289.274 10.0482 148.249 -3.23927 4.08767 12.3643Z" fill="url(#paint0_linear_1_3)"></path>
+            </svg>
+            <div class="screen-label">PANTALLA</div>
+        </div>
+
+        <div class="seat-grid">
+            <div></div>
+            @for (int c = 1; c <= Model.Columnas; c++)
+            {
+                <div class="row-label">@c</div>
+            }
+
+            @foreach (var fila in Model.Asientos.GroupBy(a => a.Fila))
+            {
+                <div class="row-label">@fila.Key</div>
+
+                @foreach (var asiento in fila.OrderBy(a => a.Columna))
+                {
+                    var clase = asiento.Disponible ? "disponible" : "ocupado";
+                    <div class="seat @clase"
+                         data-id="@asiento.Id_Asiento"
+                         data-fila="@asiento.Fila"
+                         data-columna="@asiento.Columna">
+                    </div>
+                }
+            }
+        </div>
+
+        <div class="legend">
+            <div class="legend-item"><div class="legend-box" style="background:#fff;"></div>Disponible</div>
+            <div class="legend-item"><div class="legend-box" style="background:#555;"></div>No disponible</div>
+            <div class="legend-item"><div class="legend-box" style="background:#00c853;"></div>Seleccionado</div>
+        </div>
+
+        <button class="btn-continuar" id="btnConfirmar" disabled>CONTINUAR</button>
+    </div>
+
+    <!-- DERECHA: resumen -->
+    <div class="resumen">
+        <div class="resumen-titulo">RESUMEN</div>
+
+        <div style="display:flex; gap:14px; align-items:center;">
+            <img src="@Model.Proyeccion.Pelicula.PosterUrl" style="width:65px;border-radius:6px;" />
+            <div>
+                <strong>@Model.Proyeccion.Pelicula.Nombre</strong><br />
+                @Model.FormatoEntrada
+            </div>
+        </div>
+
+        <hr style="border-color:#ffffff25; margin:18px 0;" />
+
+        <div class="detalle-item">
+            <strong>Cine, día y horario:</strong><br />
+            @Model.Proyeccion.Sala.Cine.Nombre <br />
+            Sala @Model.Proyeccion.Sala.Id_Sala <br />
+            @{
+                var fecha = Model.Proyeccion.Fecha;
+                var hora = Model.Proyeccion.Hora.ToString(@"hh\:mm");
+
+                string textoFecha;
+
+                if (fecha.Date == DateTime.Today)
+                {
+                    textoFecha = $"Hoy {fecha:dd/MM} · {hora}";
+                }
+                else
+                {
+                    // Nombre del día en español
+                    var diaSemana = fecha.ToString("dddd", new CultureInfo("es-AR"));
+                    // Primera letra mayúscula
+                    diaSemana = char.ToUpper(diaSemana[0]) + diaSemana.Substring(1);
+
+                    textoFecha = $"{diaSemana} {fecha:dd/MM} · {hora}";
+                }
+            }
+            @textoFecha
+
+        </div>
+
+
+        <hr style="border-color:#ffffff25; margin:18px 0;" />
+
+        <div class="detalle-item">
+            <strong>Entradas:</strong><br />
+            @Model.CantidadEntradas · entrada @Model.FormatoEntrada
+
+        </div>
+
+        <hr style="border-color:#ffffff25; margin:18px 0;" />
+
+        <div class="detalle-item">
+            <strong>Butacas:</strong><br />
+            <div id="lista-butacas" style="margin-top:8px; display:flex; gap:6px; flex-wrap:wrap;"></div>
+        </div>
+
+        <hr style="border-color:#ffffff25; margin:18px 0;" />
+
+        <div class="total-box">
+            Total: $<span id="total">@Model.TotalCompra.ToString("N0")</span>
+        </div>
+
+    </div>
+
+
+</div>
+
+<script>
+    const seats = document.querySelectorAll('.seat.disponible');
+    const btnConfirmar = document.getElementById('btnConfirmar');
+    const totalSpan = document.getElementById('total');
+    const totalEntradas = @Model.CantidadEntradas;
+    let seleccionados = [];
+        const listaButacas = document.getElementById('lista-butacas');
+
+        function actualizarResumen() {
+        listaButacas.innerHTML = "";
+
+        seleccionados.forEach(id => {
+            const seat = document.querySelector(`.seat[data-id='${id}']`);
+            const fila = seat.dataset.fila;
+            const columna = seat.dataset.columna;
+
+            const span = document.createElement('span');
+            span.textContent = `${fila} ${columna}`;
+            span.style.background = "#222";
+            span.style.padding = "4px 8px";
+            span.style.borderRadius = "6px";
+
+            listaButacas.appendChild(span);
+        });
+    }
+
+
+    // Manejo selección de asientos
+    seats.forEach(seat => {
+        seat.addEventListener('click', () => {
+            const id = seat.dataset.id;
+            if (seat.classList.contains('seleccionado')) {
+                seat.classList.remove('seleccionado');
+                seleccionados = seleccionados.filter(s => s !== id);
+            } else {
+                if (seleccionados.length < totalEntradas) {
+                    seat.classList.add('seleccionado');
+                    seleccionados.push(id);
+                } else {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Límite alcanzado',
+                        text: `Solo podés elegir ${totalEntradas} asientos.`,
+                        confirmButtonColor: '#e50914',
+                        background: '#111',
+                        color: '#fff'
+                    });
+                }
+            }
+            btnConfirmar.disabled = seleccionados.length !== totalEntradas;
+            actualizarResumen();
+
+        });
+    });
+
+    // Confirmar selección
+    btnConfirmar.addEventListener('click', () => {
+        const form = document.createElement('form');
+        form.method = 'post';
+        form.action = '@Url.Action("ConfirmarSeleccion", "Asientos")';
+
+        seleccionados.forEach(id => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'asientosSeleccionados';
+            input.value = id;
+            form.appendChild(input);
+        });
+        document.body.appendChild(form);
+        form.submit();
+    });
+</script>

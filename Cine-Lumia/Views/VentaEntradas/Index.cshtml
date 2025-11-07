@@ -228,21 +228,25 @@
     const cards = document.querySelectorAll('.entrada-card');
     const totalSpan = document.getElementById('total');
     const btnContinuar = document.getElementById('btnContinuar');
-    const maxEntradas = @Model.AsientosDisponibles; // 🔸 límite máximo
-    const minEntradas = 1; // 🔸 mínimo 1
+    const maxEntradas = @Model.AsientosDisponibles;
+    const minEntradas = 1;
 
     function calcularTotal() {
         let total = 0;
         let totalEntradas = 0;
+        let formato = "";
         cards.forEach(card => {
             const precio = parseFloat(card.dataset.precio);
             const cantidad = parseInt(card.querySelector('.cantidad').innerText);
+            if (cantidad > 0) {
+                formato = card.querySelector('.entrada-info h4').innerText; // nombre del formato
+            }
             total += precio * cantidad;
             totalEntradas += cantidad;
         });
         totalSpan.textContent = total.toLocaleString('es-AR');
         btnContinuar.disabled = totalEntradas === 0;
-        return totalEntradas;
+        return { totalEntradas, total, formato };
     }
 
     cards.forEach(card => {
@@ -251,8 +255,8 @@
         const cantidadSpan = card.querySelector('.cantidad');
 
         btnSumar.addEventListener('click', () => {
-            const totalActual = calcularTotal();
-            if (totalActual < maxEntradas) {
+            const { totalEntradas } = calcularTotal();
+            if (totalEntradas < maxEntradas) {
                 cantidadSpan.innerText = parseInt(cantidadSpan.innerText) + 1;
                 calcularTotal();
             } else {
@@ -289,8 +293,30 @@
         });
     });
 
+    // Listener independiente
+        btnContinuar.addEventListener('click', () => {
+        const { totalEntradas, total, formato } = calcularTotal();
+
+        // Guardamos con POST usando un formulario oculto en vez de armar la URL
+        const form = document.createElement('form');
+        form.method = "post";
+        form.action = "/Asientos/Index";
+
+        form.innerHTML = `
+            <input type="hidden" name="idProyeccion" value="@Model.Proyeccion.Id_Proyeccion" />
+            <input type="hidden" name="cantidadEntradas" value="${totalEntradas}" />
+            <input type="hidden" name="totalCompra" value="${total}" />
+            <input type="hidden" name="formatoEntrada" value="${formato}" />
+        `;
+
+        document.body.appendChild(form);
+        form.submit();
+    });
+
+
     calcularTotal();
 </script>
+
 
 
 

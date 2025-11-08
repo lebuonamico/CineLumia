@@ -214,9 +214,15 @@ namespace Cine_Lumia.Controllers
                 _context.SaveChanges();
             }
 
-            var nameParts = user.NombreCompleto?.Split(new[] { ' ' }, 2, StringSplitOptions.RemoveEmptyEntries);
-            var nombre = nameParts?.Length > 0 ? nameParts[0] : string.Empty;
-            var apellido = nameParts?.Length > 1 ? nameParts[1] : string.Empty;
+            var nombre = user.NombreCompleto ?? string.Empty;
+            var apellido = string.Empty;
+            var lastSpaceIndex = nombre.LastIndexOf(' ');
+
+            if (lastSpaceIndex > 0 && lastSpaceIndex < nombre.Length - 1)
+            {
+                nombre = user.NombreCompleto.Substring(0, lastSpaceIndex);
+                apellido = user.NombreCompleto.Substring(lastSpaceIndex + 1);
+            }
 
             var model = new ManageViewModel
             {

@@ -1,24 +1,14 @@
-@model Cine_Lumia.Models.ManageViewModel
-
-@{    ViewData["Title"] = "Gestionar Cuenta";
-}
-
-<div class="row justify-content-center">
-    <div class="col-md-8 col-lg-6">
-        <div class="card mt-5">
-            <div class="card-header text-center">
-                <h3 class="card-title">@ViewData["Title"]</h3>
-            </div>
             <div class="card-body">
-                <div class="d-flex align-items-center justify-content-center mb-4">
-                    <div class="avatar-carousel">
-                        <button id="prev-avatar" class="avatar-nav-btn prev"><i class="bi bi-arrow-left-circle"></i></button>
-                        <img src="/img/avatar/AV001.gif" alt="Avatar" class="profile-avatar" id="avatar-image" data-avatars='["AV001.gif", "AV002.gif", "AV003.gif"]'>
-                        <button id="next-avatar" class="avatar-nav-btn next"><i class="bi bi-arrow-right-circle"></i></button>
-                    </div>
-                </div>
-
                 <form asp-action="Manage" method="post">
+                    <div class="d-flex align-items-center justify-content-center mb-4">
+                        <div class="avatar-carousel">
+                            <button id="prev-avatar" type="button" class="avatar-nav-btn prev"><i class="bi bi-arrow-left-circle"></i></button>
+                            <img src="~/img/avatar/@Model.Avatars[Model.IdAvatar - 1]" alt="Avatar" class="profile-avatar" id="avatar-image" data-avatars='@Json.Serialize(Model.Avatars)'>
+                            <button id="next-avatar" type="button" class="avatar-nav-btn next"><i class="bi bi-arrow-right-circle"></i></button>
+                        </div>
+                    </div>
+
+                    <input type="hidden" asp-for="IdAvatar" />
                     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
                     <h4 class="mb-3">Datos Personales</h4>
@@ -113,4 +103,33 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const avatarImage = document.getElementById('avatar-image');
+            const prevButton = document.getElementById('prev-avatar');
+            const nextButton = document.getElementById('next-avatar');
+            const idAvatarInput = document.getElementById('IdAvatar');
+
+            const avatars = JSON.parse(avatarImage.getAttribute('data-avatars'));
+            let currentAvatarIndex = @(Model.IdAvatar - 1);
+
+            function updateAvatar() {
+                avatarImage.src = `/img/avatar/${avatars[currentAvatarIndex]}`;
+                idAvatarInput.value = currentAvatarIndex + 1;
+            }
+
+            prevButton.addEventListener('click', function () {
+                currentAvatarIndex = (currentAvatarIndex - 1 + avatars.length) % avatars.length;
+                updateAvatar();
+            });
+
+            nextButton.addEventListener('click', function () {
+                currentAvatarIndex = (currentAvatarIndex + 1) % avatars.length;
+                updateAvatar();
+            });
+
+            // Initial setup
+            updateAvatar();
+        });
+    </script>
 }

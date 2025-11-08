@@ -35,6 +35,10 @@ namespace Cine_Lumia.Models
         [Display(Name = "Género")]
         public string? Genero { get; set; }
 
+        public int IdAvatar { get; set; }
+
+        public List<string> Avatars { get; set; } = new List<string>();
+
         [Required(ErrorMessage = "La contraseña actual es obligatoria para guardar los cambios.")]
         [DataType(DataType.Password)]
         [Display(Name = "Contraseña Actual")]

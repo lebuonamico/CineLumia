@@ -111,7 +111,9 @@ namespace Cine_Lumia.Controllers
             var model = new ProfileViewModel
             {
                 Email = user.Email,
-                Alias = user.Alias
+                Alias = user.Alias,
+                IdAvatar = user.IdAvatar,
+                Avatars = GetAvatarList()
             };
 
             return View(model);
@@ -141,7 +143,8 @@ namespace Cine_Lumia.Controllers
 
                 var espectador = new Espectador
                 {
-                    NombreCompleto = $"{model.Nombre} {model.Apellido}",
+                    Nombre = model.Nombre,
+                    Apellido = model.Apellido,
                     Email = model.Email,
                     Password = model.Password, // En una aplicación real, hashear la contraseña
                     Dni = null // DNI es requerido, lo pongo en null por ahora.
@@ -197,6 +200,12 @@ namespace Cine_Lumia.Controllers
             return _context.Espectadores.FirstOrDefault(e => e.Email == userEmail);
         }
 
+        private List<string> GetAvatarList()
+        {
+            // This could be read from a configuration file or a directory listing in a real application
+            return new List<string> { "AV001.gif", "AV002.gif", "AV003.gif" };
+        }
+
         [HttpGet]
         [Authorize]
         public IActionResult Manage()
@@ -214,26 +223,18 @@ namespace Cine_Lumia.Controllers
                 _context.SaveChanges();
             }
 
-            var nombre = user.NombreCompleto ?? string.Empty;
-            var apellido = string.Empty;
-            var lastSpaceIndex = nombre.LastIndexOf(' ');
-
-            if (lastSpaceIndex > 0 && lastSpaceIndex < nombre.Length - 1)
-            {
-                nombre = user.NombreCompleto.Substring(0, lastSpaceIndex);
-                apellido = user.NombreCompleto.Substring(lastSpaceIndex + 1);
-            }
-
             var model = new ManageViewModel
             {
-                Nombre = nombre,
-                Apellido = apellido,
+                Nombre = user.Nombre,
+                Apellido = user.Apellido,
                 Email = user.Email,
                 Dni = user.Dni,
                 Alias = user.Alias,
                 Telefono = user.Telefono,
                 FechaNacimiento = user.FechaNacimiento,
-                Genero = user.Genero
+                Genero = user.Genero,
+                IdAvatar = user.IdAvatar,
+                Avatars = GetAvatarList()
             };
 
             return View(model);
@@ -246,6 +247,8 @@ namespace Cine_Lumia.Controllers
         {
             if (!ModelState.IsValid)
             {
+                // Repopulate avatars list if model state is invalid
+                model.Avatars = GetAvatarList();
                 return View(model);
             }
 
@@ -258,16 +261,20 @@ namespace Cine_Lumia.Controllers
             if (user.Password != model.CurrentPassword)
             {
                 ModelState.AddModelError("CurrentPassword", "La contraseña actual es incorrecta.");
+                // Repopulate avatars list if password is wrong
+                model.Avatars = GetAvatarList();
                 return View(model);
             }
 
-            user.NombreCompleto = $"{model.Nombre} {model.Apellido}";
+            user.Nombre = model.Nombre;
+            user.Apellido = model.Apellido;
             user.Email = model.Email;
             user.Dni = model.Dni;
             user.Alias = model.Alias;
             user.Telefono = model.Telefono;
             user.FechaNacimiento = model.FechaNacimiento;
             user.Genero = model.Genero;
+            user.IdAvatar = model.IdAvatar;
 
             _context.SaveChanges();
 

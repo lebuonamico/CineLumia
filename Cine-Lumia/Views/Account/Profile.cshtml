@@ -14,7 +14,7 @@
                 <div class="d-flex align-items-center justify-content-center mb-3 profile-info-container">
                     <div class="avatar-carousel">
                         <button id="prev-avatar" class="avatar-nav-btn prev"><i class="bi bi-arrow-left-circle"></i></button>
-                        <img src="/img/avatar/AV001.gif" alt="Avatar" class="profile-avatar" id="avatar-image" data-avatars='["AV001.gif", "AV002.gif", "AV003.gif"]'>
+                        <img src="~/img/avatar/@Model.Avatars[Model.IdAvatar - 1]" alt="Avatar" class="profile-avatar" id="avatar-image" data-avatars='@Json.Serialize(Model.Avatars)'>
                         <button id="next-avatar" class="avatar-nav-btn next"><i class="bi bi-arrow-right-circle"></i></button>
                     </div>
                     <div>

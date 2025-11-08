@@ -7,5 +7,7 @@ namespace Cine_Lumia.Models
     {
         public string Email { get; set; }
         public string? Alias { get; set; }
+        public int IdAvatar { get; set; }
+        public List<string> Avatars { get; set; } = new List<string>();
     }
 }

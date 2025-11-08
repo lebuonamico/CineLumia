@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Cine_Lumia.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
@@ -258,13 +259,7 @@ namespace Cine_Lumia.Controllers
                 return RedirectToAction("Login");
             }
 
-            if (user.Password != model.CurrentPassword)
-            {
-                ModelState.AddModelError("CurrentPassword", "La contraseña actual es incorrecta.");
-                // Repopulate avatars list if password is wrong
-                model.Avatars = GetAvatarList();
-                return View(model);
-            }
+
 
             user.Nombre = model.Nombre;
             user.Apellido = model.Apellido;
@@ -316,21 +311,18 @@ namespace Cine_Lumia.Controllers
             return RedirectToAction("Manage");
         }
 
-        [HttpGet]
-        [Authorize]
-        public IActionResult DeleteAccount()
-        {
-            return View(); // This view will contain the confirmation and password input
-        }
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
-        public async Task<IActionResult> DeleteAccount(DeleteAccountViewModel model)
+        public async Task<IActionResult> DeleteAccountConfirmed(DeleteAccountPasswordModel model)
         {
             if (!ModelState.IsValid)
             {
-                return View(model);
+                // If model is invalid, return a JSON response with errors for AJAX handling or reload the page with error
+                // For now, we'll just redirect to manage, an actual implementation might use AJAX and return Json(errors)
+                return RedirectToAction("Manage"); 
             }
 
             var user = GetCurrentUser();
@@ -339,18 +331,29 @@ namespace Cine_Lumia.Controllers
                 return RedirectToAction("Login");
             }
 
+            // In a real application, you would use ASP.NET Core Identity's password hasher
+            // For now, simple string comparison
             if (user.Password != model.Password)
             {
                 ModelState.AddModelError("Password", "La contraseña es incorrecta.");
-                return View(model);
+                // Again, for AJAX this would be Json(errors), for full post it would reload manage view
+                return RedirectToAction("Manage"); 
             }
 
             _context.Espectadores.Remove(user);
+            await HttpContext.SignOutAsync("LumiaCookieAuth"); // Sign out the user BEFORE saving changes to avoid issues
             _context.SaveChanges();
 
-            await HttpContext.SignOutAsync("LumiaCookieAuth"); // Sign out the user after deletion
-
             return RedirectToAction("Index", "Home"); // Redirect to home page
+        }
+
+        // Internal class for password confirmation in DeleteAccountConfirmed action
+        public class DeleteAccountPasswordModel
+        {
+            [Required(ErrorMessage = "La contraseña es obligatoria para eliminar la cuenta.")]
+            [DataType(DataType.Password)]
+            [Display(Name = "Contraseña")]
+            public string Password { get; set; } = string.Empty;
         }
 
         [HttpGet]

@@ -34,7 +34,7 @@ namespace Cine_Lumia.Controllers
         public IActionResult Login(string returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
-            return View();
+            return PartialView("_LoginPartial");
         }
 
         /// <summary>
@@ -82,11 +82,11 @@ namespace Cine_Lumia.Controllers
 
                     if (Url.IsLocalUrl(returnUrl))
                     {
-                        return Redirect(returnUrl);
+                        return Json(new { success = true, redirectUrl = returnUrl });
                     }
                     else
                     {
-                        return RedirectToAction("Index", "Home"); // Redirect to home if no valid returnUrl
+                        return Json(new { success = true, redirectUrl = Url.Action("Index", "Home") }); // Redirect to home if no valid returnUrl
                     }
                 }
                 else
@@ -96,7 +96,7 @@ namespace Cine_Lumia.Controllers
                 }
             }
             // Si el modelo no es válido o el login falla, vuelve a mostrar la vista con los errores.
-            return View(model);
+            return PartialView("_LoginPartial", model);
         }
 
         [HttpGet]
@@ -117,13 +117,13 @@ namespace Cine_Lumia.Controllers
                 Avatars = GetAvatarList()
             };
 
-            return View(model);
+            return PartialView("_ProfilePartial", model);
         }
 
         [HttpGet]
         public IActionResult Register()
         {
-            return View();
+            return PartialView("_RegisterPartial");
         }
 
         [HttpPost]
@@ -139,7 +139,7 @@ namespace Cine_Lumia.Controllers
                     model.Email = string.Empty; // Clear email field
                     model.Password = string.Empty; // Clear password field
                     model.ConfirmPassword = string.Empty; // Clear confirm password field
-                    return View(model);
+                    return PartialView("_RegisterPartial", model);
                 }
 
                 var espectador = new Espectador
@@ -154,15 +154,15 @@ namespace Cine_Lumia.Controllers
                 _context.Espectadores.Add(espectador);
                 _context.SaveChanges();
 
-                return RedirectToAction("Login");
+                return Json(new { success = true, redirectUrl = Url.Action("Index", "Home") });
             }
-            return View(model);
+            return PartialView("_RegisterPartial", model);
         }
 
         [HttpGet]
         public IActionResult ForgotPassword()
         {
-            return View();
+            return PartialView("_ForgotPasswordPartial");
         }
 
         [HttpPost]
@@ -173,9 +173,9 @@ namespace Cine_Lumia.Controllers
             {
                 // Aquí iría la lógica para enviar el correo de recuperación.
                 // Por ahora, solo redirigimos a una página de confirmación.
-                return RedirectToAction("ForgotPasswordConfirmation");
+                return Json(new { success = true });
             }
-            return View(model);
+            return PartialView("_ForgotPasswordPartial", model);
         }
 
         [HttpGet]
@@ -238,7 +238,7 @@ namespace Cine_Lumia.Controllers
                 Avatars = GetAvatarList()
             };
 
-            return View(model);
+            return PartialView("_ManagePartial", model);
         }
 
         [HttpPost]
@@ -250,7 +250,7 @@ namespace Cine_Lumia.Controllers
             {
                 // Repopulate avatars list if model state is invalid
                 model.Avatars = GetAvatarList();
-                return View(model);
+                return PartialView("_ManagePartial", model);
             }
 
             var user = GetCurrentUser();
@@ -265,22 +265,22 @@ namespace Cine_Lumia.Controllers
             user.Apellido = model.Apellido;
             user.Email = model.Email;
             user.Dni = model.Dni;
-            user.Alias = model.Alias;
-            user.Telefono = model.Telefono;
-            user.FechaNacimiento = model.FechaNacimiento;
-            user.Genero = model.Genero;
+            user.Alias = user.Alias;
+            user.Telefono = user.Telefono;
+            user.FechaNacimiento = user.FechaNacimiento;
+            user.Genero = user.Genero;
             user.IdAvatar = model.IdAvatar;
 
             _context.SaveChanges();
 
-            return RedirectToAction("Manage");
+            return Json(new { success = true, redirectUrl = Url.Action("Index", "Home") }); // Redirect to home page
         }
 
         [HttpGet]
         [Authorize]
         public IActionResult ChangePassword()
         {
-            return View();
+            return PartialView("_ChangePasswordPartial");
         }
 
         [HttpPost]
@@ -290,7 +290,7 @@ namespace Cine_Lumia.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return View(model);
+                return PartialView("_ChangePasswordPartial", model);
             }
 
             var user = GetCurrentUser();
@@ -302,13 +302,13 @@ namespace Cine_Lumia.Controllers
             if (user.Password != model.OldPassword)
             {
                 ModelState.AddModelError("OldPassword", "La contraseña actual es incorrecta.");
-                return View(model);
+                return PartialView("_ChangePasswordPartial", model);
             }
 
             user.Password = model.NewPassword; // En una aplicación real, hashear la contraseña
             _context.SaveChanges();
 
-            return RedirectToAction("Manage");
+            return Json(new { success = true, redirectUrl = Url.Action("Index", "Home") }); // Redirect to home page
         }
 
 
@@ -322,7 +322,7 @@ namespace Cine_Lumia.Controllers
             {
                 // If model is invalid, return a JSON response with errors for AJAX handling or reload the page with error
                 // For now, we'll just redirect to manage, an actual implementation might use AJAX and return Json(errors)
-                return RedirectToAction("Manage"); 
+                return PartialView("_DeleteAccountConfirmationPartial", model); 
             }
 
             var user = GetCurrentUser();
@@ -337,14 +337,14 @@ namespace Cine_Lumia.Controllers
             {
                 ModelState.AddModelError("Password", "La contraseña es incorrecta.");
                 // Again, for AJAX this would be Json(errors), for full post it would reload manage view
-                return RedirectToAction("Manage"); 
+                return PartialView("_DeleteAccountConfirmationPartial", model); 
             }
 
             _context.Espectadores.Remove(user);
             await HttpContext.SignOutAsync("LumiaCookieAuth"); // Sign out the user BEFORE saving changes to avoid issues
             _context.SaveChanges();
 
-            return RedirectToAction("Index", "Home"); // Redirect to home page
+            return Json(new { success = true, redirectUrl = Url.Action("Index", "Home") }); // Redirect to home page
         }
 
         // Internal class for password confirmation in DeleteAccountConfirmed action

@@ -1,0 +1,76 @@
+@model Cine_Lumia.Models.LoginViewModel
+
+<section>
+    <form asp-action="Login" method="post" data-ajax="true" data-ajax-method="POST" data-ajax-update="#genericModal .modal-body" data-ajax-mode="replace" data-ajax-success="onLoginSuccess">
+        <!-- Resumen de validación para mostrar errores generales del modelo -->
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+        
+        <div class="form-floating mb-3">
+            <input asp-for="LoginIdentifier" class="form-control" placeholder="Mail" />
+            <label asp-for="LoginIdentifier">Mail</label>
+            <span asp-validation-for="LoginIdentifier" class="text-danger"></span>
+        </div>
+        
+        <div class="form-floating mb-3">
+            <div class="input-group">
+                <input asp-for="Password" class="form-control" placeholder="Contraseña" id="passwordInput" />
+                <label for="passwordInput">Contraseña</label>
+                <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                    <i class="bi bi-eye-slash" id="togglePasswordIcon"></i>
+                </button>
+            </div>
+            <span asp-validation-for="Password" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" asp-for="RememberMe" />
+            <label class="form-check-label" asp-for="RememberMe"></label>
+        </div>
+        
+        <div class="d-grid">
+            <button type="submit" class="btn btn-primary">Ingresar</button>
+        </div>
+        <div class="text-center mt-3">
+            <a href="#" class="modal-link" data-url="@Url.Action("ForgotPasswordPartial", "Account")" data-title="Recuperar Contraseña">¿Olvidaste tu contraseña?</a>
+        </div>
+        <div class="text-center mt-2">
+            <a href="#" class="modal-link" data-url="@Url.Action("RegisterPartial", "Account")" data-title="Registrarse">¿No tenés cuenta? Registrate aquí</a>
+        </div>
+    </form>
+</section>
+
+<script>
+    // Script para mostrar/ocultar contraseña
+    document.addEventListener('DOMContentLoaded', function () {
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('passwordInput');
+        const togglePasswordIcon = document.getElementById('togglePasswordIcon');
+
+        if (togglePassword && passwordInput && togglePasswordIcon) {
+            togglePassword.addEventListener('click', function () {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                
+                if (type === 'password') {
+                    togglePasswordIcon.classList.remove('bi-eye');
+                    togglePasswordIcon.classList.add('bi-eye-slash');
+                } else {
+                    togglePasswordIcon.classList.remove('bi-eye-slash');
+                    togglePasswordIcon.classList.add('bi-eye');
+                }
+            });
+        }
+    });
+
+    // Función para manejar el éxito del login (ej. cerrar modal y recargar página)
+    function onLoginSuccess(data) {
+        // Assuming 'data' contains a success indicator or a redirect URL
+        if (data && data.success) { // You might need to adjust this based on your controller's JSON response
+            location.reload(); // Reload the page to update navbar state
+        } else {
+            // If login failed but ModelState was valid, the partial view itself will show errors
+            // Re-parse validation scripts for the newly loaded content
+            $.validator.unobtrusive.parse('#genericModal .modal-body');
+        }
+    }
+</script>

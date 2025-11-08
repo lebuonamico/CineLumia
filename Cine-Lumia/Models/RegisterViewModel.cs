@@ -5,6 +5,14 @@ namespace Cine_Lumia.Models
 {
     public class RegisterViewModel
     {
+        [Required(ErrorMessage = "El nombre es obligatorio.")]
+        [StringLength(100)]
+        public string Nombre { get; set; }
+
+        [Required(ErrorMessage = "El apellido es obligatorio.")]
+        [StringLength(100)]
+        public string Apellido { get; set; }
+
         [Required(ErrorMessage = "El correo electrónico es obligatorio.")]
         [EmailAddress(ErrorMessage = "El formato del correo electrónico no es válido.")]
         public string Email { get; set; }

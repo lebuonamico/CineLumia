@@ -1,0 +1,36 @@
+@model Cine_Lumia.Models.DeleteAccountViewModel
+
+@{
+    ViewData["Title"] = "Eliminar Cuenta";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+        <div class="card mt-5">
+            <div class="card-header text-center">
+                <h3 class="card-title">@ViewData["Title"]</h3>
+            </div>
+            <div class="card-body">
+                <p class="text-danger text-center">¡Advertencia! Esta acción es irreversible. Al eliminar tu cuenta, se borrarán todos tus datos.</p>
+                <form asp-action="DeleteAccount" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label"></label>
+                        <input asp-for="Password" class="form-control" />
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-danger">Confirmar Eliminación de Cuenta</button>
+                        <a asp-action="Manage" class="btn btn-outline-secondary">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

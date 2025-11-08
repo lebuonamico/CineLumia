@@ -13,29 +13,80 @@
                 <form asp-action="Manage" method="post">
                     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
+                    <h4 class="mb-3">Datos Personales</h4>
+                    <div class="mb-3">
+                        <label asp-for="Nombre" class="form-label"></label>
+                        <input asp-for="Nombre" class="form-control" />
+                        <span asp-validation-for="Nombre" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Apellido" class="form-label"></label>
+                        <input asp-for="Apellido" class="form-control" />
+                        <span asp-validation-for="Apellido" class="text-danger"></span>
+                    </div>
                     <div class="mb-3">
                         <label asp-for="Email" class="form-label"></label>
                         <input asp-for="Email" class="form-control" />
                         <span asp-validation-for="Email" class="text-danger"></span>
                     </div>
-
                     <div class="mb-3">
                         <label asp-for="Dni" class="form-label"></label>
                         <input asp-for="Dni" class="form-control" />
                         <span asp-validation-for="Dni" class="text-danger"></span>
                     </div>
-
                     <div class="mb-3">
                         <label asp-for="Alias" class="form-label"></label>
                         <input asp-for="Alias" class="form-control" />
                         <span asp-validation-for="Alias" class="text-danger"></span>
                     </div>
-
                     <div class="mb-3">
-                        <a asp-action="ChangePassword">Cambiar Contraseña</a>
+                        <label asp-for="Telefono" class="form-label"></label>
+                        <input asp-for="Telefono" class="form-control" />
+                        <span asp-validation-for="Telefono" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="FechaNacimiento" class="form-label"></label>
+                        <input asp-for="FechaNacimiento" type="date" class="form-control" />
+                        <span asp-validation-for="FechaNacimiento" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Genero" class="form-label"></label>
+                        <input asp-for="Genero" class="form-control" />
+                        <span asp-validation-for="Genero" class="text-danger"></span>
                     </div>
 
-                    <hr />
+                    <hr class="my-4" />
+
+                    <h4 class="mb-3">Seguridad y Acceso</h4>
+                    <div class="mb-3">
+                        <a asp-action="ChangePassword" class="btn btn-outline-secondary">Cambiar Contraseña</a>
+                    </div>
+
+                    <hr class="my-4" />
+
+                    <h4 class="mb-3">Métodos de Pago Guardados</h4>
+                    <div class="mb-3">
+                        <p class="text-muted">Aquí podrás ver y modificar tus tarjetas registradas. (Funcionalidad futura)</p>
+                        <button type="button" class="btn btn-outline-info" disabled>Gestionar Tarjetas</button>
+                    </div>
+
+                    <hr class="my-4" />
+
+                    <h4 class="mb-3">Historial y Configuración de Entradas</h4>
+                    <div class="mb-3">
+                        <p class="text-muted">Consulta tu historial de compras de entradas. (Funcionalidad futura)</p>
+                        <button type="button" class="btn btn-outline-info" disabled>Ver Historial de Compras</button>
+                    </div>
+
+                    <hr class="my-4" />
+
+                    <h4 class="mb-3">Cierre de Cuenta</h4>
+                    <div class="mb-3">
+                        <p class="text-muted">Si deseas eliminar tu cuenta, haz clic en el botón. Se te pedirá tu contraseña para confirmar.</p>
+                        <a asp-action="DeleteAccount" class="btn btn-danger">Eliminar Cuenta</a>
+                    </div>
+
+                    <hr class="my-4" />
 
                     <div class="mb-3">
                         <label asp-for="CurrentPassword" class="form-label"></label>

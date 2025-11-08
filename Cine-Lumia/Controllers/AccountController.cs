@@ -132,6 +132,8 @@ namespace Cine_Lumia.Controllers
 
                 var espectador = new Espectador
                 {
+                    Nombre = model.Nombre,
+                    Apellido = model.Apellido,
                     Email = model.Email,
                     Password = model.Password, // En una aplicación real, hashear la contraseña
                     Dni = null // DNI es requerido, lo pongo en null por ahora.
@@ -206,9 +208,14 @@ namespace Cine_Lumia.Controllers
 
             var model = new ManageViewModel
             {
+                Nombre = user.Nombre,
+                Apellido = user.Apellido,
                 Email = user.Email,
                 Dni = user.Dni,
-                Alias = user.Alias
+                Alias = user.Alias,
+                Telefono = user.Telefono,
+                FechaNacimiento = user.FechaNacimiento,
+                Genero = user.Genero
             };
 
             return View(model);
@@ -236,9 +243,14 @@ namespace Cine_Lumia.Controllers
                 return View(model);
             }
 
+            user.Nombre = model.Nombre;
+            user.Apellido = model.Apellido;
             user.Email = model.Email;
             user.Dni = model.Dni;
             user.Alias = model.Alias;
+            user.Telefono = model.Telefono;
+            user.FechaNacimiento = model.FechaNacimiento;
+            user.Genero = model.Genero;
 
             _context.SaveChanges();
 
@@ -278,6 +290,43 @@ namespace Cine_Lumia.Controllers
             _context.SaveChanges();
 
             return RedirectToAction("Manage");
+        }
+
+        [HttpGet]
+        [Authorize]
+        public IActionResult DeleteAccount()
+        {
+            return View(); // This view will contain the confirmation and password input
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize]
+        public async Task<IActionResult> DeleteAccount(DeleteAccountViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var user = GetCurrentUser();
+            if (user == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            if (user.Password != model.Password)
+            {
+                ModelState.AddModelError("Password", "La contraseña es incorrecta.");
+                return View(model);
+            }
+
+            _context.Espectadores.Remove(user);
+            _context.SaveChanges();
+
+            await HttpContext.SignOutAsync("LumiaCookieAuth"); // Sign out the user after deletion
+
+            return RedirectToAction("Index", "Home"); // Redirect to home page
         }
 
         [HttpGet]

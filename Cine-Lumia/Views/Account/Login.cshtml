@@ -16,25 +16,35 @@
                         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
                         
                         <div class="form-floating mb-3">
-                            <input asp-for="Email" class="form-control" placeholder="name@example.com" data-val-required="Ingrese un correo válido" />
-                            <label asp-for="Email"></label>
-                            <span asp-validation-for="Email" class="text-danger"></span>
+                            <input asp-for="LoginIdentifier" class="form-control" placeholder="Ingresá tu correo o alias de usuario" />
+                            <label asp-for="LoginIdentifier">Ingresá tu correo o alias de usuario</label>
+                            <span asp-validation-for="LoginIdentifier" class="text-danger"></span>
                         </div>
                         
                         <div class="form-floating mb-3">
-                            <input asp-for="Password" class="form-control" placeholder="Password" />
-                            <label asp-for="Password"></label>
+                            <div class="input-group">
+                                <input asp-for="Password" class="form-control" placeholder="Contraseña" id="passwordInput" />
+                                <label for="passwordInput">Contraseña</label>
+                                <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                    <i class="bi bi-eye-slash" id="togglePasswordIcon"></i>
+                                </button>
+                            </div>
                             <span asp-validation-for="Password" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" asp-for="RememberMe" />
+                            <label class="form-check-label" asp-for="RememberMe"></label>
                         </div>
                         
                         <div class="d-grid">
                             <button type="submit" class="btn btn-primary">Ingresar</button>
                         </div>
                         <div class="text-center mt-3">
-                            <a asp-action="Register">Registrarse</a>
+                            <a asp-action="ForgotPassword">¿Olvidaste tu contraseña?</a>
                         </div>
                         <div class="text-center mt-2">
-                            <a asp-action="ForgotPassword">Olvidé mi contraseña</a>
+                            <a asp-action="Register">¿No tenés cuenta? Registrate aquí</a>
                         </div>
                     </form>
                 </section>
@@ -46,4 +56,28 @@
 @section Scripts {
     <!-- Incluye scripts de validación para el cliente -->
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const togglePassword = document.getElementById('togglePassword');
+            const passwordInput = document.getElementById('passwordInput');
+            const togglePasswordIcon = document.getElementById('togglePasswordIcon');
+
+            if (togglePassword && passwordInput && togglePasswordIcon) {
+                togglePassword.addEventListener('click', function () {
+                    // toggle the type attribute
+                    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                    passwordInput.setAttribute('type', type);
+                    
+                    // toggle the eye icon
+                    if (type === 'password') {
+                        togglePasswordIcon.classList.remove('bi-eye');
+                        togglePasswordIcon.classList.add('bi-eye-slash');
+                    } else {
+                        togglePasswordIcon.classList.remove('bi-eye-slash');
+                        togglePasswordIcon.classList.add('bi-eye');
+                    }
+                });
+            }
+        });
+    </script>
 }

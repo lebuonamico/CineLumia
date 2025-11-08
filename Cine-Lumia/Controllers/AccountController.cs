@@ -49,23 +49,32 @@ namespace Cine_Lumia.Controllers
             ViewData["ReturnUrl"] = returnUrl; // Pass returnUrl back to view if model state is invalid
             if (ModelState.IsValid)
             {
-                // Busca un espectador que coincida con el email y la contraseña proporcionados.
+                // Busca un espectador que coincida con el email o alias y la contraseña proporcionados.
                 // NOTA: En una aplicación real, la contraseña debería estar hasheada y verificada de forma segura.
-                var espectador = _context.Espectadores.FirstOrDefault(e => e.Email == model.Email && e.Password == model.Password);
+                var espectador = _context.Espectadores.FirstOrDefault(e =>
+                    (e.Email == model.LoginIdentifier || e.Alias == model.LoginIdentifier) &&
+                    e.Password == model.Password);
 
                 if (espectador != null)
                 {
+                    // TODO: Si se implementa verificación por email, añadir aquí la comprobación de cuenta verificada.
+                    // if (!espectador.IsVerified) {
+                    //     ModelState.AddModelError(string.Empty, "Cuenta no verificada, revisá tu correo.");
+                    //     return View(model);
+                    // }
+
                     var claims = new[]
                     {
                         new Claim(ClaimTypes.Name, espectador.Email),
-                        new Claim(ClaimTypes.Email, espectador.Email)
+                        new Claim(ClaimTypes.Email, espectador.Email),
+                        new Claim("Alias", espectador.Alias ?? espectador.Email) // Add alias claim
                     };
 
                     var claimsIdentity = new ClaimsIdentity(claims, "LumiaCookieAuth");
                     var authProperties = new AuthenticationProperties
                     {
-                        IsPersistent = true, // Para que la cookie sea persistente
-                        ExpiresUtc = DateTimeOffset.UtcNow.AddDays(1)
+                        IsPersistent = model.RememberMe, // Usa el valor del checkbox "Recordarme"
+                        ExpiresUtc = DateTimeOffset.UtcNow.AddDays(model.RememberMe ? 30 : 1) // 30 días si "Recordarme", 1 día si no
                     };
 
                     await HttpContext.SignInAsync("LumiaCookieAuth", new ClaimsPrincipal(claimsIdentity), authProperties);
@@ -82,7 +91,7 @@ namespace Cine_Lumia.Controllers
                 else
                 {
                     // Si no se encuentra el usuario, añade un error al ModelState.
-                    ModelState.AddModelError(string.Empty, "El usuario no existe o la contraseña es incorrecta.");
+                    ModelState.AddModelError(string.Empty, "Correo o contraseña incorrectos.");
                 }
             }
             // Si el modelo no es válido o el login falla, vuelve a mostrar la vista con los errores.

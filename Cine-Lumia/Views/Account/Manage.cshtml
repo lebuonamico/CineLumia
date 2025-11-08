@@ -60,7 +60,12 @@
                     </div>
                     <div class="mb-3">
                         <label asp-for="Genero" class="form-label"></label>
-                        <input asp-for="Genero" class="form-control" />
+                        <select asp-for="Genero" class="form-select">
+                            <option value="">Seleccionar Género</option>
+                            <option value="Hombre">Hombre</option>
+                            <option value="Mujer">Mujer</option>
+                            <option value="Otro">Otro</option>
+                        </select>
                         <span asp-validation-for="Genero" class="text-danger"></span>
                     </div>
 
@@ -89,20 +94,10 @@
 
                     <hr class="my-4" />
 
-                    <h4 class="mb-3">Cierre de Cuenta</h4>
-                    <div class="mb-3">
-                        <p class="text-muted">Si deseas eliminar tu cuenta, haz clic en el botón. Se te pedirá tu contraseña para confirmar.</p>
+                    <div class="d-flex justify-content-end mb-3">
                         <a asp-action="DeleteAccount" class="btn btn-danger">Eliminar Cuenta</a>
                     </div>
-
-                    <hr class="my-4" />
-
-                    <div class="mb-3">
-                        <label asp-for="CurrentPassword" class="form-label"></label>
-                        <input asp-for="CurrentPassword" class="form-control" />
-                        <span asp-validation-for="CurrentPassword" class="text-danger"></span>
-                    </div>
-
+                    
                     <div class="d-grid">
                         <button type="submit" class="btn btn-primary">Guardar Cambios</button>
                     </div>

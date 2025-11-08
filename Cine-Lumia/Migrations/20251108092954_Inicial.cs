@@ -45,6 +45,12 @@ namespace Cine_Lumia.Migrations
                 {
                     Id_Espectador = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    Nombre = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Apellido = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Telefono = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
+                    FechaNacimiento = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Genero = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    IdAvatar = table.Column<int>(type: "int", nullable: false),
                     Dni = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Alias = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),

@@ -1,57 +1,67 @@
-            <div class="card-body">
-                <form asp-action="Manage" method="post">
-                    <div class="d-flex align-items-center justify-content-center mb-4">
-                        <div class="avatar-carousel">
-                            <button id="prev-avatar" type="button" class="avatar-nav-btn prev"><i class="bi bi-arrow-left-circle"></i></button>
-                            <img src="~/img/avatar/@Model.Avatars[Model.IdAvatar - 1]" alt="Avatar" class="profile-avatar" id="avatar-image">
-                            <button id="next-avatar" type="button" class="avatar-nav-btn next"><i class="bi bi-arrow-right-circle"></i></button>
-                        </div>
-                    </div>
+@model Cine_Lumia.Models.ManageViewModel
 
-                    <input type="hidden" id="IdAvatar" name="IdAvatar" value="@Model.IdAvatar" />
+@{    ViewData["Title"] = "Gestionar Cuenta";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card mt-5">
+            <div class="card-header text-center">
+                <h3 class="card-title">@ViewData["Title"]</h3>
+            </div>
+            <div class="card-body">
+                @*
+                <div class="d-flex align-items-center justify-content-center mb-4">
+                    <div class="avatar-carousel">
+                        <button id="prev-avatar" class="avatar-nav-btn prev"><i class="bi bi-arrow-left-circle"></i></button>
+                        <img src="/img/avatar/AV001.gif" alt="Avatar" class="profile-avatar" id="avatar-image" data-avatars='["AV001.gif", "AV002.gif", "AV003.gif"]'>
+                        <button id="next-avatar" class="avatar-nav-btn next"><i class="bi bi-arrow-right-circle"></i></button>
+                    </div>
+                </div>
+                *@
+                <form asp-action="Manage" method="post">
                     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
                     <h4 class="mb-3">Datos Personales</h4>
-                    
                     <div class="mb-3">
-                        <label for="Nombre" class="form-label">Nombre</label>
-                        <input name="Nombre" value="@Model.Nombre" class="form-control" />
-                        <span data-valmsg-for="Nombre" class="text-danger"></span>
+                        <label asp-for="Nombre" class="form-label"></label>
+                        <input asp-for="Nombre" class="form-control" />
+                        <span asp-validation-for="Nombre" class="text-danger"></span>
                     </div>
                     <div class="mb-3">
-                        <label for="Apellido" class="form-label">Apellido</label>
-                        <input name="Apellido" value="@Model.Apellido" class="form-control" />
-                        <span data-valmsg-for="Apellido" class="text-danger"></span>
+                        <label asp-for="Apellido" class="form-label"></label>
+                        <input asp-for="Apellido" class="form-control" />
+                        <span asp-validation-for="Apellido" class="text-danger"></span>
                     </div>
                     <div class="mb-3">
-                        <label for="Email" class="form-label">Correo Electrónico</label>
-                        <input name="Email" value="@Model.Email" class="form-control" />
-                        <span data-valmsg-for="Email" class="text-danger"></span>
+                        <label asp-for="Email" class="form-label"></label>
+                        <input asp-for="Email" class="form-control" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
                     </div>
                     <div class="mb-3">
-                        <label for="Dni" class="form-label">DNI</label>
-                        <input name="Dni" value="@Model.Dni" class="form-control" />
-                        <span data-valmsg-for="Dni" class="text-danger"></span>
+                        <label asp-for="Dni" class="form-label"></label>
+                        <input asp-for="Dni" class="form-control" />
+                        <span asp-validation-for="Dni" class="text-danger"></span>
                     </div>
                     <div class="mb-3">
-                        <label for="Alias" class="form-label">Alias</label>
-                        <input name="Alias" value="@Model.Alias" class="form-control" />
-                        <span data-valmsg-for="Alias" class="text-danger"></span>
+                        <label asp-for="Alias" class="form-label"></label>
+                        <input asp-for="Alias" class="form-control" />
+                        <span asp-validation-for="Alias" class="text-danger"></span>
                     </div>
                     <div class="mb-3">
-                        <label for="Telefono" class="form-label">Teléfono de Contacto</label>
-                        <input name="Telefono" value="@Model.Telefono" class="form-control" />
-                        <span data-valmsg-for="Telefono" class="text-danger"></span>
+                        <label asp-for="Telefono" class="form-label"></label>
+                        <input asp-for="Telefono" class="form-control" />
+                        <span asp-validation-for="Telefono" class="text-danger"></span>
                     </div>
                     <div class="mb-3">
-                        <label for="FechaNacimiento" class="form-label">Fecha de Nacimiento</label>
-                        <input name="FechaNacimiento" value="@(Model.FechaNacimiento.HasValue ? Model.FechaNacimiento.Value.ToString("yyyy-MM-dd") : "")" type="date" class="form-control" />
-                        <span data-valmsg-for="FechaNacimiento" class="text-danger"></span>
+                        <label asp-for="FechaNacimiento" class="form-label"></label>
+                        <input asp-for="FechaNacimiento" type="date" class="form-control" />
+                        <span asp-validation-for="FechaNacimiento" class="text-danger"></span>
                     </div>
                     <div class="mb-3">
-                        <label for="Genero" class="form-label">Género</label>
-                        <input name="Genero" value="@Model.Genero" class="form-control" />
-                        <span data-valmsg-for="Genero" class="text-danger"></span>
+                        <label asp-for="Genero" class="form-label"></label>
+                        <input asp-for="Genero" class="form-control" />
+                        <span asp-validation-for="Genero" class="text-danger"></span>
                     </div>
 
                     <hr class="my-4" />
@@ -87,13 +97,12 @@
 
                     <hr class="my-4" />
 
-                    
                     <div class="mb-3">
-                        <label for="CurrentPassword" class="form-label">Contraseña Actual</label>
-                        <input name="CurrentPassword" class="form-control" />
-                        <span data-valmsg-for="CurrentPassword" class="text-danger"></span>
+                        <label asp-for="CurrentPassword" class="form-label"></label>
+                        <input asp-for="CurrentPassword" class="form-control" />
+                        <span asp-validation-for="CurrentPassword" class="text-danger"></span>
                     </div>
-                    
+
                     <div class="d-grid">
                         <button type="submit" class="btn btn-primary">Guardar Cambios</button>
                     </div>
@@ -105,33 +114,4 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const avatarImage = document.getElementById('avatar-image');
-            const prevButton = document.getElementById('prev-avatar');
-            const nextButton = document.getElementById('next-avatar');
-            const idAvatarInput = document.getElementById('IdAvatar');
-
-            const avatars = @Html.Raw(Json.Serialize(Model.Avatars));
-            let currentAvatarIndex = @(Model.IdAvatar - 1);
-
-            function updateAvatar() {
-                avatarImage.src = `/img/avatar/${avatars[currentAvatarIndex]}`;
-                idAvatarInput.value = currentAvatarIndex + 1;
-            }
-
-            prevButton.addEventListener('click', function () {
-                currentAvatarIndex = (currentAvatarIndex - 1 + avatars.length) % avatars.length;
-                updateAvatar();
-            });
-
-            nextButton.addEventListener('click', function () {
-                currentAvatarIndex = (currentAvatarIndex + 1) % avatars.length;
-                updateAvatar();
-            });
-
-            // Initial setup
-            updateAvatar();
-        });
-    </script>
 }

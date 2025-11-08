@@ -141,8 +141,7 @@ namespace Cine_Lumia.Controllers
 
                 var espectador = new Espectador
                 {
-                    Nombre = model.Nombre,
-                    Apellido = model.Apellido,
+                    NombreCompleto = $"{model.Nombre} {model.Apellido}",
                     Email = model.Email,
                     Password = model.Password, // En una aplicación real, hashear la contraseña
                     Dni = null // DNI es requerido, lo pongo en null por ahora.
@@ -215,10 +214,14 @@ namespace Cine_Lumia.Controllers
                 _context.SaveChanges();
             }
 
+            var nameParts = user.NombreCompleto?.Split(new[] { ' ' }, 2, StringSplitOptions.RemoveEmptyEntries);
+            var nombre = nameParts?.Length > 0 ? nameParts[0] : string.Empty;
+            var apellido = nameParts?.Length > 1 ? nameParts[1] : string.Empty;
+
             var model = new ManageViewModel
             {
-                Nombre = user.Nombre,
-                Apellido = user.Apellido,
+                Nombre = nombre,
+                Apellido = apellido,
                 Email = user.Email,
                 Dni = user.Dni,
                 Alias = user.Alias,
@@ -252,8 +255,7 @@ namespace Cine_Lumia.Controllers
                 return View(model);
             }
 
-            user.Nombre = model.Nombre;
-            user.Apellido = model.Apellido;
+            user.NombreCompleto = $"{model.Nombre} {model.Apellido}";
             user.Email = model.Email;
             user.Dni = model.Dni;
             user.Alias = model.Alias;

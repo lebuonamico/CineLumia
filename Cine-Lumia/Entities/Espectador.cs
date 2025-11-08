@@ -7,11 +7,8 @@ namespace Cine_Lumia.Entities
         [Key]
         public int Id_Espectador { get; set; }
 
-        [Required, StringLength(100)]
-        public string Nombre { get; set; } = string.Empty;
-
-        [Required, StringLength(100)]
-        public string Apellido { get; set; } = string.Empty;
+        [Required, StringLength(201)] // 100 for name + 100 for lastname + 1 for space
+        public string NombreCompleto { get; set; } = string.Empty;
 
         [StringLength(20)]
         public string? Telefono { get; set; }

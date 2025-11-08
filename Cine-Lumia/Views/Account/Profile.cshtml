@@ -12,11 +12,6 @@
             </div>
             <div class="card-body">
                 <div class="d-flex align-items-center justify-content-center mb-3 profile-info-container">
-                    <div class="avatar-carousel">
-                        <button id="prev-avatar" class="avatar-nav-btn prev"><i class="bi bi-arrow-left-circle"></i></button>
-                        <img src="~/img/avatar/@Model.Avatars[Model.IdAvatar - 1]" alt="Avatar" class="profile-avatar" id="avatar-image">
-                        <button id="next-avatar" class="avatar-nav-btn next"><i class="bi bi-arrow-right-circle"></i></button>
-                    </div>
                     <div>
                         <p class="mb-0"><strong>Correo Electrónico:</strong> @Model.Email</p>
                         <p class="mb-0"><strong>Alias:</strong> @(string.IsNullOrEmpty(Model.Alias) ? "No asignado" : Model.Alias)</p>
@@ -29,33 +24,3 @@
         </div>
     </div>
 </div>
-
-@section Scripts {
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const avatarImage = document.getElementById('avatar-image');
-            const prevButton = document.getElementById('prev-avatar');
-            const nextButton = document.getElementById('next-avatar');
-            
-            const avatars = @Html.Raw(Json.Serialize(Model.Avatars));
-            let currentAvatarIndex = @(Model.IdAvatar - 1);
-
-            function updateAvatar() {
-                avatarImage.src = `/img/avatar/${avatars[currentAvatarIndex]}`;
-            }
-
-            prevButton.addEventListener('click', function () {
-                currentAvatarIndex = (currentAvatarIndex - 1 + avatars.length) % avatars.length;
-                updateAvatar();
-            });
-
-            nextButton.addEventListener('click', function () {
-                currentAvatarIndex = (currentAvatarIndex + 1) % avatars.length;
-                updateAvatar();
-            });
-
-            // Initial setup
-            updateAvatar();
-        });
-    </script>
-}

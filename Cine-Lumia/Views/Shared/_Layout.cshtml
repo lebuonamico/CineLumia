@@ -43,19 +43,32 @@
                         <li class="nav-item">
                             <a class="nav-link text-light" href="#" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCines" aria-controls="offcanvasCines">Seleccionar Cine</a>
                         </li>
-                        @if (User.Identity.IsAuthenticated)
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-light" asp-controller="Account" asp-action="Profile">Ver Perfil</a>
-                            </li>
-                        }
-                        else
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-light" asp-controller="Account" asp-action="Login">Login</a>
-                            </li>
-                        }
-
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-light" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                @if (User.Identity.IsAuthenticated)
+                                {
+                                    <span>Hola, @User.Identity.Name</span>
+                                }
+                                else
+                                {
+                                    <span>Cuenta</span>
+                                }
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                @if (User.Identity.IsAuthenticated)
+                                {
+                                    <li><a class="dropdown-item" asp-controller="Account" asp-action="Profile">Ver Perfil</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Account" asp-action="Manage">Gestionar Cuenta</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" asp-controller="Account" asp-action="Logout">Cerrar Sesión</a></li>
+                                }
+                                else
+                                {
+                                    <li><a class="dropdown-item" asp-controller="Account" asp-action="Login">Login</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Account" asp-action="Register">Registrarse</a></li>
+                                }
+                            </ul>
+                        </li>
                     </ul>
                 </div>
             </div>

@@ -12,48 +12,48 @@
                     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
                     <h4 class="mb-3">Datos Personales</h4>
-                    @*
+                    
                     <div class="mb-3">
-                        <label asp-for="Nombre" class="form-label"></label>
-                        <input asp-for="Nombre" class="form-control" />
-                        <span asp-validation-for="Nombre" class="text-danger"></span>
+                        <label for="Nombre" class="form-label">Nombre</label>
+                        <input name="Nombre" value="@Model.Nombre" class="form-control" />
+                        <span data-valmsg-for="Nombre" class="text-danger"></span>
                     </div>
                     <div class="mb-3">
-                        <label asp-for="Apellido" class="form-label"></label>
-                        <input asp-for="Apellido" class="form-control" />
-                        <span asp-validation-for="Apellido" class="text-danger"></span>
+                        <label for="Apellido" class="form-label">Apellido</label>
+                        <input name="Apellido" value="@Model.Apellido" class="form-control" />
+                        <span data-valmsg-for="Apellido" class="text-danger"></span>
                     </div>
                     <div class="mb-3">
-                        <label asp-for="Email" class="form-label"></label>
-                        <input asp-for="Email" class="form-control" />
-                        <span asp-validation-for="Email" class="text-danger"></span>
+                        <label for="Email" class="form-label">Correo Electrónico</label>
+                        <input name="Email" value="@Model.Email" class="form-control" />
+                        <span data-valmsg-for="Email" class="text-danger"></span>
                     </div>
                     <div class="mb-3">
-                        <label asp-for="Dni" class="form-label"></label>
-                        <input asp-for="Dni" class="form-control" />
-                        <span asp-validation-for="Dni" class="text-danger"></span>
+                        <label for="Dni" class="form-label">DNI</label>
+                        <input name="Dni" value="@Model.Dni" class="form-control" />
+                        <span data-valmsg-for="Dni" class="text-danger"></span>
                     </div>
                     <div class="mb-3">
-                        <label asp-for="Alias" class="form-label"></label>
-                        <input asp-for="Alias" class="form-control" />
-                        <span asp-validation-for="Alias" class="text-danger"></span>
+                        <label for="Alias" class="form-label">Alias</label>
+                        <input name="Alias" value="@Model.Alias" class="form-control" />
+                        <span data-valmsg-for="Alias" class="text-danger"></span>
                     </div>
                     <div class="mb-3">
-                        <label asp-for="Telefono" class="form-label"></label>
-                        <input asp-for="Telefono" class="form-control" />
-                        <span asp-validation-for="Telefono" class="text-danger"></span>
+                        <label for="Telefono" class="form-label">Teléfono de Contacto</label>
+                        <input name="Telefono" value="@Model.Telefono" class="form-control" />
+                        <span data-valmsg-for="Telefono" class="text-danger"></span>
                     </div>
                     <div class="mb-3">
-                        <label asp-for="FechaNacimiento" class="form-label"></label>
-                        <input asp-for="FechaNacimiento" type="date" class="form-control" />
-                        <span asp-validation-for="FechaNacimiento" class="text-danger"></span>
+                        <label for="FechaNacimiento" class="form-label">Fecha de Nacimiento</label>
+                        <input name="FechaNacimiento" value="@(Model.FechaNacimiento.HasValue ? Model.FechaNacimiento.Value.ToString("yyyy-MM-dd") : "")" type="date" class="form-control" />
+                        <span data-valmsg-for="FechaNacimiento" class="text-danger"></span>
                     </div>
                     <div class="mb-3">
-                        <label asp-for="Genero" class="form-label"></label>
-                        <input asp-for="Genero" class="form-control" />
-                        <span asp-validation-for="Genero" class="text-danger"></span>
+                        <label for="Genero" class="form-label">Género</label>
+                        <input name="Genero" value="@Model.Genero" class="form-control" />
+                        <span data-valmsg-for="Genero" class="text-danger"></span>
                     </div>
-                    *@
+
                     <hr class="my-4" />
 
                     <h4 class="mb-3">Seguridad y Acceso</h4>
@@ -87,13 +87,13 @@
 
                     <hr class="my-4" />
 
-                    @*
+                    
                     <div class="mb-3">
-                        <label asp-for="CurrentPassword" class="form-label"></label>
-                        <input asp-for="CurrentPassword" class="form-control" />
-                        <span asp-validation-for="CurrentPassword" class="text-danger"></span>
+                        <label for="CurrentPassword" class="form-label">Contraseña Actual</label>
+                        <input name="CurrentPassword" class="form-control" />
+                        <span data-valmsg-for="CurrentPassword" class="text-danger"></span>
                     </div>
-                    *@
+                    
                     <div class="d-grid">
                         <button type="submit" class="btn btn-primary">Guardar Cambios</button>
                     </div>

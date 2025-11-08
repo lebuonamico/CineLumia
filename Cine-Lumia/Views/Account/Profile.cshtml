@@ -12,6 +12,7 @@
             </div>
             <div class="card-body">
                 <div class="d-flex align-items-center justify-content-center mb-3 profile-info-container">
+                    <img src="~/img/avatar/@Model.Avatars[Model.IdAvatar - 1]" alt="Avatar" class="profile-avatar-small me-3" style="width: 40px; height: 40px; border-radius: 50%;">
                     <div>
                         <p class="mb-0"><strong>Correo Electrónico:</strong> @Model.Email</p>
                         <p class="mb-0"><strong>Alias:</strong> @(string.IsNullOrEmpty(Model.Alias) ? "No asignado" : Model.Alias)</p>

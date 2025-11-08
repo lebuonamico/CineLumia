@@ -14,7 +14,7 @@ namespace Cine_Lumia.Models
         /// </summary>
         [Required(ErrorMessage = "El correo electrónico o alias es obligatorio.")]
         [Display(Name = "Correo electrónico o Alias")]
-        public string LoginIdentifier { get; set; }
+        public string LoginIdentifier { get; set; } = string.Empty;
 
         /// <summary>
         /// Propiedad para la contraseña del usuario.
@@ -22,7 +22,7 @@ namespace Cine_Lumia.Models
         /// </summary>
         [Required(ErrorMessage = "La contraseña es obligatoria.")]
         [DataType(DataType.Password)]
-        public string Password { get; set; }
+        public string Password { get; set; } = string.Empty;
 
         /// <summary>
         /// Propiedad para la opción "Recordarme".

@@ -3,15 +3,16 @@
                     <div class="d-flex align-items-center justify-content-center mb-4">
                         <div class="avatar-carousel">
                             <button id="prev-avatar" type="button" class="avatar-nav-btn prev"><i class="bi bi-arrow-left-circle"></i></button>
-                            <img src="~/img/avatar/@Model.Avatars[Model.IdAvatar - 1]" alt="Avatar" class="profile-avatar" id="avatar-image" data-avatars='@Json.Serialize(Model.Avatars)'>
+                            <img src="~/img/avatar/@Model.Avatars[Model.IdAvatar - 1]" alt="Avatar" class="profile-avatar" id="avatar-image">
                             <button id="next-avatar" type="button" class="avatar-nav-btn next"><i class="bi bi-arrow-right-circle"></i></button>
                         </div>
                     </div>
 
-                    <input type="hidden" asp-for="IdAvatar" />
+                    <input type="hidden" id="IdAvatar" name="IdAvatar" value="@Model.IdAvatar" />
                     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
                     <h4 class="mb-3">Datos Personales</h4>
+                    @*
                     <div class="mb-3">
                         <label asp-for="Nombre" class="form-label"></label>
                         <input asp-for="Nombre" class="form-control" />
@@ -52,7 +53,7 @@
                         <input asp-for="Genero" class="form-control" />
                         <span asp-validation-for="Genero" class="text-danger"></span>
                     </div>
-
+                    *@
                     <hr class="my-4" />
 
                     <h4 class="mb-3">Seguridad y Acceso</h4>
@@ -86,12 +87,13 @@
 
                     <hr class="my-4" />
 
+                    @*
                     <div class="mb-3">
                         <label asp-for="CurrentPassword" class="form-label"></label>
                         <input asp-for="CurrentPassword" class="form-control" />
                         <span asp-validation-for="CurrentPassword" class="text-danger"></span>
                     </div>
-
+                    *@
                     <div class="d-grid">
                         <button type="submit" class="btn btn-primary">Guardar Cambios</button>
                     </div>
@@ -110,7 +112,7 @@
             const nextButton = document.getElementById('next-avatar');
             const idAvatarInput = document.getElementById('IdAvatar');
 
-            const avatars = JSON.parse(avatarImage.getAttribute('data-avatars'));
+            const avatars = @Html.Raw(Json.Serialize(Model.Avatars));
             let currentAvatarIndex = @(Model.IdAvatar - 1);
 
             function updateAvatar() {

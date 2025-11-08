@@ -7,6 +7,6 @@ namespace Cine_Lumia.Models
     {
         [Required(ErrorMessage = "El correo electrónico es obligatorio.")]
         [EmailAddress(ErrorMessage = "El formato del correo electrónico no es válido.")]
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
     }
 }

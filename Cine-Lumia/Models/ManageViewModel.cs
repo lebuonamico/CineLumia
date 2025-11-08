@@ -8,15 +8,15 @@ namespace Cine_Lumia.Models
         [Required(ErrorMessage = "El nombre es obligatorio.")]
         [StringLength(100)]
         [Display(Name = "Nombre")]
-        public string Nombre { get; set; }
+        public string Nombre { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "El apellido es obligatorio.")]
         [StringLength(100)]
         [Display(Name = "Apellido")]
-        public string Apellido { get; set; }
+        public string Apellido { get; set; } = string.Empty;
 
         [Display(Name = "Correo Electrónico")]
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
 
         [Display(Name = "DNI")]
         public string? Dni { get; set; }
@@ -42,6 +42,6 @@ namespace Cine_Lumia.Models
         [Required(ErrorMessage = "La contraseña actual es obligatoria para guardar los cambios.")]
         [DataType(DataType.Password)]
         [Display(Name = "Contraseña Actual")]
-        public string CurrentPassword { get; set; }
+        public string CurrentPassword { get; set; } = string.Empty;
     }
 }

@@ -71,29 +71,12 @@
 
                     <hr class="my-4" />
 
-                    <h4 class="mb-3">Seguridad y Acceso</h4>
-                    <div class="d-flex justify-content-between mb-3">
-                        <a asp-action="ChangePassword" class="btn btn-outline-secondary">Cambiar Contraseña</a>
-                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">Eliminar Cuenta</button>
-                    </div>
-
-                    <hr class="my-4" />
-
-                    <h4 class="mb-3">Métodos de Pago Guardados</h4>
+                    <h4 class="mb-3">Confirmar Cambios</h4>
                     <div class="mb-3">
-                        <p class="text-muted">Aquí podrás ver y modificar tus tarjetas registradas. (Funcionalidad futura)</p>
-                        <button type="button" class="btn btn-outline-info" disabled>Gestionar Tarjetas</button>
+                        <label asp-for="CurrentPassword" class="form-label"></label>
+                        <input asp-for="CurrentPassword" type="password" class="form-control" />
+                        <span asp-validation-for="CurrentPassword" class="text-danger"></span>
                     </div>
-
-                    <hr class="my-4" />
-
-                    <h4 class="mb-3">Historial y Configuración de Entradas</h4>
-                    <div class="mb-3">
-                        <p class="text-muted">Consulta tu historial de compras de entradas. (Funcionalidad futura)</p>
-                        <button type="button" class="btn btn-outline-info" disabled>Ver Historial de Compras</button>
-                    </div>
-
-                    <hr class="my-4" />
                     
                     <div class="d-grid">
                         <button type="submit" class="btn btn-primary">Guardar Cambios</button>

@@ -261,6 +261,13 @@ namespace Cine_Lumia.Controllers
 
 
 
+            if (user.Password != model.CurrentPassword)
+            {
+                ModelState.AddModelError("CurrentPassword", "La contraseña actual es incorrecta.");
+                model.Avatars = GetAvatarList(); // Repopulate avatars list if model state is invalid
+                return View(model);
+            }
+
             user.Nombre = model.Nombre;
             user.Apellido = model.Apellido;
             user.Email = model.Email;

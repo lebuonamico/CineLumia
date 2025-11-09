@@ -17,6 +17,7 @@ html { position: relative; min-height:100%; }
 
 body {
  margin-bottom:60px;
+ padding-top: 90px; /* ajustá según la altura real de tu navbar */
  background-color: #000000; /* fondo negro */
  color: #ffffff; /* texto en blanco */
  font-family: 'Oswald', sans-serif; /* fuente Oswald */

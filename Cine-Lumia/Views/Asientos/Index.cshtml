@@ -164,8 +164,53 @@
         .btn-continuar:hover:not(:disabled) {
             background: #e81e34;
         }
+    /* ---- BOTÓN VOLVER ---- */
+    .btn-volver-top {
+        position: fixed;
+        top: 90px; /* debajo del navbar */
+        left: 40px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(0, 0, 0, 0.75);
+        border: 1px solid #ff253c;
+        color: #ff253c;
+        font-weight: 600;
+        font-size: 1rem;
+        padding: 10px 22px;
+        border-radius: 40px;
+        cursor: pointer;
+        z-index: 1050;
+        transition: all 0.25s ease;
+        backdrop-filter: blur(6px);
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    }
 
+        .btn-volver-top:hover {
+            background: #ff253c;
+            color: #fff;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255, 37, 60, 0.4);
+        }
+
+        .btn-volver-top i {
+            font-size: 1.2rem;
+        }
 </style>
+<!-- BOTÓN VOLVER -->
+<form id="volverForm" method="post" action="/VentaEntradas/GuardarTempData">
+    <input type="hidden" name="idProyeccion" value="@Model.Id_Proyeccion" />
+    <input type="hidden" name="cantidadEntradas" value="@Model.CantidadEntradas" />
+    <input type="hidden" name="totalCompra" value="@Model.TotalCompra" />
+    <input type="hidden" name="formatoEntrada" value="@Model.FormatoEntrada" />
+</form>
+
+<button class="btn-volver-top" id="btnVolver">
+    <i class="bi bi-arrow-left"></i> Volver
+</button>
+
+
+
 
 <div class="container">
     <!-- IZQUIERDA: pantalla + matriz -->
@@ -339,12 +384,25 @@
 
         });
     });
-
+    const asientosPrevios = "@ViewData["AsientosSeleccionados"]";
+    if (asientosPrevios) {
+        const ids = asientosPrevios.split(',');
+        ids.forEach(id => {
+            const seat = document.querySelector(`.seat[data-id='${id}']`);
+            if (seat && seat.classList.contains('disponible')) {
+                seat.classList.add('seleccionado');
+                seleccionados.push(id);
+            }
+        });
+        btnConfirmar.disabled = seleccionados.length !== totalEntradas;
+        actualizarResumen();
+    }
     // Confirmar selección
     btnConfirmar.addEventListener('click', () => {
         const form = document.createElement('form');
         form.method = 'post';
-        form.action = '@Url.Action("ConfirmarSeleccion", "Asientos")';
+        form.action = '@Url.Action("ConfirmarSeleccion", "Asientos")?idProyeccion=@Model.Id_Proyeccion';
+
 
         seleccionados.forEach(id => {
             const input = document.createElement('input');
@@ -355,5 +413,9 @@
         });
         document.body.appendChild(form);
         form.submit();
+    });
+    document.getElementById('btnVolver').addEventListener('click', e => {
+        e.preventDefault();
+        document.getElementById('volverForm').submit();
     });
 </script>

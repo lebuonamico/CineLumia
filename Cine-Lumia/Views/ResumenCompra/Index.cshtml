@@ -1,0 +1,254 @@
+﻿@model Cine_Lumia.Models.ViewModel.ResumenCompraViewModel
+@using System.Globalization
+
+@{
+    ViewData["Title"] = "Resumen de Compra";
+}
+
+<style>
+    body {
+        background-color: #0d0d0d;
+        color: #fff;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .resumen-container {
+        max-width: 900px;
+        margin: 80px auto 60px auto;
+        background: linear-gradient(145deg, #141414, #0d0d0d);
+        border-radius: 18px;
+        padding: 30px 40px;
+        display: flex;
+        gap: 35px;
+        box-shadow: 0 0 25px rgba(255, 37, 60, 0.15);
+        transition: transform .3s ease;
+    }
+
+        .resumen-container:hover {
+            transform: scale(1.01);
+        }
+
+    .poster {
+        flex: 0 0 240px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .poster img {
+            width: 100%;
+            height: auto;
+            border-radius: 14px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+            object-fit: cover;
+        }
+
+    .detalle {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    h2 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 25px;
+        color: #ff253c;
+        text-shadow: 0 0 10px rgba(255, 37, 60, 0.3);
+    }
+
+    .item {
+        margin-bottom: 16px;
+        font-size: 1rem;
+    }
+
+        .item strong {
+            color: #ff253c;
+        }
+
+    .asientos-box {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 8px;
+    }
+
+    .asiento-tag {
+        background: #222;
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: 0.95rem;
+    }
+
+    .totales {
+        border-top: 1px solid #333;
+        padding-top: 18px;
+        margin-top: 25px;
+        font-size: 1.05rem;
+    }
+
+    .total-final {
+        margin-top: 10px;
+        font-weight: 700;
+        font-size: 1.4rem;
+        color: #fff;
+        text-shadow: 0 0 12px rgba(255, 37, 60, 0.6);
+    }
+
+    .btn-confirmar {
+        margin-top: 35px;
+        width: 100%;
+        padding: 16px;
+        background: linear-gradient(90deg, #ff253c, #ff0048);
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        font-size: 1.15rem;
+        font-weight: 700;
+        cursor: pointer;
+        letter-spacing: 0.5px;
+        transition: all .25s ease-in-out;
+        box-shadow: 0 0 20px rgba(255, 37, 60, 0.25);
+    }
+
+        .btn-confirmar:hover {
+            background: linear-gradient(90deg, #ff0048, #ff253c);
+            box-shadow: 0 0 25px rgba(255, 37, 60, 0.45);
+        }
+
+    /* ---- BOTÓN VOLVER ---- */
+    .btn-volver-top {
+        position: fixed;
+        top: 90px;
+        left: 40px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(0, 0, 0, 0.75);
+        border: 1px solid #ff253c;
+        color: #ff253c;
+        font-weight: 600;
+        font-size: 1rem;
+        padding: 10px 22px;
+        border-radius: 40px;
+        cursor: pointer;
+        z-index: 1050;
+        transition: all 0.25s ease;
+        backdrop-filter: blur(6px);
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    }
+
+        .btn-volver-top:hover {
+            background: #ff253c;
+            color: #fff;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255, 37, 60, 0.4);
+        }
+
+        .btn-volver-top i {
+            font-size: 1.2rem;
+        }
+</style>
+
+<!-- BOTÓN VOLVER -->
+<a class="btn-volver-top"
+   href="@Url.Action("Seleccion", "Asientos", new { 
+       idProyeccion = Model.Proyeccion.Id_Proyeccion,
+       cantidadEntradas = Model.CantidadEntradas,
+       totalCompra = Model.TotalCompra,
+       formatoEntrada = Model.FormatoEntrada,
+       asientos = string.Join(",", Model.AsientosSeleccionados.Select(a => a.Id_Asiento))
+   })">
+    <i class="bi bi-arrow-left"></i> Volver
+</a>
+
+
+
+
+
+<div class="resumen-container">
+    <div class="poster">
+        <img src="@Model.Proyeccion.Pelicula.PosterUrl"
+             alt="@Model.Proyeccion.Pelicula.Nombre" />
+    </div>
+
+    <div class="detalle">
+        <div>
+            <h2>Resumen de tu compra</h2>
+
+            <div class="item">
+                <strong>Película:</strong> @Model.Proyeccion.Pelicula.Nombre
+            </div>
+
+            <div class="item">
+                <strong>Cine:</strong> @Model.Proyeccion.Sala.Cine.Nombre<br />
+                Sala @Model.Proyeccion.Sala.Id_Sala
+            </div>
+
+            <div class="item">
+                <strong>Día y horario:</strong><br />
+                @{
+                    var fecha = Model.Proyeccion.Fecha;
+                    var hora = Model.Proyeccion.Hora.ToString(@"hh\:mm");
+                    string textoFecha = fecha.Date == DateTime.Today
+                    ? $"Hoy {fecha:dd/MM} · {hora}"
+                    : $"{fecha:dddd dd/MM} · {hora}";
+                }
+                @textoFecha
+            </div>
+
+            <div class="item">
+                <strong>Entradas:</strong><br />
+                @Model.CantidadEntradas × @Model.FormatoEntrada
+            </div>
+
+            <div class="item">
+                <strong>Butacas:</strong>
+                <div class="asientos-box">
+                    @foreach (var a in Model.AsientosSeleccionados)
+                    {
+                        <span class="asiento-tag">@a.Fila @a.Columna</span>
+                    }
+                </div>
+            </div>
+
+            <div class="totales">
+                <div>Subtotal: $@Model.TotalCompra.ToString("N0", CultureInfo.InvariantCulture)</div>
+                <div>Cargo por servicio entradas: $@Model.CargoServicioEntradas.ToString("N0", CultureInfo.InvariantCulture)</div>
+                <div class="total-final">
+                    TOTAL: $@((Model.TotalCompra + Model.CargoServicioEntradas).ToString("N0", CultureInfo.InvariantCulture))
+                </div>
+            </div>
+        </div>
+
+        <button class="btn-confirmar">CONFIRMAR COMPRA</button>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    document.querySelector('.btn-confirmar').addEventListener('click', function () {
+        Swal.fire({
+            icon: 'success',
+            title: '¡Compra confirmada!',
+            text: 'Tu compra fue procesada correctamente. Te enviamos el detalle a tu correo.',
+            confirmButtonText: 'Ir al inicio',
+            confirmButtonColor: '#e50914',
+            background: '#111',
+            color: '#fff',
+            allowOutsideClick: false, 
+            allowEscapeKey: false,    
+            backdrop: `
+                rgba(0,0,0,0.75)
+                left top
+                no-repeat
+            `
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = '@Url.Action("Index", "Home")';
+            }
+        });
+    });
+</script>

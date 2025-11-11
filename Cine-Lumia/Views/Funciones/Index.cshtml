@@ -163,7 +163,7 @@
 <!-- Fondo -->
 <div class="backdrop" style="background-image: url('@Model.Pelicula.PosterUrl')"></div>
 <!-- Botón Volver -->
-<button class="btn-volver-top" onclick="window.history.back()">
+<button class="btn-volver-top" id="btnVolver">
     <i class="bi bi-arrow-left"></i> Volver
 </button>
 <div class="container">
@@ -202,12 +202,14 @@
 <button id="buyButton" class="buy-button">Comprar Entrada</button>
 
 <script>
-        let proyeccionesPorFecha = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ProyeccionesPorFecha));
-    let fechaSeleccionada = null; // inicialmente ninguna
+    let proyeccionesPorFecha = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ProyeccionesPorFecha));
+    let fechaSeleccionada = null;
     let horaSeleccionada = null;
     let idProyeccionSeleccionado = null;
+    let salaSeleccionada = null;
 
-    function renderHorarios(fecha) {
+    // --- Render de horarios con restauración opcional ---
+    function renderHorarios(fecha, horaRestaurar = null, salaRestaurar = null) {
         const container = document.getElementById('horariosContainer');
         container.innerHTML = '';
 
@@ -227,12 +229,23 @@
                 btn.className = 'hour-button';
                 btn.innerText = h.Hora;
                 btn.dataset.idproyeccion = h.IdProyeccion;
+                btn.dataset.sala = sala.Sala;
+
+                // ✅ restaurar selección si coincide sala y hora
+                if (horaRestaurar && salaRestaurar &&
+                    h.Hora === horaRestaurar && sala.Sala === salaRestaurar) {
+                    btn.classList.add('selected');
+                    horaSeleccionada = h.Hora;
+                    idProyeccionSeleccionado = h.IdProyeccion;
+                    salaSeleccionada = sala.Sala;
+                }
 
                 btn.addEventListener('click', () => {
                     document.querySelectorAll('.hour-button').forEach(b => b.classList.remove('selected'));
                     btn.classList.add('selected');
                     horaSeleccionada = h.Hora;
                     idProyeccionSeleccionado = h.IdProyeccion;
+                    salaSeleccionada = sala.Sala;
                     checkShowBuyButton();
                 });
 
@@ -242,34 +255,18 @@
             container.appendChild(horariosDiv);
         });
 
-        checkShowBuyButton(); // inicializa oculto
+        checkShowBuyButton();
     }
 
-        document.querySelectorAll('.date-link').forEach(link => {
-        link.addEventListener('click', () => {
-            // Marcar la fecha seleccionada
-            document.querySelectorAll('.date-link').forEach(l => l.classList.remove('active'));
-            link.classList.add('active');
-
-            // Actualizar variables
-            fechaSeleccionada = link.dataset.fecha;
-            horaSeleccionada = null;
-            idProyeccionSeleccionado = null;
-
-            // Renderizar salas y horarios solo ahora
-            renderHorarios(fechaSeleccionada);
-        });
-    });
-
-
+    // --- Fecha seleccionada ---
     document.querySelectorAll('.date-link').forEach(link => {
         link.addEventListener('click', () => {
             document.querySelectorAll('.date-link').forEach(l => l.classList.remove('active'));
             link.classList.add('active');
-
             fechaSeleccionada = link.dataset.fecha;
             horaSeleccionada = null;
             idProyeccionSeleccionado = null;
+            salaSeleccionada = null;
             renderHorarios(fechaSeleccionada);
         });
     });
@@ -279,9 +276,60 @@
         btn.style.display = (fechaSeleccionada && horaSeleccionada) ? 'block' : 'none';
     }
 
-    document.getElementById('buyButton').addEventListener('click', () => {
+    // --- Comprar ---
+        document.getElementById('buyButton').addEventListener('click', () => {
         if (!idProyeccionSeleccionado) return;
-        window.location.href = `/VentaEntradas/Index?idProyeccion=${idProyeccionSeleccionado}`;
+
+        const form = document.createElement('form');
+        form.method = 'get'; // usamos GET para Index
+        form.action = '@Url.Action("Index", "VentaEntradas")';
+        form.innerHTML = `<input type="hidden" name="idProyeccion" value="${idProyeccionSeleccionado}">`;
+        document.body.appendChild(form);
+        form.submit();
+    });
+
+
+    // --- Restaurar solo si viene desde VentaEntradas ---
+    window.addEventListener("DOMContentLoaded", () => {
+        const desdeVenta = "@(ViewBag.DesdeVenta ?? false)".toLowerCase() === "true";
+        if (!desdeVenta) return;
+
+        let fechaRestauradaRaw = "@(ViewBag.FechaSeleccionada ?? "")";
+        const horaRestaurada = "@(ViewBag.HoraSeleccionada ?? "")";
+        const salaRestaurada = "@(ViewBag.SalaSeleccionada ?? "")";
+
+        // Normalizar formato de fecha
+        let fechaRestaurada = "";
+        if (fechaRestauradaRaw.includes("/")) {
+            try {
+                const partes = fechaRestauradaRaw.split(" ")[0].split("/");
+                const dia = partes[0].padStart(2, "0");
+                const mes = partes[1].padStart(2, "0");
+                const anio = partes[2];
+                fechaRestaurada = `${anio}-${mes}-${dia}`;
+            } catch {}
+        } else {
+            fechaRestaurada = fechaRestauradaRaw;
+        }
+
+        const link = document.querySelector(`.date-link[data-fecha="${fechaRestaurada}"]`);
+        if (!link) return;
+
+        link.classList.add("active");
+        fechaSeleccionada = fechaRestaurada;
+
+        // 🚀 Llamamos al render con los datos de restauración directamente
+        renderHorarios(fechaRestaurada, horaRestaurada, salaRestaurada);
+    });
+                document.getElementById("btnVolver").addEventListener("click", () => {
+        // 🏠 Siempre volver al Home sin condiciones
+        window.location.href = "/";
     });
 
 </script>
+
+
+
+
+
+

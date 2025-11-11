@@ -1,12 +1,10 @@
-using System.ComponentModel.DataAnnotations;
-using Cine_Lumia.Models;
-using Microsoft.AspNetCore.Mvc;
-using System.Linq;
 using Cine_Lumia.Entities;
-using System.Security.Claims;
+using Cine_Lumia.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
 
 namespace Cine_Lumia.Controllers
 {
@@ -187,7 +185,15 @@ namespace Cine_Lumia.Controllers
         [HttpGet]
         public async Task<IActionResult> Logout()
         {
+            // Cierra la sesión y elimina la cookie de autenticación
             await HttpContext.SignOutAsync("LumiaCookieAuth");
+
+            // 🔒 Evita que el navegador almacene en caché las páginas protegidas
+            Response.Headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0";
+            Response.Headers["Pragma"] = "no-cache";
+            Response.Headers["Expires"] = "-1";
+
+            // Redirige al Home (o podrías redirigir al Login si preferís)
             return RedirectToAction("Index", "Home");
         }
 
@@ -322,7 +328,7 @@ namespace Cine_Lumia.Controllers
             {
                 // If model is invalid, return a JSON response with errors for AJAX handling or reload the page with error
                 // For now, we'll just redirect to manage, an actual implementation might use AJAX and return Json(errors)
-                return RedirectToAction("Manage"); 
+                return RedirectToAction("Manage");
             }
 
             var user = GetCurrentUser();
@@ -337,7 +343,7 @@ namespace Cine_Lumia.Controllers
             {
                 ModelState.AddModelError("Password", "La contraseña es incorrecta.");
                 // Again, for AJAX this would be Json(errors), for full post it would reload manage view
-                return RedirectToAction("Manage"); 
+                return RedirectToAction("Manage");
             }
 
             _context.Espectadores.Remove(user);

@@ -1,4 +1,4 @@
-﻿using Cine_Lumia.Data; // para el seeder
+﻿using Cine_Lumia.Data;
 using Cine_Lumia.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,7 +14,7 @@ string connectionString = builder.Configuration.GetConnectionString("DefaultConn
 // ============================
 builder.Services.AddDbContext<CineDbContext>(options =>
     options.UseSqlServer(connectionString, sqlOptions =>
-        sqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)) // 🔹 evita cartesian explosion
+        sqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery))
 );
 
 // ============================
@@ -40,7 +40,7 @@ builder.Services.AddAuthentication("LumiaCookieAuth")
         options.Cookie.Name = "LumiaCookieAuth";
         options.LoginPath = "/Account/Login";
         options.AccessDeniedPath = "/Account/AccessDenied";
-        options.ExpireTimeSpan = TimeSpan.FromDays(1); 
+        options.ExpireTimeSpan = TimeSpan.FromDays(1);
     });
 
 var app = builder.Build();
@@ -53,12 +53,25 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
 }
 
+// 🔹 Mover esto ANTES de `await next()` y antes de `UseRouting`
+app.Use(async (context, next) =>
+{
+    // Evita que las páginas protegidas se guarden en caché
+    context.Response.Headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0";
+    context.Response.Headers["Pragma"] = "no-cache";
+    context.Response.Headers["Expires"] = "-1";
+
+    await next();
+});
+
+app.UseStaticFiles();
+app.MapStaticAssets();
+
 app.UseRouting();
+
 app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseStaticFiles();
-app.MapStaticAssets();
 
 app.MapControllerRoute(
     name: "default",
@@ -71,8 +84,8 @@ app.MapControllerRoute(
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<CineDbContext>();
-    dbContext.Database.Migrate();              // 🔹 Aplica migraciones automáticamente
-    CineSeeder.Seed(dbContext);                // 🔹 Carga datos iniciales si no existen
+    dbContext.Database.Migrate();
+    CineSeeder.Seed(dbContext);
 }
 
 // ============================

@@ -1,4 +1,6 @@
-﻿
+﻿@{
+    var returnUrl = Context.Request.Path + Context.Request.QueryString;
+}
 <style>
     body {
         padding-top: 90px; /* ajustá según la altura real de tu navbar */
@@ -64,7 +66,16 @@
                                 }
                                 else
                                 {
-                                    <li><a class="dropdown-item" asp-controller="Account" asp-action="Login">Login</a></li>
+                                    
+<li>
+    <a class="dropdown-item"
+       asp-controller="Account"
+       asp-action="Login"
+       asp-route-returnUrl="@returnUrl">
+       Login
+    </a>
+</li>
+
                                     <li><a class="dropdown-item" asp-controller="Account" asp-action="Register">Registrarse</a></li>
                                 }
                             </ul>

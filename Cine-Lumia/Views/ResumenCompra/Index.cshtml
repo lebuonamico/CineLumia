@@ -24,9 +24,9 @@
         transition: transform .3s ease;
     }
 
-        .resumen-container:hover {
-            transform: scale(1.01);
-        }
+    .resumen-container:hover {
+        transform: scale(1.01);
+    }
 
     .poster {
         flex: 0 0 240px;
@@ -35,13 +35,13 @@
         justify-content: center;
     }
 
-        .poster img {
-            width: 100%;
-            height: auto;
-            border-radius: 14px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
-            object-fit: cover;
-        }
+    .poster img {
+        width: 100%;
+        height: auto;
+        border-radius: 14px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+        object-fit: cover;
+    }
 
     .detalle {
         flex: 1;
@@ -63,9 +63,9 @@
         font-size: 1rem;
     }
 
-        .item strong {
-            color: #ff253c;
-        }
+    .item strong {
+        color: #ff253c;
+    }
 
     .asientos-box {
         display: flex;
@@ -112,12 +112,11 @@
         box-shadow: 0 0 20px rgba(255, 37, 60, 0.25);
     }
 
-        .btn-confirmar:hover {
-            background: linear-gradient(90deg, #ff0048, #ff253c);
-            box-shadow: 0 0 25px rgba(255, 37, 60, 0.45);
-        }
+    .btn-confirmar:hover {
+        background: linear-gradient(90deg, #ff0048, #ff253c);
+        box-shadow: 0 0 25px rgba(255, 37, 60, 0.45);
+    }
 
-    /* ---- BOTÓN VOLVER ---- */
     .btn-volver-top {
         position: fixed;
         top: 90px;
@@ -139,16 +138,16 @@
         box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
     }
 
-        .btn-volver-top:hover {
-            background: #ff253c;
-            color: #fff;
-            transform: scale(1.05);
-            box-shadow: 0 0 20px rgba(255, 37, 60, 0.4);
-        }
+    .btn-volver-top:hover {
+        background: #ff253c;
+        color: #fff;
+        transform: scale(1.05);
+        box-shadow: 0 0 20px rgba(255, 37, 60, 0.4);
+    }
 
-        .btn-volver-top i {
-            font-size: 1.2rem;
-        }
+    .btn-volver-top i {
+        font-size: 1.2rem;
+    }
 </style>
 
 <!-- BOTÓN VOLVER -->
@@ -163,14 +162,9 @@
     <i class="bi bi-arrow-left"></i> Volver
 </a>
 
-
-
-
-
 <div class="resumen-container">
     <div class="poster">
-        <img src="@Model.Proyeccion.Pelicula.PosterUrl"
-             alt="@Model.Proyeccion.Pelicula.Nombre" />
+        <img src="@Model.Proyeccion.Pelicula.PosterUrl" alt="@Model.Proyeccion.Pelicula.Nombre" />
     </div>
 
     <div class="detalle">
@@ -192,8 +186,8 @@
                     var fecha = Model.Proyeccion.Fecha;
                     var hora = Model.Proyeccion.Hora.ToString(@"hh\:mm");
                     string textoFecha = fecha.Date == DateTime.Today
-                    ? $"Hoy {fecha:dd/MM} · {hora}"
-                    : $"{fecha:dddd dd/MM} · {hora}";
+                        ? $"Hoy {fecha:dd/MM} · {hora}"
+                        : $"{fecha:dddd dd/MM} · {hora}";
                 }
                 @textoFecha
             </div>
@@ -222,33 +216,58 @@
             </div>
         </div>
 
-        <button class="btn-confirmar">CONFIRMAR COMPRA</button>
+        <form id="formCompra" method="post" asp-action="Confirmar" asp-controller="ResumenCompra">
+            <input type="hidden" name="IdProyeccion" value="@Model.Proyeccion.Id_Proyeccion" />
+            <input type="hidden" name="CantidadEntradas" value="@Model.CantidadEntradas" />
+            <input type="hidden" name="TotalCompra" value="@Model.TotalCompra" />
+            <input type="hidden" name="FormatoEntrada" value="@Model.FormatoEntrada" />
+            @foreach (var asiento in Model.AsientosSeleccionados)
+            {
+                <input type="hidden" name="AsientosSeleccionadosIds" value="@asiento.Id_Asiento" />
+            }
+            <button type="submit" class="btn-confirmar">CONFIRMAR COMPRA</button>
+        </form>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-    document.querySelector('.btn-confirmar').addEventListener('click', function () {
-        Swal.fire({
-            icon: 'success',
-            title: '¡Compra confirmada!',
-            text: 'Tu compra fue procesada correctamente. Te enviamos el detalle a tu correo.',
-            confirmButtonText: 'Ir al inicio',
-            confirmButtonColor: '#e50914',
-            background: '#111',
-            color: '#fff',
-            allowOutsideClick: false, 
-            allowEscapeKey: false,    
-            backdrop: `
-                rgba(0,0,0,0.75)
-                left top
-                no-repeat
-            `
-        }).then((result) => {
-            if (result.isConfirmed) {
-                window.location.href = '@Url.Action("Index", "Home")';
-            }
+    document.querySelector('#formCompra').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+
+        const response = await fetch(form.action, {
+            method: 'POST',
+            body: new FormData(form)
         });
+
+        if (response.ok) {
+            Swal.fire({
+                icon: 'success',
+                title: '¡Compra confirmada!',
+                text: 'Tu compra fue procesada correctamente. Te enviamos el detalle a tu correo.',
+                confirmButtonText: 'Ir al inicio',
+                confirmButtonColor: '#e50914',
+                background: '#111',
+                color: '#fff',
+                allowOutsideClick: false,
+                allowEscapeKey: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '@Url.Action("Index", "Home")';
+                }
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error al procesar la compra',
+                text: 'Hubo un problema al guardar tus entradas. Intenta nuevamente.',
+                confirmButtonColor: '#e50914',
+                background: '#111',
+                color: '#fff'
+            });
+        }
     });
 </script>

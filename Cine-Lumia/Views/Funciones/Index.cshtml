@@ -5,6 +5,7 @@
         background: #0d0d0d !important;
         color: #fff !important;
         font-family: 'Segoe UI', sans-serif;
+        margin: 0;
     }
 
     .backdrop {
@@ -16,14 +17,21 @@
         z-index: -1;
     }
 
-    .movie-wrap {
+    .container {
         display: flex;
         gap: 40px;
-        margin-top: 50px;
+        max-width: 1200px;
+        margin: 50px auto;
+        padding: 0 20px;
+    }
+
+    .left-panel {
+        width: 340px;
+        flex-shrink: 0;
     }
 
     .movie-poster {
-        width: 340px;
+        width: 100%;
         height: 510px;
         border-radius: 14px;
         object-fit: cover;
@@ -31,13 +39,23 @@
     }
 
     .movie-title {
-        font-size: 2.6rem;
+        font-size: 2rem;
         font-weight: 700;
+        margin-top: 20px;
     }
 
     .details {
-        margin-top: 8px;
         color: #cfcfcf;
+        margin-top: 6px;
+    }
+
+    .right-panel {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        max-height: 600px; /* altura máxima visible */
+        overflow-y: auto; /* scroll solo en esta columna */
+        padding-right: 10px;
     }
 
     .date-selector a {
@@ -52,17 +70,17 @@
         margin: 4px;
     }
 
-        .date-selector a.active,
-        .date-selector a:hover {
-            background: #ff253c;
-            color: #fff;
-        }
+    .date-selector a.active,
+    .date-selector a:hover {
+        background: #ff253c;
+        color: #fff;
+    }
 
     .sala-title {
-        font-size: 1.4rem;
+        font-size: 1.2rem;
         font-weight: 600;
-        margin-top: 45px;
-        margin-bottom: 12px;
+        margin-top: 20px;
+        margin-bottom: 8px;
         text-transform: uppercase;
     }
 
@@ -74,7 +92,7 @@
     }
 
     .hour-button {
-        padding: 12px 24px;
+        padding: 10px 20px;
         border-radius: 40px;
         border: 1px solid #ff253c;
         font-weight: 600;
@@ -84,16 +102,11 @@
         transition: .25s;
     }
 
-        .hour-button:hover,
-        .hour-button.selected {
-            background: #ff253c;
-            color: #fff;
-            transform: scale(1.08);
-        }
-
-    hr {
-        border-color: #ffffff35;
-        margin-top: 40px;
+    .hour-button:hover,
+    .hour-button.selected {
+        background: #ff253c;
+        color: #fff;
+        transform: scale(1.05);
     }
 
     .buy-button {
@@ -114,20 +127,13 @@
         z-index: 999;
     }
 
-        .buy-button:hover {
-            background: #e81e34;
-            transform: none;
-        }
-
-    .container {
-        padding: 20px;
-        max-width: 1200px;
-        margin: 0 auto;
+    .buy-button:hover {
+        background: #e81e34;
     }
 
     .btn-volver-top {
         position: fixed;
-        top: 90px; /* se baja un poco para no quedar debajo del navbar */
+        top: 90px;
         left: 40px;
         display: flex;
         align-items: center;
@@ -140,62 +146,56 @@
         padding: 10px 22px;
         border-radius: 40px;
         cursor: pointer;
-        z-index: 1050; /* más alto que el navbar y el backdrop */
+        z-index: 1050;
         transition: all 0.25s ease;
         backdrop-filter: blur(6px);
         box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
     }
 
-        .btn-volver-top:hover {
-            background: #ff253c;
-            color: #fff;
-            transform: scale(1.05);
-            box-shadow: 0 0 20px rgba(255, 37, 60, 0.4);
-        }
+    .btn-volver-top:hover {
+        background: #ff253c;
+        color: #fff;
+        transform: scale(1.05);
+        box-shadow: 0 0 20px rgba(255, 37, 60, 0.4);
+    }
 
-        .btn-volver-top i {
-            font-size: 1.2rem;
-        }
-
+    .btn-volver-top i {
+        font-size: 1.2rem;
+    }
 
 </style>
 
 <!-- Fondo -->
 <div class="backdrop" style="background-image: url('@Model.Pelicula.PosterUrl')"></div>
+
 <!-- Botón Volver -->
 <button class="btn-volver-top" id="btnVolver">
     <i class="bi bi-arrow-left"></i> Volver
 </button>
+
 <div class="container">
-    
 
-
-    <div class="movie-wrap">
+    <!-- Panel izquierdo -->
+    <div class="left-panel">
         <img src="@Model.Pelicula.PosterUrl" class="movie-poster" />
-
-        <div class="movie-info">
-            <div class="movie-title">@Model.Pelicula.Nombre</div>
-            <div class="details">@Model.Cine.Nombre – @Model.Cine.Direccion</div>
-            <div class="details">@Model.Pelicula.Duracion min</div>
-
-            <!-- Selector de fechas -->
-            <div class="date-selector d-flex gap-2 mt-4 flex-wrap">
-                @foreach (var f in Model.FechasDisponibles)
-                {
-                    <a href="javascript:void(0);"
-                       class="date-link"
-                       data-fecha="@f">@DateTime.Parse(f).ToString("dd/MM")</a>
-                }
-
-            </div>
-        </div>
+        <div class="movie-title">@Model.Pelicula.Nombre</div>
+        <div class="details">@Model.Cine.Nombre – @Model.Cine.Direccion</div>
+        <div class="details">@Model.Pelicula.Duracion min</div>
     </div>
 
-    <hr />
+    <!-- Panel derecho con scroll -->
+    <div class="right-panel">
+        <div class="date-selector d-flex gap-2 flex-wrap">
+            @foreach (var f in Model.FechasDisponibles)
+            {
+                <a href="javascript:void(0);" class="date-link" data-fecha="@f">@DateTime.Parse(f).ToString("dd/MM")</a>
+            }
+        </div>
 
-    <!-- Contenedor dinámico de horarios -->
-    <div id="horariosContainer"></div>
+        <hr />
 
+        <div id="horariosContainer"></div>
+    </div>
 </div>
 
 <!-- Botón Comprar Entrada -->
@@ -208,7 +208,6 @@
     let idProyeccionSeleccionado = null;
     let salaSeleccionada = null;
 
-    // --- Render de horarios con restauración opcional ---
     function renderHorarios(fecha, horaRestaurar = null, salaRestaurar = null) {
         const container = document.getElementById('horariosContainer');
         container.innerHTML = '';
@@ -231,7 +230,6 @@
                 btn.dataset.idproyeccion = h.IdProyeccion;
                 btn.dataset.sala = sala.Sala;
 
-                // ✅ restaurar selección si coincide sala y hora
                 if (horaRestaurar && salaRestaurar &&
                     h.Hora === horaRestaurar && sala.Sala === salaRestaurar) {
                     btn.classList.add('selected');
@@ -258,7 +256,6 @@
         checkShowBuyButton();
     }
 
-    // --- Fecha seleccionada ---
     document.querySelectorAll('.date-link').forEach(link => {
         link.addEventListener('click', () => {
             document.querySelectorAll('.date-link').forEach(l => l.classList.remove('active'));
@@ -276,20 +273,17 @@
         btn.style.display = (fechaSeleccionada && horaSeleccionada) ? 'block' : 'none';
     }
 
-    // --- Comprar ---
-        document.getElementById('buyButton').addEventListener('click', () => {
+    document.getElementById('buyButton').addEventListener('click', () => {
         if (!idProyeccionSeleccionado) return;
 
         const form = document.createElement('form');
-        form.method = 'get'; // usamos GET para Index
+        form.method = 'get';
         form.action = '@Url.Action("Index", "VentaEntradas")';
         form.innerHTML = `<input type="hidden" name="idProyeccion" value="${idProyeccionSeleccionado}">`;
         document.body.appendChild(form);
         form.submit();
     });
 
-
-    // --- Restaurar solo si viene desde VentaEntradas ---
     window.addEventListener("DOMContentLoaded", () => {
         const desdeVenta = "@(ViewBag.DesdeVenta ?? false)".toLowerCase() === "true";
         if (!desdeVenta) return;
@@ -298,7 +292,6 @@
         const horaRestaurada = "@(ViewBag.HoraSeleccionada ?? "")";
         const salaRestaurada = "@(ViewBag.SalaSeleccionada ?? "")";
 
-        // Normalizar formato de fecha
         let fechaRestaurada = "";
         if (fechaRestauradaRaw.includes("/")) {
             try {
@@ -318,18 +311,10 @@
         link.classList.add("active");
         fechaSeleccionada = fechaRestaurada;
 
-        // 🚀 Llamamos al render con los datos de restauración directamente
         renderHorarios(fechaRestaurada, horaRestaurada, salaRestaurada);
     });
-                document.getElementById("btnVolver").addEventListener("click", () => {
-        // 🏠 Siempre volver al Home sin condiciones
+
+    document.getElementById("btnVolver").addEventListener("click", () => {
         window.location.href = "/";
     });
-
 </script>
-
-
-
-
-
-

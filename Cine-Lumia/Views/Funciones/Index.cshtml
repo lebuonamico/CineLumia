@@ -1,5 +1,6 @@
 ﻿@model Cine_Lumia.Models.ViewModel.FuncionesViewModel
 
+
 <style>
     body {
         background: #0d0d0d !important;
@@ -53,8 +54,8 @@
         flex: 1;
         display: flex;
         flex-direction: column;
-        max-height: 600px; /* altura máxima visible */
-        overflow-y: auto; /* scroll solo en esta columna */
+        max-height: 600px;
+        overflow-y: auto;
         padding-right: 10px;
     }
 
@@ -70,11 +71,11 @@
         margin: 4px;
     }
 
-    .date-selector a.active,
-    .date-selector a:hover {
-        background: #ff253c;
-        color: #fff;
-    }
+        .date-selector a.active,
+        .date-selector a:hover {
+            background: #ff253c;
+            color: #fff;
+        }
 
     .sala-title {
         font-size: 1.2rem;
@@ -100,14 +101,26 @@
         color: #ffffff;
         cursor: pointer;
         transition: .25s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
-    .hour-button:hover,
-    .hour-button.selected {
-        background: #ff253c;
-        color: #fff;
-        transform: scale(1.05);
-    }
+        .hour-button:hover,
+        .hour-button.selected {
+            background: #ff253c;
+            color: #fff;
+            transform: scale(1.05);
+        }
+
+        .hour-button.disabled {
+            border-color: #555;
+            color: #777;
+            background: #1a1a1a;
+            cursor: not-allowed;
+            pointer-events: none;
+            opacity: 0.6;
+        }
 
     .buy-button {
         position: fixed;
@@ -127,9 +140,9 @@
         z-index: 999;
     }
 
-    .buy-button:hover {
-        background: #e81e34;
-    }
+        .buy-button:hover {
+            background: #e81e34;
+        }
 
     .btn-volver-top {
         position: fixed;
@@ -152,20 +165,19 @@
         box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
     }
 
-    .btn-volver-top:hover {
-        background: #ff253c;
-        color: #fff;
-        transform: scale(1.05);
-        box-shadow: 0 0 20px rgba(255, 37, 60, 0.4);
-    }
+        .btn-volver-top:hover {
+            background: #ff253c;
+            color: #fff;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255, 37, 60, 0.4);
+        }
 
-    .btn-volver-top i {
-        font-size: 1.2rem;
-    }
-
+        .btn-volver-top i {
+            font-size: 1.2rem;
+        }
 </style>
 
-<!-- Fondo -->
+<!-- Fondo difuminado -->
 <div class="backdrop" style="background-image: url('@Model.Pelicula.PosterUrl')"></div>
 
 <!-- Botón Volver -->
@@ -174,7 +186,6 @@
 </button>
 
 <div class="container">
-
     <!-- Panel izquierdo -->
     <div class="left-panel">
         <img src="@Model.Pelicula.PosterUrl" class="movie-poster" />
@@ -183,7 +194,7 @@
         <div class="details">@Model.Pelicula.Duracion min</div>
     </div>
 
-    <!-- Panel derecho con scroll -->
+    <!-- Panel derecho -->
     <div class="right-panel">
         <div class="date-selector d-flex gap-2 flex-wrap">
             @foreach (var f in Model.FechasDisponibles)
@@ -193,22 +204,25 @@
         </div>
 
         <hr />
-
         <div id="horariosContainer"></div>
     </div>
 </div>
 
-<!-- Botón Comprar Entrada -->
+<!-- Botón Comprar -->
 <button id="buyButton" class="buy-button">Comprar Entrada</button>
 
 <script>
-    let proyeccionesPorFecha = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ProyeccionesPorFecha));
+    let proyeccionesPorFecha = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+                                Model.ProyeccionesPorFecha,
+                                new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = null }
+                ));
+
     let fechaSeleccionada = null;
     let horaSeleccionada = null;
     let idProyeccionSeleccionado = null;
     let salaSeleccionada = null;
 
-    function renderHorarios(fecha, horaRestaurar = null, salaRestaurar = null) {
+    function renderHorarios(fecha) {
         const container = document.getElementById('horariosContainer');
         container.innerHTML = '';
 
@@ -226,26 +240,64 @@
             sala.Horarios.forEach(h => {
                 const btn = document.createElement('button');
                 btn.className = 'hour-button';
-                btn.innerText = h.Hora;
                 btn.dataset.idproyeccion = h.IdProyeccion;
                 btn.dataset.sala = sala.Sala;
+    // 🎬 Crear el ícono SVG tipo Hoyts
+    const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    icon.setAttribute("viewBox", "0 0 24 24");
+    icon.setAttribute("width", "24");
+    icon.setAttribute("height", "24");
+    icon.style.marginRight = "8px";
+    icon.style.transition = "color 0.3s ease, transform 0.2s";
 
-                if (horaRestaurar && salaRestaurar &&
-                    h.Hora === horaRestaurar && sala.Sala === salaRestaurar) {
-                    btn.classList.add('selected');
-                    horaSeleccionada = h.Hora;
-                    idProyeccionSeleccionado = h.IdProyeccion;
-                    salaSeleccionada = sala.Sala;
+    const path1 = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path1.setAttribute("d", "M4.08443 6.13605L7.45847 15.9402C7.58758 16.255 7.94118 16.4187 8.26759 16.3076C8.60682 16.1922 8.78822 15.8236 8.67276 15.4844L7.00024 10.6687L6.99995 10.6679C6.63017 9.59686 7.42571 8.48056 8.55875 8.48056H9.34171C9.54211 8.48056 9.65597 8.25124 9.53484 8.0916L6.91735 4.64199C6.61047 4.23755 6.13203 4 5.62434 4C4.51662 4 3.73435 5.08511 4.08443 6.13605Z");
+    path1.setAttribute("fill", "currentColor");
+
+    const path2 = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path2.setAttribute("d", "M10.4242 18.7879C10.4242 18.654 10.5328 18.5455 10.6667 18.5455H19.7576C19.8915 18.5455 20 18.654 20 18.7879V19.3939C20 19.7287 19.7287 20 19.3939 20H11.0303C10.6956 20 10.4242 19.7287 10.4242 19.3939V18.7879Z");
+    path2.setAttribute("fill", "currentColor");
+
+    const path3 = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path3.setAttribute("d", "M8.4283 9.44504C8.0113 9.4476 7.7214 9.86075 7.86085 10.2538L7.88999 10.3359L10.2235 17.1657C10.3073 17.4109 10.5378 17.5758 10.797 17.5758H19.3882C19.3901 17.5758 19.392 17.5758 19.3939 17.5757C19.8083 17.572 20.0975 17.1617 19.9602 16.7695L19.3939 15.1515L19.3904 15.1501L17.5942 9.80533C17.5109 9.55728 17.2777 9.39075 17.016 9.39235L8.4283 9.44504Z");
+    path3.setAttribute("fill", "currentColor");
+
+    icon.appendChild(path1);
+    icon.appendChild(path2);
+    icon.appendChild(path3);
+
+
+                    // 🎨 Cambiar color del ícono según disponibilidad
+    if (h.Disponibles === 0) {
+        [path1, path2, path3].forEach(p => p.setAttribute("fill", "#ff3b3b")); // 🔴 rojo
+        btn.classList.add('disabled');
+        btn.title = "Agotado";
+    } else {
+        const ratio = h.Disponibles / h.TotalAsientos;
+        if (ratio > 0.5) {
+            [path1, path2, path3].forEach(p => p.setAttribute("fill", "#00ff6a")); // 🟢 verde
+            btn.title = "Alta disponibilidad";
+        } else {
+            [path1, path2, path3].forEach(p => p.setAttribute("fill", "#ffcc00")); // 🟡 amarillo
+            btn.title = "Disponibilidad media";
+        }
+    }
+
+
+                const text = document.createTextNode(` ${h.Hora}`);
+                btn.appendChild(icon);
+                btn.appendChild(text);
+
+                if (h.Disponibles > 0) {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.hour-button').forEach(b => b.classList.remove('selected'));
+                        btn.classList.add('selected');
+                        horaSeleccionada = h.Hora;
+                        idProyeccionSeleccionado = h.IdProyeccion;
+                        salaSeleccionada = sala.Sala;
+                        checkShowBuyButton();
+                    });
                 }
-
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.hour-button').forEach(b => b.classList.remove('selected'));
-                    btn.classList.add('selected');
-                    horaSeleccionada = h.Hora;
-                    idProyeccionSeleccionado = h.IdProyeccion;
-                    salaSeleccionada = sala.Sala;
-                    checkShowBuyButton();
-                });
 
                 horariosDiv.appendChild(btn);
             });
@@ -256,17 +308,22 @@
         checkShowBuyButton();
     }
 
-    document.querySelectorAll('.date-link').forEach(link => {
+        document.querySelectorAll('.date-link').forEach(link => {
         link.addEventListener('click', () => {
             document.querySelectorAll('.date-link').forEach(l => l.classList.remove('active'));
             link.classList.add('active');
             fechaSeleccionada = link.dataset.fecha;
+
+            // 🔄 Reiniciar selección al cambiar de fecha
             horaSeleccionada = null;
             idProyeccionSeleccionado = null;
             salaSeleccionada = null;
+            checkShowBuyButton();
+
             renderHorarios(fechaSeleccionada);
         });
     });
+
 
     function checkShowBuyButton() {
         const btn = document.getElementById('buyButton');
@@ -275,7 +332,6 @@
 
     document.getElementById('buyButton').addEventListener('click', () => {
         if (!idProyeccionSeleccionado) return;
-
         const form = document.createElement('form');
         form.method = 'get';
         form.action = '@Url.Action("Index", "VentaEntradas")';
@@ -284,10 +340,15 @@
         form.submit();
     });
 
-    window.addEventListener("DOMContentLoaded", () => {
+        window.addEventListener("DOMContentLoaded", () => {
         const desdeVenta = "@(ViewBag.DesdeVenta ?? false)".toLowerCase() === "true";
-        if (!desdeVenta) return;
+        if (!desdeVenta) {
+            // Si no viene desde VentaEntradas, cargar la primera fecha normalmente
+            document.querySelector('.date-link')?.click();
+            return;
+        }
 
+        // 🔹 Restaurar datos guardados
         let fechaRestauradaRaw = "@(ViewBag.FechaSeleccionada ?? "")";
         const horaRestaurada = "@(ViewBag.HoraSeleccionada ?? "")";
         const salaRestaurada = "@(ViewBag.SalaSeleccionada ?? "")";
@@ -305,16 +366,33 @@
             fechaRestaurada = fechaRestauradaRaw;
         }
 
+        // 🔹 Activar visualmente la fecha seleccionada
         const link = document.querySelector(`.date-link[data-fecha="${fechaRestaurada}"]`);
         if (!link) return;
 
         link.classList.add("active");
         fechaSeleccionada = fechaRestaurada;
 
-        renderHorarios(fechaRestaurada, horaRestaurada, salaRestaurada);
+        // 🔹 Renderizar los horarios y restaurar hora/sala
+        renderHorarios(fechaRestaurada);
+
+        // Esperar un poco a que se dibujen los botones antes de seleccionar
+        setTimeout(() => {
+            document.querySelectorAll(".hour-button").forEach(btn => {
+                if (btn.innerText.trim() === horaRestaurada && btn.dataset.sala === salaRestaurada) {
+                    btn.classList.add("selected");
+                    horaSeleccionada = horaRestaurada;
+                    idProyeccionSeleccionado = btn.dataset.idproyeccion;
+                    salaSeleccionada = salaRestaurada;
+                }
+            });
+            checkShowBuyButton();
+        }, 150);
     });
+
 
     document.getElementById("btnVolver").addEventListener("click", () => {
         window.location.href = "/";
     });
 </script>
+

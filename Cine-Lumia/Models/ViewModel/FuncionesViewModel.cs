@@ -12,6 +12,7 @@ namespace Cine_Lumia.Models.ViewModel
 
         // Diccionario: fecha "yyyy-MM-dd" → lista de salas con horarios
         public Dictionary<string, List<SalaConHorarios>> ProyeccionesPorFecha { get; set; } = new();
+        public int Disponibles { get; set; }
     }
 
     public class SalaConHorarios
@@ -24,5 +25,8 @@ namespace Cine_Lumia.Models.ViewModel
     {
         public string Hora { get; set; } = null!;
         public int IdProyeccion { get; set; }
+
+        public int Disponibles { get; set; }      // cantidad de asientos disponibles
+        public int TotalAsientos { get; set; }    // total de asientos en la sala
     }
 }

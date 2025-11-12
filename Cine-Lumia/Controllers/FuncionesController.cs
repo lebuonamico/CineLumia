@@ -23,13 +23,8 @@ namespace Cine_Lumia.Controllers
                 return NotFound();
 
             bool desdeVenta = TempData.Peek("DesdeVentaEntradas") != null;
-            Console.WriteLine($"🔹 Funciones.Index - desdeVenta = {desdeVenta}");
-
             if (!desdeVenta)
-            {
-                Console.WriteLine("🧹 Entrada directa: limpiando TempData viejo...");
                 TempData.Clear();
-            }
 
             var fechas = Enumerable.Range(0, 7)
                 .Select(d => DateTime.Today.AddDays(d).ToString("yyyy-MM-dd"))
@@ -38,34 +33,47 @@ namespace Cine_Lumia.Controllers
             string fechaSeleccionada = fecha ?? DateTime.Today.ToString("yyyy-MM-dd");
             var ahora = DateTime.Now;
 
+            // 🔹 Cargamos todas las proyecciones con sus asientos
             var proyeccionesList = await _context.Proyecciones
                 .Include(p => p.Sala)
                     .ThenInclude(s => s.Formato)
+                .Include(p => p.Sala.Asientos)
                 .Where(p => p.Id_Pelicula == peliculaId && p.Sala.Id_Cine == cineId)
                 .ToListAsync();
 
-            proyeccionesList = proyeccionesList
-                .Where(p =>
-                    p.Fecha.Date > DateTime.Today ||
-                    (p.Fecha.Date == DateTime.Today && p.Hora > ahora.TimeOfDay))
-                .ToList();
+            // 🔹 Calculamos la disponibilidad de cada proyección
+            var proyeccionesConDisponibilidad = new List<(Entities.Proyeccion, int disponibles, int total)>();
 
-            var proyeccionesPorFecha = proyeccionesList
-                .GroupBy(p => p.Fecha.Date.ToString("yyyy-MM-dd"))
+            foreach (var p in proyeccionesList)
+            {
+                int totalAsientos = p.Sala.Asientos.Count();
+                int ocupados = await _context.Entradas.CountAsync(e => e.Id_Proyeccion == p.Id_Proyeccion);
+                int disponibles = totalAsientos - ocupados;
+                proyeccionesConDisponibilidad.Add((p, disponibles, totalAsientos));
+            }
+
+            // 🔹 Agrupamos por fecha y sala
+            var proyeccionesPorFecha = proyeccionesConDisponibilidad
+                .Where(p => p.Item1.Fecha.Date > DateTime.Today ||
+                            (p.Item1.Fecha.Date == DateTime.Today && p.Item1.Hora > ahora.TimeOfDay))
+                .GroupBy(p => p.Item1.Fecha.Date.ToString("yyyy-MM-dd"))
                 .ToDictionary(
                     g => g.Key,
-                    g => g.GroupBy(p => p.Sala)
+                    g => g.GroupBy(p => p.Item1.Sala)
                           .Select(s => new SalaConHorarios
                           {
                               Sala = "Sala " + s.Key.Formato.Nombre,
                               Horarios = s.Select(h => new HorarioProyeccion
                               {
-                                  IdProyeccion = h.Id_Proyeccion,
-                                  Hora = h.Hora.ToString(@"hh\:mm")
+                                  IdProyeccion = h.Item1.Id_Proyeccion,
+                                  Hora = h.Item1.Hora.ToString(@"hh\:mm"),
+                                  Disponibles = h.disponibles,
+                                  TotalAsientos = h.total
                               }).OrderBy(h => h.Hora).ToList()
                           }).ToList()
                 );
 
+            // 🔹 ViewModel final
             var vm = new FuncionesViewModel
             {
                 Cine = cine,
@@ -77,20 +85,14 @@ namespace Cine_Lumia.Controllers
 
             if (desdeVenta)
             {
-                Console.WriteLine("🟢 Restaurando datos desde VentaEntradas...");
                 ViewBag.DesdeVenta = true;
                 ViewBag.FechaSeleccionada = TempData["FechaSeleccionada"];
                 ViewBag.HoraSeleccionada = TempData["HoraSeleccionada"];
                 ViewBag.SalaSeleccionada = TempData["SalaSeleccionada"];
-
-                // 🔥 Importante: limpiamos todo para cortar la cadena
                 TempData.Clear();
-
-                Console.WriteLine("✅ TempData limpiado tras restauración.");
             }
             else
             {
-                Console.WriteLine("⚪ Carga directa sin restauración.");
                 ViewBag.DesdeVenta = false;
             }
 

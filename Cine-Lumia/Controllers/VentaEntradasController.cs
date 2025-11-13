@@ -165,11 +165,10 @@ namespace Cine_Lumia.Controllers
 
             TempData["DesdeVentaEntradas"] = true;
 
-            // Redirige sin fecha ni hora en URL
-            return RedirectToAction("Index", new { cineId, peliculaId });
+            // Mantener valores en TempData y redirigir a Funciones para que consuma TempData sin exponer query string
+            TempData.Keep();
+            return RedirectToAction("VolverDesdeVentaEntradas", "Funciones");
         }
-
-
 
 
     }

@@ -5,6 +5,30 @@
     body {
         padding-top: 90px; /* ajustá según la altura real de tu navbar */
     }
+
+    /* SweetAlert custom styles for selected-cine alert */
+    .swal2-dark-popup {
+        background: #000 !important;
+        color: #fff !important;
+    }
+
+    .swal2-confirm-red {
+        background-color: #ff253c !important;
+        color: #fff !important;
+    }
+
+    /* Make the 'info' icon red to match the confirm button */
+    .swal2-icon.swal2-info {
+        background-color: transparent !important;
+        color: #ff253c !important;
+        border: 2px solid #ff253c !important;
+        box-shadow: none !important;
+    }
+
+    .swal2-icon.swal2-info svg {
+        fill: #ff253c !important;
+        stroke: #ff253c !important;
+    }
 </style>
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="dark">
@@ -114,12 +138,16 @@
 
 <!-- Script para cargar dinámicamente los cines -->
 <script>
+    // Cache de cines para reusar y actualizar footer
+    var cinesCache = [];
+
     document.addEventListener('DOMContentLoaded', async () => {
         const contenedor = document.getElementById('listaCines');
 
         try {
             const response = await fetch('/Cines/Listar');
             const cines = await response.json();
+            cinesCache = cines;
 
             contenedor.innerHTML = cines.map(c => `
                 <div class="list-group-item bg-dark text-light d-flex justify-content-between align-items-start border-0 py-3">
@@ -132,31 +160,113 @@
                 </div>
             `).join('');
 
+            // Si ya hay cine seleccionado en localStorage, marcarlo
+            const seleccionadoLocal = localStorage.getItem('cineSeleccionado');
+            if (seleccionadoLocal) {
+                const input = document.querySelector(`input[name="cine"][value="${seleccionadoLocal}"]`);
+                if (input) input.checked = true;
+                setFooter(seleccionadoLocal);
+            } else {
+                setFooter(null);
+            }
+
         } catch (error) {
             contenedor.innerHTML = '<p class="text-danger">Error al cargar los cines.</p>';
+            setFooter(null);
         }
     });
 
-    document.getElementById('btnSeleccionar').addEventListener('click', () => {
+    function setFooter(cineId) {
+        var nombreEl = document.getElementById('footerCineNombre');
+        var direccionEl = document.getElementById('footerCineDireccion');
+        if (!nombreEl || !direccionEl) return;
+
+        if (!cineId) {
+            nombreEl.textContent = 'Cine no seleccionado';
+            direccionEl.textContent = '';
+            return;
+        }
+
+        var cine = cinesCache.find(c => c.id == cineId);
+        if (cine) {
+            nombreEl.textContent = cine.nombre;
+            direccionEl.textContent = cine.direccion;
+        } else {
+            // Si no está en cache, intentar pedir al servidor
+            fetch(`/Cines/Listar`).then(r => r.json()).then(list => {
+                cinesCache = list;
+                var found = cinesCache.find(c => c.id == cineId);
+                if (found) {
+                    nombreEl.textContent = found.nombre;
+                    direccionEl.textContent = found.direccion;
+                } else {
+                    nombreEl.textContent = 'Cine no seleccionado';
+                    direccionEl.textContent = '';
+                }
+            }).catch(() => {
+                nombreEl.textContent = 'Cine no seleccionado';
+                direccionEl.textContent = '';
+            });
+        }
+    }
+
+    document.getElementById('btnSeleccionar').addEventListener('click', async () => {
         const seleccionado = document.querySelector('input[name="cine"]:checked');
         if (seleccionado) {
-            alert(`Seleccionaste el cine con ID ${seleccionado.value}`);
-            // Si querés redirigir:
-            // window.location.href = `/Cines/Detalle/${seleccionado.value}`;
+            const cineId = seleccionado.value;
+            // Guardamos en localStorage para validaciones cliente
+            localStorage.setItem('cineSeleccionado', cineId);
+
+            // Actualizar footer inmediatamente
+            setFooter(cineId);
+
+            // Hacemos una llamada al servidor para que deje TempData con la selección
+            try {
+                await fetch(`/Cines/Seleccionar?cineId=${cineId}`);
+                // Mostrar alerta con icono info y estilo oscuro + botón rojo
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Cine seleccionado',
+                    text: 'Se ha seleccionado tu cine principal.',
+                    customClass: {
+                        popup: 'swal2-dark-popup',
+                        confirmButton: 'swal2-confirm-red'
+                    },
+                    confirmButtonText: 'Aceptar'
+                });
+            } catch {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Atención',
+                    text: 'No se pudo guardar la selección en el servidor, pero se guardó localmente.'
+                });
+            }
+
         } else {
-            alert('Por favor seleccioná un cine.');
+            Swal.fire({
+                icon: 'warning',
+                title: 'Por favor seleccioná un cine',
+                text: ''
+            });
         }
     });
 </script>
 
     <footer class="footer bg-dark text-white text-center py-3">
-        <div class="container d-flex justify-content-center align-items-center">
-            <p class="mb-0 me-3">&copy; 2025 - CineLumia - <a asp-area="" asp-controller="Home" asp-action="Privacy" class="text-white">Privacy</a></p>
+        <div class="container d-flex justify-content-between align-items-center">
+            <div id="footerCineInfo" class="text-start">
+                <div id="footerCineNombre" class="fw-bold">Cine no seleccionado</div>
+                <div id="footerCineDireccion" class="small text-muted"></div>
+            </div>
+
             <div class="d-flex align-items-center">
-                <span class="me-2">Siguenos:</span>
-                <a href="#" class="text-white me-2"><i class="bi bi-facebook"></i></a>
-                <a href="#" class="text-white me-2"><i class="bi bi-instagram"></i></a>
-                <a href="#" class="text-white"><i class="bi bi-youtube"></i></a>
+                <p class="mb-0 me-3">&copy; 2025 - CineLumia - <a asp-area="" asp-controller="Home" asp-action="Privacy" class="text-white">Privacy</a></p>
+                <div class="d-flex align-items-center ms-3">
+                    <span class="me-2">Siguenos:</span>
+                    <a href="#" class="text-white me-2"><i class="bi bi-facebook"></i></a>
+                    <a href="#" class="text-white me-2"><i class="bi bi-instagram"></i></a>
+                    <a href="#" class="text-white"><i class="bi bi-youtube"></i></a>
+                </div>
             </div>
         </div>
     </footer>

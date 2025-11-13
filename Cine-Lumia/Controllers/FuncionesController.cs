@@ -14,10 +14,58 @@ namespace Cine_Lumia.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> Index(int cineId, int peliculaId, string? fecha)
+        // GET: Index optionally receives cineId and peliculaId. If TempData/Session contain selection, prefer them to avoid URL tampering.
+        public async Task<IActionResult> Index(int? cineId, int? peliculaId, string? fecha)
         {
-            var cine = await _context.Cines.FirstOrDefaultAsync(c => c.Id_Cine == cineId);
-            var pelicula = await _context.Peliculas.FirstOrDefaultAsync(p => p.Id_Pelicula == peliculaId);
+            // Priorizar TempData (valores guardados por la aplicación)
+            if (TempData.ContainsKey("CineId") && TempData.ContainsKey("PeliculaId"))
+            {
+                var tempCine = Convert.ToInt32(TempData.Peek("CineId"));
+                var tempPelicula = Convert.ToInt32(TempData.Peek("PeliculaId"));
+
+                cineId = tempCine;
+                peliculaId = tempPelicula;
+
+                // Mantener para próximas peticiones
+                TempData.Keep("CineId");
+                TempData.Keep("PeliculaId");
+            }
+            else
+            {
+                // Si no hay TempData, intentar Session
+                var fromSession = HttpContext.Session.GetInt32("CineSeleccionado");
+                if (fromSession.HasValue)
+                {
+                    cineId = fromSession.Value;
+                    // intentar recuperar peliculaId desde TempData si existe
+                    if (TempData.ContainsKey("PeliculaId"))
+                    {
+                        peliculaId = Convert.ToInt32(TempData.Peek("PeliculaId"));
+                        TempData.Keep("PeliculaId");
+                    }
+                }
+            }
+
+            if (!cineId.HasValue || !peliculaId.HasValue)
+            {
+                // Como fallback final, usar querystring si no hay selección server-side
+                // Esto permite enlaces directos pero no prioriza parámetros pasados manualmente.
+                // Si se desea evitar completamente la posibilidad de que el usuario manipule la URL,
+                // se puede requerir siempre TempData/Session y devolver error si no existen.
+                // Por ahora, si no hay selección en servidor, intentamos tomar los valores de la query.
+                if (!cineId.HasValue || !peliculaId.HasValue)
+                {
+                    // No hay selección válida
+                    TempData["ErrorSeleccionCine"] = "Debe seleccionar un cine para ver detalles.";
+                    return RedirectToAction("Index", "Home");
+                }
+            }
+
+            int cid = cineId.Value;
+            int pid = peliculaId.Value;
+
+            var cine = await _context.Cines.FirstOrDefaultAsync(c => c.Id_Cine == cid);
+            var pelicula = await _context.Peliculas.FirstOrDefaultAsync(p => p.Id_Pelicula == pid);
 
             if (cine == null || pelicula == null)
                 return NotFound();
@@ -38,7 +86,7 @@ namespace Cine_Lumia.Controllers
                 .Include(p => p.Sala)
                     .ThenInclude(s => s.Formato)
                 .Include(p => p.Sala.Asientos)
-                .Where(p => p.Id_Pelicula == peliculaId && p.Sala.Id_Cine == cineId)
+                .Where(p => p.Id_Pelicula == pid && p.Sala.Id_Cine == cid)
                 .ToListAsync();
 
             // 🔹 Calculamos la disponibilidad de cada proyección
@@ -112,12 +160,15 @@ namespace Cine_Lumia.Controllers
             int cineId = Convert.ToInt32(TempData["CineId"]);
             int peliculaId = Convert.ToInt32(TempData["PeliculaId"]);
 
-            Console.WriteLine($"🎬 Redirigiendo a Funciones con cineId={cineId}, peliculaId={peliculaId}");
+            Console.WriteLine($"🎬 Guardando TempData y redirigiendo a Funciones sin exponer parámetros.");
 
+            // Mantener los valores en TempData y redirigir a Index sin query string
+            TempData["CineId"] = cineId;
+            TempData["PeliculaId"] = peliculaId;
             TempData["DesdeVentaEntradas"] = true;
             TempData.Keep();
 
-            return RedirectToAction("Index", new { cineId, peliculaId });
+            return RedirectToAction("Index");
         }
     }
 }

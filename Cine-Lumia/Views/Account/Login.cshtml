@@ -1,6 +1,7 @@
 @model Cine_Lumia.Models.LoginViewModel
 
-@{    ViewData["Title"] = "Iniciar Sesión";
+@{
+    ViewData["Title"] = "Iniciar Sesión";
 }
 
 <div class="row justify-content-center">
@@ -14,19 +15,18 @@
                     <form asp-action="Login" method="post">
                         <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
 
-                        <!-- Resumen de validación para mostrar errores generales del modelo -->
                         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-                        
-                        <div class="form-floating mb-3">
-                            <input asp-for="LoginIdentifier" class="form-control" placeholder="Mail" />
-                            <label asp-for="LoginIdentifier">Mail</label>
+
+                        <div class="mb-3">
+                            <label asp-for="LoginIdentifier" class="form-label">Correo Electrónico o Alias</label>
+                            <input asp-for="LoginIdentifier" class="form-control" />
                             <span asp-validation-for="LoginIdentifier" class="text-danger"></span>
                         </div>
-                        
-                        <div class="form-floating mb-3">
+
+                        <div class="mb-3">
+                            <label asp-for="Password" class="form-label">Contraseña</label>
                             <div class="input-group">
-                                <input asp-for="Password" class="form-control" placeholder="Contraseña" id="passwordInput" />
-                                <label for="passwordInput">Contraseña</label>
+                                <input asp-for="Password" class="form-control" id="passwordInput" type="password" />
                                 <button class="btn btn-outline-secondary" type="button" id="togglePassword">
                                     <i class="bi bi-eye-slash" id="togglePasswordIcon"></i>
                                 </button>
@@ -36,17 +36,16 @@
 
                         <div class="mb-3 form-check">
                             <input type="checkbox" class="form-check-input" asp-for="RememberMe" />
-                            <label class="form-check-label" asp-for="RememberMe"></label>
+                            <label class="form-check-label" asp-for="RememberMe">Recordarme</label>
                         </div>
-                        
-                        <div class="d-grid">
+
+                        <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-primary">Ingresar</button>
+                            <a class="btn btn-secondary" asp-controller="Account" asp-action="Register">Registrarme</a>
                         </div>
+
                         <div class="text-center mt-3">
                             <a asp-action="ForgotPassword">¿Olvidaste tu contraseña?</a>
-                        </div>
-                        <div class="text-center mt-2">
-                            <a asp-action="Register">¿No tenés cuenta? Registrate aquí</a>
                         </div>
                     </form>
                 </section>

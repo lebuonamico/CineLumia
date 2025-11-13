@@ -34,17 +34,7 @@ body {
 }
 
 /* Buttons: white background, black text, hover -> red text with transition */
-.btn {
- background-color: #ffffff !important;
- color: #000000 !important;
- border: none !important;
- transition: color0.25s ease, background-color0.25s ease;
-}
 
-.btn:hover, .btn:focus {
- color: #ff0000 !important; /* hover: texto rojo */
- text-decoration: none;
-}
 
 /* Card background requested */
 .card {

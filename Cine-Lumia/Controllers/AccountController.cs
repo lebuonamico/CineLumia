@@ -186,7 +186,8 @@ namespace Cine_Lumia.Controllers
             return View();
         }
 
-        [HttpGet]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
             // Cierra la sesión y elimina la cookie de autenticación
@@ -369,6 +370,34 @@ namespace Cine_Lumia.Controllers
             _context.SaveChanges();
 
             return RedirectToAction("Index", "Home"); // Redirect to home page
+        }
+
+        [HttpGet]
+        [Authorize]
+        public IActionResult ModoDePago()
+        {
+            return View();
+        }
+
+        [HttpGet]
+        [Authorize]
+        public IActionResult Promociones()
+        {
+            return View();
+        }
+
+        [HttpGet]
+        [Authorize]
+        public IActionResult DarDeBaja()
+        {
+            return View();
+        }
+
+        [HttpGet]
+        [Authorize]
+        public IActionResult PreguntasFrecuentes()
+        {
+            return View();
         }
 
         // Internal class for password confirmation in DeleteAccountConfirmed action

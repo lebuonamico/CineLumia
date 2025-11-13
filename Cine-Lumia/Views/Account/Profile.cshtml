@@ -4,24 +4,49 @@
     ViewData["Title"] = "Mi Perfil";
 }
 
-<div class="row justify-content-center">
-    <div class="col-md-8 col-lg-6">
-        <div class="card mt-5 text-center">
-            <div class="card-header">
-                <h3 class="card-title">Bienvenido a tu Perfil</h3>
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-lg-3 col-md-4 text-center mb-4">
+            <img src="~/img/avatar/@Model.Avatars[Model.IdAvatar - 1]" alt="Avatar" class="img-fluid rounded-circle shadow-sm" style="width: 150px; height: 150px; object-fit: cover;">
+            <h4 class="mt-3">Bienvenido</h4>
+            <p class="fw-bold text-light">@(Model.Alias ?? "Usuario")</p>
+            <p class="text-muted small">@Model.Email</p>
+        </div>
+
+        <div class="col-lg-9 col-md-8">
+            <div class="list-group">
+                <a asp-controller="Account" asp-action="ModoDePago" class="list-group-item list-group-item-action">
+                    <i class="bi bi-credit-card-fill me-2"></i>Modo de Pago
+                </a>
+                <a asp-controller="ComprasRealizadas" asp-action="Index" class="list-group-item list-group-item-action">
+                    <i class="bi bi-receipt me-2"></i>Compras Realizadas
+                </a>
+                <a asp-controller="Account" asp-action="Promociones" class="list-group-item list-group-item-action">
+                    <i class="bi bi-tags-fill me-2"></i>Promociones
+                </a>
             </div>
-            <div class="card-body">
-                <div class="d-flex align-items-center justify-content-center mb-3 profile-info-container">
-                    <img src="~/img/avatar/@Model.Avatars[Model.IdAvatar - 1]" alt="Avatar" class="profile-avatar-small me-3" style="width: 40px; height: 40px; border-radius: 50%;">
-                    <div>
-                        <p class="mb-0"><strong>Correo Electrónico:</strong> @Model.Email</p>
-                        <p class="mb-0"><strong>Alias:</strong> @(string.IsNullOrEmpty(Model.Alias) ? "No asignado" : Model.Alias)</p>
-                    </div>
-                </div>
-                <p class="mt-4">Desde aquí puedes administrar los detalles de tu cuenta.</p>
-                <a asp-action="Manage" class="btn btn-primary">Gestionar Cuenta</a>
-                <a asp-action="Logout" class="btn btn-danger mt-3">Cerrar Sesión</a>
+
+            <hr class="my-4">
+
+            <div class="list-group">
+                <a asp-controller="Account" asp-action="Manage" class="list-group-item list-group-item-action">
+                    <i class="bi bi-gear-fill me-2"></i>Gestionar Cuenta
+                </a>
+                <a asp-controller="Account" asp-action="DarDeBaja" class="list-group-item list-group-item-action list-group-item-danger">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Dar de Baja Usuario
+                </a>
+                 <a asp-controller="Account" asp-action="PreguntasFrecuentes" class="list-group-item list-group-item-action">
+                    <i class="bi bi-question-circle-fill me-2"></i>Preguntas Frecuentes
+                </a>
             </div>
+
+            <hr class="my-4">
+            
+            <form asp-controller="Account" asp-action="Logout" method="post" class="d-grid">
+                <button type="submit" class="btn btn-outline-light">
+                    <i class="bi bi-box-arrow-right me-2"></i>Cerrar Sesión
+                </button>
+            </form>
         </div>
     </div>
 </div>

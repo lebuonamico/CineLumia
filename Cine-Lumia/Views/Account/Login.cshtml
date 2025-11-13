@@ -12,6 +12,8 @@
             <div class="card-body">
                 <section>
                     <form asp-action="Login" method="post">
+                        <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
+
                         <!-- Resumen de validación para mostrar errores generales del modelo -->
                         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
                         

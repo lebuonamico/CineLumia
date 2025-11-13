@@ -16,7 +16,8 @@ html {
 html { position: relative; min-height:100%; }
 
 body {
- margin-bottom:60px;
+ /* removed bottom margin to prevent footer overlap */
+ margin-bottom:0;
  background-color: #000000; /* fondo negro */
  color: #ffffff; /* texto en blanco */
  font-family: 'Oswald', sans-serif; /* fuente Oswald */
@@ -117,4 +118,22 @@ footer a, .footer a { color: #ffffff !important; }
 
 .avatar-nav-btn.next {
     right: 10px;
+}
+
+/* Carousel controls and indicators global overrides */
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    filter: invert(1) brightness(2) !important; /* make icons appear white */
+}
+
+.carousel-indicators button {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: transparent; /* removed background */
+    border: 1px solid rgba(255,255,255,0.9);
+}
+
+.carousel-indicators .active {
+    background-color: #ffffff !important;
 }

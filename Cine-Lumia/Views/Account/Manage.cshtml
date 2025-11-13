@@ -97,20 +97,7 @@
                         <button type="submit" class="btn btn-primary" id="submit-btn" disabled>Guardar Cambios</button>
                     </div>
                 </form>
-                <!-- Modal de confirmación -->
-                <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="successModalLabel">¡Éxito!</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body text-center">
-                                <p>Cambios Guardados!</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+
             </div>
         </div>
     </div>
@@ -255,14 +242,20 @@
                 })
                 .then(response => {
                     if (response.ok) {
-                        // Show the modal
-                        var successModal = new bootstrap.Modal(document.getElementById('successModal'));
-                        successModal.show();
-
-                        // Redirect after 2 seconds
-                        setTimeout(function() {
-                            window.location.href = '/Home/Index'; // Redirect to home page
-                        }, 2000); // 2 seconds
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Éxito!',
+                            text: 'Cambios guardados correctamente.',
+                            customClass: {
+                                popup: 'swal2-dark-popup',
+                                confirmButton: 'swal2-confirm-red'
+                            },
+                            confirmButtonText: 'Aceptar',
+                            timer: 2000,
+                            timerProgressBar: true
+                        }).then((result) => {
+                            window.location.href = '/Home/Index';
+                        });
                     } else {
                         // Handle errors
                         alert('Error al guardar los cambios.');

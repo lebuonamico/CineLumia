@@ -1,6 +1,7 @@
 @model Cine_Lumia.Models.RegisterViewModel
 
-@{    ViewData["Title"] = "Registrarse";
+@{
+    ViewData["Title"] = "Registrarse";
 }
 
 <div class="row justify-content-center">
@@ -15,32 +16,89 @@
                         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
                         <div class="mb-3">
-                            <input asp-for="Nombre" class="form-control" placeholder="Nombre" />
+                            <label asp-for="Nombre" class="form-label"></label>
+                            <input asp-for="Nombre" class="form-control" />
                             <span asp-validation-for="Nombre" class="text-danger"></span>
                         </div>
 
                         <div class="mb-3">
-                            <input asp-for="Apellido" class="form-control" placeholder="Apellido" />
+                            <label asp-for="Apellido" class="form-label"></label>
+                            <input asp-for="Apellido" class="form-control" />
                             <span asp-validation-for="Apellido" class="text-danger"></span>
                         </div>
-                        
+
                         <div class="mb-3">
-                            <input asp-for="Email" class="form-control" placeholder="Correo Electrónico" />
+                            <label asp-for="Email" class="form-label"></label>
+                            <input asp-for="Email" class="form-control" />
                             <span asp-validation-for="Email" class="text-danger"></span>
                         </div>
-                        
+
                         <div class="mb-3">
-                            <input asp-for="Password" class="form-control" placeholder="Contraseña" />
+                            <label asp-for="Dni" class="form-label"></label>
+                            <input asp-for="Dni" class="form-control" />
+                            <span asp-validation-for="Dni" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Telefono" class="form-label"></label>
+                            <input asp-for="Telefono" class="form-control" />
+                            <span asp-validation-for="Telefono" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="FechaNacimiento" class="form-label"></label>
+                            <input asp-for="FechaNacimiento" type="date" class="form-control" />
+                            <span asp-validation-for="FechaNacimiento" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Genero" class="form-label"></label>
+                            <select asp-for="Genero" class="form-select">
+                                <option value="">Seleccionar Género</option>
+                                <option value="Hombre">Hombre</option>
+                                <option value="Mujer">Mujer</option>
+                                <option value="Otro">Otro</option>
+                            </select>
+                            <span asp-validation-for="Genero" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Password" class="form-label"></label>
+                            <input asp-for="Password" class="form-control" />
                             <span asp-validation-for="Password" class="text-danger"></span>
                         </div>
 
                         <div class="mb-3">
-                            <input asp-for="ConfirmPassword" class="form-control" placeholder="Confirmar Contraseña" />
+                            <label asp-for="ConfirmPassword" class="form-label"></label>
+                            <input asp-for="ConfirmPassword" class="form-control" />
                             <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
                         </div>
-                        
+
+                        <!-- CAPTCHA Section -->
+                        <div class="mb-4">
+                            <label class="form-label">Verificación de Seguridad</label>
+                            <div class="captcha-container">
+                                <div class="captcha">
+                                    <div class="spinner">
+                                        <label>
+                                            <input type="checkbox" id="captcha-checkbox-register">
+                                            <span class="checkmark"><span>&nbsp;</span></span>
+                                        </label>
+                                    </div>
+                                    <div class="text">
+                                        No soy un robot
+                                    </div>
+                                    <div class="logo">
+                                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/RecaptchaLogo.svg/250px-RecaptchaLogo.svg.png" alt="reCAPTCHA" />
+                                        <p>reCAPTCHA</p>
+                                        <small>Privacy - Terms</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">Registrarse</button>
+                            <button type="submit" class="btn btn-primary" id="register-btn" disabled>Registrarse</button>
                         </div>
                     </form>
                 </section>
@@ -49,6 +107,109 @@
     </div>
 </div>
 
+<style>
+    .captcha-container {
+        display: flex;
+        justify-content: center;
+        margin: 1em 0;
+    }
+
+    .captcha {
+        background-color: #f9f9f9;
+        border: 2px solid #d3d3d3;
+        border-radius: 5px;
+        color: #4c4a4b;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 10px;
+    }
+
+    .text {
+        font-size: 1.2em;
+        font-weight: 500;
+        margin: 0 15px;
+    }
+
+    .spinner {
+        margin: 0 10px;
+    }
+
+    #captcha-checkbox-register {
+        opacity: 0;
+        position: absolute;
+    }
+
+        #captcha-checkbox-register + .checkmark {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            background-color: #fcfcfc;
+            border: 2px solid #c3c3c3;
+            border-radius: 3px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        #captcha-checkbox-register:checked + .checkmark {
+            background-color: #029f56;
+            border-color: #029f56;
+        }
+
+            #captcha-checkbox-register:checked + .checkmark span {
+                color: white;
+                font-weight: bold;
+            }
+
+    .logo {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 0 10px;
+    }
+
+        .logo img {
+            height: 40px;
+            width: 40px;
+        }
+
+        .logo p {
+            color: #9d9ba7;
+            margin: 0;
+            font-size: 0.9em;
+            font-weight: 700;
+        }
+
+        .logo small {
+            color: #9d9ba7;
+            font-size: 0.7em;
+        }
+
+    #register-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+</style>
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const captchaCheckboxRegister = document.getElementById('captcha-checkbox-register');
+            const registerBtn = document.getElementById('register-btn');
+
+            captchaCheckboxRegister.addEventListener('change', function() {
+                registerBtn.disabled = !this.checked;
+            });
+
+            document.querySelector('form').addEventListener('submit', function(e) {
+                if (!captchaCheckboxRegister.checked) {
+                    e.preventDefault();
+                    alert('Por favor, verifica que no eres un robot antes de registrarte.');
+                }
+            });
+        });
+    </script>
 }

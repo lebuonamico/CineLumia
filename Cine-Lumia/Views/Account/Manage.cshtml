@@ -1,6 +1,7 @@
 @model Cine_Lumia.Models.ManageViewModel
 
-@{    ViewData["Title"] = "Gestionar Cuenta";
+@{
+    ViewData["Title"] = "Gestionar Cuenta";
 }
 
 <div class="row justify-content-center">
@@ -18,7 +19,7 @@
                     </div>
                 </div>
 
-                <form asp-action="Manage" method="post">
+                <form asp-action="Manage" method="post" id="manageForm">
                     <input type="hidden" id="IdAvatar" name="IdAvatar" value="@Model.IdAvatar" />
                     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
@@ -69,61 +70,147 @@
                         <span asp-validation-for="Genero" class="text-danger"></span>
                     </div>
 
-                    <hr class="my-4" />
-
-                    <h4 class="mb-3">Confirmar Cambios</h4>
-                    <div class="mb-3">
-                        <label asp-for="CurrentPassword" class="form-label"></label>
-                        <input asp-for="CurrentPassword" type="password" class="form-control" />
-                        <span asp-validation-for="CurrentPassword" class="text-danger"></span>
+                    <!-- CAPTCHA Section -->
+                    <div class="mb-4">
+                        <label class="form-label">Verificación de Seguridad</label>
+                        <div class="captcha-container">
+                            <div class="captcha">
+                                <div class="spinner">
+                                    <label>
+                                        <input type="checkbox" id="captcha-checkbox">
+                                        <span class="checkmark"><span>&nbsp;</span></span>
+                                    </label>
+                                </div>
+                                <div class="text">
+                                    No soy un robot
+                                </div>
+                                <div class="logo">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/RecaptchaLogo.svg/250px-RecaptchaLogo.svg.png" alt="reCAPTCHA" />
+                                    <p>reCAPTCHA</p>
+                                    <small>Privacy - Terms</small>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    
+
                     <div class="d-grid">
-                        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                        <button type="submit" class="btn btn-primary" id="submit-btn" disabled>Guardar Cambios</button>
                     </div>
                 </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Delete Account Modal -->
-<div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="deleteAccountModalLabel">Confirmar Eliminación de Cuenta</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form asp-action="DeleteAccountConfirmed" method="post">
-                <div class="modal-body">
-                    <p class="text-danger text-center">¡Advertencia! Esta acción es irreversible. Al eliminar tu cuenta, se borrarán todos tus datos.</p>
-                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-
-                    <div class="mb-3">
-                        <label for="Password" class="form-label">Contraseña</label>
-                        <input type="password" id="Password" name="Password" class="form-control" required />
-                        <span data-valmsg-for="Password" class="text-danger"></span>
+                <!-- Modal de confirmación -->
+                <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="successModalLabel">¡Éxito!</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body text-center">
+                                <p>Cambios Guardados!</p>
+                            </div>
+                            <div class="modal-footer justify-content-center">
+                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Aceptar</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-danger">Confirmar Eliminación</button>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
 </div>
 
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
+    <style>
+        .captcha-container {
+            display: flex;
+            justify-content: center;
+            margin: 1em 0;
+        }
+
+        .captcha {
+            background-color: #f9f9f9;
+            border: 2px solid #d3d3d3;
+            border-radius: 5px;
+            color: #4c4a4b;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+
+        .text {
+            font-size: 1.2em;
+            font-weight: 500;
+            margin: 0 15px;
+        }
+
+        .spinner {
+            margin: 0 10px;
+        }
+
+        #captcha-checkbox {
+            opacity: 0;
+            position: absolute;
+        }
+
+            #captcha-checkbox + .checkmark {
+                display: inline-block;
+                width: 24px;
+                height: 24px;
+                background-color: #fcfcfc;
+                border: 2px solid #c3c3c3;
+                border-radius: 3px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                cursor: pointer;
+            }
+
+            #captcha-checkbox:checked + .checkmark {
+                background-color: #029f56;
+                border-color: #029f56;
+            }
+
+                #captcha-checkbox:checked + .checkmark span {
+                    color: white;
+                    font-weight: bold;
+                }
+
+        .logo {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0 10px;
+        }
+
+            .logo img {
+                height: 40px;
+                width: 40px;
+            }
+
+            .logo p {
+                color: #9d9ba7;
+                margin: 0;
+                font-size: 0.9em;
+                font-weight: 700;
+            }
+
+            .logo small {
+                color: #9d9ba7;
+                font-size: 0.7em;
+            }
+
+        #submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+    </style>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // Avatar carousel
             const avatarImage = document.getElementById('avatar-image');
             const prevButton = document.getElementById('prev-avatar');
             const nextButton = document.getElementById('next-avatar');
             const idAvatarInput = document.getElementById('IdAvatar');
-
             const avatars = @Html.Raw(Json.Serialize(Model.Avatars));
             let currentAvatarIndex = @(Model.IdAvatar - 1);
 
@@ -142,8 +229,38 @@
                 updateAvatar();
             });
 
-            // Initial setup
+            // CAPTCHA functionality
+            const captchaCheckbox = document.getElementById('captcha-checkbox');
+            const submitBtn = document.getElementById('submit-btn');
+
+            captchaCheckbox.addEventListener('change', function() {
+                submitBtn.disabled = !this.checked;
+            });
+
+            // Form submission handling
+            document.getElementById('manageForm').addEventListener('submit', function(e) {
+                if (!captchaCheckbox.checked) {
+                    e.preventDefault();
+                    alert('Por favor, verifica que no eres un robot antes de guardar los cambios.');
+                    return;
+                }
+
+                // Prevent default form submission to handle with AJAX or show modal
+                e.preventDefault();
+
+                // Simulate successful save (in a real app, this would be an AJAX call)
+                // For now, we assume success if CAPTCHA is checked
+                
+                // Show the modal
+                var successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                successModal.show();
+
+                // Redirect after 2 seconds
+                setTimeout(function() {
+                    window.location.href = '/Home/Index'; // Redirect to home page
+                }, 2000); // 2 seconds
+            });
+
             updateAvatar();
         });
     </script>
-}

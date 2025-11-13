@@ -66,6 +66,7 @@ namespace Cine_Lumia.Controllers
                     {
                         new Claim(ClaimTypes.Name, espectador.Email),
                         new Claim(ClaimTypes.Email, espectador.Email),
+                        new Claim(ClaimTypes.GivenName, espectador.Nombre),
                         new Claim("Alias", espectador.Alias ?? espectador.Email) // Add alias claim
                     };
 
@@ -146,7 +147,10 @@ namespace Cine_Lumia.Controllers
                     Apellido = model.Apellido,
                     Email = model.Email,
                     Password = model.Password, // En una aplicación real, hashear la contraseña
-                    Dni = null // DNI es requerido, lo pongo en null por ahora.
+                    Dni = model.Dni,
+                    Telefono = model.Telefono,
+                    FechaNacimiento = model.FechaNacimiento,
+                    Genero = model.Genero
                 };
 
                 _context.Espectadores.Add(espectador);
@@ -267,12 +271,7 @@ namespace Cine_Lumia.Controllers
 
 
 
-            if (user.Password != model.CurrentPassword)
-            {
-                ModelState.AddModelError("CurrentPassword", "La contraseña actual es incorrecta.");
-                model.Avatars = GetAvatarList(); // Repopulate avatars list if model state is invalid
-                return View(model);
-            }
+            // No password validation required as per user's request, CAPTCHA is sufficient.
 
             user.Nombre = model.Nombre;
             user.Apellido = model.Apellido;

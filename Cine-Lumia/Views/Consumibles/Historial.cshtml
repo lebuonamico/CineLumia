@@ -1,0 +1,44 @@
+﻿@model IEnumerable<Cine_Lumia.Entities.EspectadorConsumible>
+
+@{
+    ViewData["Title"] = "Historial de Compras";
+}
+
+<h2 class="mt-4 mb-4 text-center">🧾 Historial de Compras</h2>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info text-center">
+        No realizaste compras todavía 🍿
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped table-bordered align-middle">
+            <thead class="table-dark text-center">
+                <tr>
+                    <th>Cine</th>
+                    <th>Snack</th>
+                    <th>Cantidad</th>
+                    <th>Precio Unitario</th>
+                    <th>Total</th>
+                    <th>Fecha</th>
+                </tr>
+            </thead>
+            <tbody class="text-center">
+                @foreach (var compra in Model)
+                {
+                    <tr>
+                        <td>@compra.Cine.Nombre</td>
+                        <td>@compra.Consumible.Nombre</td>
+                        <td>@compra.Cantidad</td>
+                        <td>$@compra.Consumible.Precio</td>
+                        <td>$@(compra.Consumible.Precio* compra.Cantidad)</td>
+                        <td>@compra.Fecha.ToString("dd/MM/yyyy HH:mm")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

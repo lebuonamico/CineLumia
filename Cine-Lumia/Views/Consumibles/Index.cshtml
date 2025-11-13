@@ -22,7 +22,9 @@
                             <div class="card-body d-flex flex-column justify-content-between">
                                 <div>
                                     <h5 class="card-title">@item.Consumible.Nombre</h5>
-                                    <p class="card-text text-muted">Stock disponible: <strong>@item.Stock</strong></p>
+                                    <p class="card-text text-muted">
+                                        Stock disponible: <strong>@item.Stock</strong>
+                                    </p>
                                 </div>
                                 <div>
                                     <button class="btn btn-sm btn-success mt-3 w-75 mx-auto"
@@ -45,6 +47,7 @@
     </div>
 }
 
+<!-- MODAL DE COMPRA -->
 <div class="modal fade" id="comprarModal" tabindex="-1" aria-labelledby="comprarModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -119,31 +122,32 @@
                     'Content-Type': 'application/json',
                     'RequestVerificationToken': document.getElementsByName('__RequestVerificationToken')[0].value
                 },
-                body: JSON.stringify({ 
-                    cineId: cineId, 
-                    consumibleId: consumibleId, 
-                    cantidad: cantidad 
+                body: JSON.stringify({
+                    cineId: cineId,
+                    consumibleId: consumibleId,
+                    cantidad: cantidad
                 })
             })
-            .then(response => {
-                if (response.ok) {
-                    return response.json();
+            .then(async response => {
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        alert('🔐 Debes iniciar sesión para comprar.');
+                        return;
+                    }
+                    const data = await response.json().catch(() => null);
+                    const mensaje = data?.mensaje || '❌ Error al realizar la compra.';
+                    alert(mensaje);
+                    return;
                 }
-                throw new Error('Error en la compra.');
+
+                const data = await response.json();
+                alert(data.mensaje);
+                var modal = bootstrap.Modal.getInstance(document.getElementById('comprarModal'));
+                modal.hide();
+                location.reload(); // Recargar para ver stock actualizado
             })
-            .then(data => {
-            alert('✅ Compra realizada con éxito: ' + cantidad + 'x ' + snack);
-            var modal = bootstrap.Modal.getInstance(document.getElementById('comprarModal'));
-            modal.hide();
-                location.reload(); // Recargar la página para ver el stock actualizado
-            })
-            .catch(error => {
-                if (error.message.includes('401')) {
-                    alert('🔐 Debes iniciar sesión para comprar.');
-                } else {
-                    alert('❌ Error al realizar la compra.');
-                }
-                console.error('Error:', error);
+            .catch(() => {
+                alert('❌ Error al procesar la compra.');
             });
         });
     </script>

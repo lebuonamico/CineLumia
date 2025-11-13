@@ -254,7 +254,7 @@ namespace Cine_Lumia.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
-        public IActionResult Manage(ManageViewModel model)
+        public async Task<IActionResult> Manage(ManageViewModel model)
         {
             if (!ModelState.IsValid)
             {
@@ -268,8 +268,6 @@ namespace Cine_Lumia.Controllers
             {
                 return RedirectToAction("Login");
             }
-
-
 
             // No password validation required as per user's request, CAPTCHA is sufficient.
 
@@ -285,7 +283,21 @@ namespace Cine_Lumia.Controllers
 
             _context.SaveChanges();
 
-            return RedirectToAction("Manage");
+            // Re-sign in the user with the updated claims
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.Name, user.Email),
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.GivenName, user.Nombre),
+                new Claim("Alias", user.Alias ?? user.Email)
+            };
+
+            var claimsIdentity = new ClaimsIdentity(claims, "LumiaCookieAuth");
+            var authProperties = new AuthenticationProperties { IsPersistent = true }; // Or read from existing cookie
+
+            await HttpContext.SignInAsync("LumiaCookieAuth", new ClaimsPrincipal(claimsIdentity), authProperties);
+
+            return Ok(); // Return an OK status to the AJAX call
         }
 
         [HttpGet]

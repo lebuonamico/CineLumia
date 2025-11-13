@@ -1,0 +1,31 @@
+@model IEnumerable<Cine_Lumia.Models.ViewModel.ComprasRealizadasViewModel>
+
+@{
+    ViewData["Title"] = "Compras Realizadas";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<div class="row">
+    @foreach (var item in Model)
+    {
+        <div class="col-md-4">
+            <div class="card mb-4 shadow-sm">
+                <img src="@item.ImagenUrl" class="card-img-top" alt="@item.PeliculaNombre">
+                <div class="card-body">
+                    <h5 class="card-title">@item.PeliculaNombre</h5>
+                    <p class="card-text">@item.Descripcion</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">Asiento: @item.Asiento</li>
+                        <li class="list-group-item">Horario: @item.Horario</li>
+                    </ul>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-sm btn-outline-secondary">Ver Detalle de Compra</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

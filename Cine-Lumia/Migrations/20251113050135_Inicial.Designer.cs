@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Cine_Lumia.Migrations
 {
     [DbContext(typeof(CineDbContext))]
-    [Migration("20251113025028_Inicial")]
+    [Migration("20251113050135_Inicial")]
     partial class Inicial
     {
         /// <inheritdoc />

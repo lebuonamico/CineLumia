@@ -29,24 +29,42 @@ namespace Cine_Lumia.Controllers
                 return Challenge();
             }
 
+            var viewModel = new ComprasRealizadasViewModel();
+
+            // Fetch movie ticket purchases
             var entradas = await _context.Entradas
                 .Where(e => e.Id_Espectador == user.Id_Espectador)
                 .Include(e => e.Proyeccion)
                     .ThenInclude(p => p.Pelicula)
                 .Include(e => e.Proyeccion)
                     .ThenInclude(p => p.Sala)
+                        .ThenInclude(s => s.Cine) // Include Cine for address
                 .Include(e => e.Asiento)
-                .Select(e => new ComprasRealizadasViewModel
-                {
-                    PeliculaNombre = e.Proyeccion.Pelicula.Nombre,
-                    Asiento = e.Asiento.Fila + e.Asiento.Columna.ToString(),
-                    Horario = e.Proyeccion.Hora.ToString(@"hh\:mm"),
-                    ImagenUrl = e.Proyeccion.Pelicula.PosterUrl,
-                    Descripcion = e.Proyeccion.Pelicula.Nombre // Or some other description property
-                })
                 .ToListAsync();
 
-            return View(entradas);
+            viewModel.Tickets = entradas.Select(e => new TicketPurchaseViewModel
+            {
+                PeliculaNombre = e.Proyeccion.Pelicula.Nombre,
+                Horario = e.Proyeccion.Hora.ToString(@"hh\:mm"),
+                Asiento = e.Asiento.Fila + e.Asiento.Columna.ToString(),
+                CineNombre = e.Proyeccion.Sala.Cine.Nombre,
+                CineDireccion = e.Proyeccion.Sala.Cine.Direccion,
+                ImagenUrl = e.Proyeccion.Pelicula.PosterUrl
+            }).ToList();
+
+            // Fetch snack purchases
+            var snacksComprados = await _context.EspectadorConsumibles
+                .Where(ec => ec.Id_Espectador == user.Id_Espectador)
+                .Include(ec => ec.Consumible)
+                .ToListAsync();
+
+            viewModel.Snacks = snacksComprados.Select(ec => new SnackPurchaseViewModel
+            {
+                ConsumibleNombre = ec.Consumible.Nombre,
+                Cantidad = ec.Cantidad
+            }).ToList();
+
+            return View(viewModel);
         }
 
         private Espectador GetCurrentUser()

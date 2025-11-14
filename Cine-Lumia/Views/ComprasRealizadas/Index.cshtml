@@ -1,31 +1,88 @@
-@model IEnumerable<Cine_Lumia.Models.ViewModel.ComprasRealizadasViewModel>
+@model Cine_Lumia.Models.ViewModel.ComprasRealizadasViewModel
 
 @{
-    ViewData["Title"] = "Compras Realizadas";
+    ViewData["Title"] = "Mis Compras Realizadas";
 }
 
-<h1>@ViewData["Title"]</h1>
+<h2 class="mt-4 mb-4 text-center">Mis Compras Realizadas</h2>
 
-<div class="row">
-    @foreach (var item in Model)
+<div class="container">
+    <h3>Entradas de Cine</h3>
+    @if (Model.Tickets != null && Model.Tickets.Any())
     {
-        <div class="col-md-4">
-            <div class="card mb-4 shadow-sm">
-                <img src="@item.ImagenUrl" class="card-img-top" alt="@item.PeliculaNombre">
-                <div class="card-body">
-                    <h5 class="card-title">@item.PeliculaNombre</h5>
-                    <p class="card-text">@item.Descripcion</p>
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item">Asiento: @item.Asiento</li>
-                        <li class="list-group-item">Horario: @item.Horario</li>
-                    </ul>
-                    <div class="d-flex justify-content-between align-items-center mt-3">
-                        <div class="btn-group">
-                            <button type="button" class="btn btn-sm btn-outline-secondary">Ver Detalle de Compra</button>
+        <div class="row">
+            @foreach (var ticket in Model.Tickets)
+            {
+                <div class="col-md-6 mb-4">
+                    <div class="card" style="max-width: 540px;">
+                        <div class="row g-0">
+                            <div class="col-md-4">
+                                <img src="@ticket.ImagenUrl" class="img-fluid rounded-start" alt="Poster de @ticket.PeliculaNombre" style="width: 100%; height: auto; object-fit: cover;">
+                            </div>
+                            <div class="col-md-8">
+                                <div class="card-body">
+                                    <h5 class="card-title">@ticket.PeliculaNombre</h5>
+                                    <p class="card-text">
+                                        Horario: @ticket.Horario<br />
+                                        Asiento: @ticket.Asiento<br />
+                                        Cine: @ticket.CineNombre<br />
+                                        Dirección: @ticket.CineDireccion
+                                    </p>
+                                    <div class="d-flex justify-content-between mt-3">
+                                        <a href="#" class="btn btn-sm btn-outline-primary">Ver Más</a>
+                                        <a href="#" class="btn btn-sm btn-outline-secondary">Gestionar</a>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            }
         </div>
     }
+    else
+    {
+        <p>No has comprado ninguna entrada de cine aún.</p>
+    }
+
+    <h3 class="mt-5">Snacks Comprados</h3>
+    @if (Model.Snacks != null && Model.Snacks.Any())
+    {
+        <div class="row">
+            @foreach (var snack in Model.Snacks)
+            {
+                <div class="col-md-6 mb-4">
+                    <div class="card" style="max-width: 540px;">
+                        <div class="row g-0">
+                            <div class="col-md-4">
+                                <img src="/images/snack_placeholder.png" class="img-fluid rounded-start" alt="Imagen de @snack.ConsumibleNombre" style="width: 100%; height: auto; object-fit: cover;">
+                            </div>
+                            <div class="col-md-8">
+                                <div class="card-body">
+                                    <h5 class="card-title">@snack.ConsumibleNombre</h5>
+                                    <p class="card-text">Cantidad: @snack.Cantidad</p>
+                                    <div class="d-flex justify-content-between mt-3">
+                                        <a href="#" class="btn btn-sm btn-outline-primary">Ver Más</a>
+                                        <a href="#" class="btn btn-sm btn-outline-secondary">Gestionar</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p>No has comprado ningún snack aún.</p>
+    }
 </div>
+
+@* Placeholder for snack image if not already present *@
+@section Scripts {
+    <script>
+        // You might want to ensure this image exists or create it.
+        // For now, it's a placeholder.
+    </script>
+}

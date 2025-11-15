@@ -2,153 +2,378 @@
 
 @{
     ViewData["Title"] = "Snacks disponibles por cine";
-    var agrupado = Model.GroupBy(c => c.Cine.Nombre);
+    var agrupado = Model.GroupBy(c => c.Cine.Nombre); // This was the original grouping
 }
 
-<h2 class="mt-4 mb-4 text-center">🍿 Snacks disponibles por cine</h2>
+<nav class="navbar navbar-expand-lg bg-body-tertiary">
+    <div class="container-fluid">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
 
-@foreach (var grupo in agrupado)
-{
-    <div class="card mb-4 shadow-sm">
-        <div class="card-header bg-primary text-white">
-            <h4 class="mb-0">🎬 @grupo.Key</h4>
-        </div>
-        <div class="card-body">
-            <div class="row">
-                @foreach (var item in grupo)
-                {
-                    <div class="col-md-4 mb-3">
-                        <div class="card h-100 text-center border-0 shadow-sm bg-light">
-                            <div class="card-body d-flex flex-column justify-content-between">
-                                <div>
-                                    <h5 class="card-title">@item.Consumible.Nombre</h5>
-                                    <p class="card-text text-muted">
-                                        Stock disponible: <strong>@item.Stock</strong>
-                                    </p>
-                                </div>
-                                <div>
-                                    <button class="btn btn-sm btn-success mt-3 w-75 mx-auto"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#comprarModal"
-                                            data-cine="@item.Cine.Nombre"
-                                            data-snack="@item.Consumible.Nombre"
-                                            data-stock="@item.Stock"
-                                            data-cine-id="@item.Id_Cine"
-                                            data-consumible-id="@item.Id_Consumible">
-                                        🛒 Comprar
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                }
-            </div>
+            <form class="d-flex w-100 me-2" role="search" id="searchForm">
+                <input class="form-control me-2 w-100" type="search" placeholder="Buscar snacks..." aria-label="Search" id="searchInput" style="font-size: 1.6rem;" />
+                <button class="btn btn-outline-info btn-lg" type="submit">Buscar</button>
+            </form>
+
         </div>
     </div>
-}
+</nav>
 
-<!-- MODAL DE COMPRA -->
-<div class="modal fade" id="comprarModal" tabindex="-1" aria-labelledby="comprarModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title" id="comprarModalLabel">🛒 Comprar Snack</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+<h2 class="mt-4 mb-4 text-center">Tus Snacks Favoritos En un solo lugar</h2>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            @foreach (var grupo in agrupado)
+            {
+                <div class="card mb-4 shadow-sm cine-section">
+                    <div class="card-header bg-danger text-white">
+                        <h4 class="mb-0">🍿 @grupo.Key</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            @foreach (var item in grupo)
+                            {
+                                <div class="col-md-3 mb-3 snack-item">
+                                    <div class="card h-100">
+                                        <img src="@(string.IsNullOrEmpty(item.Consumible.PosterUrl) ? Url.Content("~/images/snack_placeholder.png") : item.Consumible.PosterUrl)"
+                                             class="card-img-top" alt="@item.Consumible.Nombre" />
+                                        <div class="card-body d-flex flex-column">
+                                            <h5 class="card-title snack-name">@item.Consumible.Nombre</h5>
+                                            <p class="card-text flex-grow-1 snack-desc">@item.Consumible.Descripcion</p>
+                                            <p class="card-text"><strpng class="text-body-secondary">@item.Consumible.Precio.ToString("C")</strpng></p>
+                                            <button class="btn btn-sm btn-danger mt-2 btn-agregar-carrito btn-lg" style="font-size:1.70rem!important"
+                                                    data-snack="@item.Consumible.Nombre"
+                                                    data-precio="@item.Consumible.Precio"
+                                                    data-stock="@item.Stock"
+                                                    data-cine-id="@item.Id_Cine"
+                                                    data-consumible-id="@item.Id_Consumible">
+                                                +
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<button id="burbuja-carrito"
+        class="btn btn-info rounded-circle position-fixed bottom-0 end-0 m-4 shadow-lg"
+        data-bs-toggle="offcanvas"
+        data-bs-target="#CarritoOffcanvas"
+        aria-controls="CarritoOffcanvas"
+        style="width: 90px; height: 90px; font-size: 2.5rem; z-index: 1040;">
+    🍿
+    <span id="contador-carrito" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+        0
+    </span>
+</button>
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="CarritoOffcanvas" aria-labelledby="carritoLabel">
+    <div class="offcanvas-header bg-info text-white">
+        <h5 class="offcanvas-title btn-info" id="carritoLabel">🍿 Mi Compra</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
+    </div>
+    <div class="offcanvas-body">
+
+        <div id="carrito-vacio" class="text-center text-muted">
+            <p>No hay items en el carrito</p>
+        </div>
+
+        <div id="carrito-items" style="display: none;">
+        </div>
+
+        <div id="carrito-total" class="mt-3" style="display: none;">
+            <hr>
+            <div class="d-flex justify-content-between">
+                <strong>Total:</strong>
+                <strong id="total-precio" class="text-dark">$0.00</strong>
             </div>
-            <div class="modal-body">
-                <form id="formCompra">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" id="modalCineId" />
-                    <input type="hidden" id="modalConsumibleId" />
-                    <div class="mb-3">
-                        <label class="form-label">Cine:</label>
-                        <input type="text" class="form-control" id="modalCine" readonly />
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Snack:</label>
-                        <input type="text" class="form-control" id="modalSnack" readonly />
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Cantidad:</label>
-                        <input type="number" class="form-control" id="modalCantidad" min="1" value="1" />
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Stock disponible:</label>
-                        <input type="text" class="form-control" id="modalStock" readonly />
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-success" id="btnConfirmarCompra">Confirmar compra</button>
-            </div>
+
+            <button type="button" class="btn btn-outline-primary w-100 mt-3 btn-lg" data-bs-dismiss="offcanvas">
+                Seguir Comprando
+            </button>
+
+            <button class="btn btn-danger w-100 mt-2 btn-lg" id="btn-finalizar-compra">Finalizar Compra</button>
         </div>
     </div>
 </div>
 
 @section Scripts {
     <script>
-        var comprarModal = document.getElementById('comprarModal');
-        comprarModal.addEventListener('show.bs.modal', function (event) {
-            var button = event.relatedTarget;
-            var cine = button.getAttribute('data-cine');
-            var snack = button.getAttribute('data-snack');
-            var stock = button.getAttribute('data-stock');
-            var cineId = button.getAttribute('data-cine-id');
-            var consumibleId = button.getAttribute('data-consumible-id');
+        // Declaración del array de carrito (mantenida)
+        let carrito = [];
 
-            document.getElementById('modalCine').value = cine;
-            document.getElementById('modalSnack').value = snack;
-            document.getElementById('modalStock').value = stock;
-            document.getElementById('modalCineId').value = cineId;
-            document.getElementById('modalConsumibleId').value = consumibleId;
+        // Elementos DOM para la burbuja y el carrito (agregados)
+        const contadorCarritoDOM = document.getElementById('contador-carrito');
+
+        // Función para actualizar el contador de la burbuja (total de unidades)
+        function actualizarContadorBurbuja() {
+            const totalUnidades = carrito.reduce((sum, item) => sum + item.cantidad, 0);
+            contadorCarritoDOM.textContent = totalUnidades;
+            contadorCarritoDOM.style.display = totalUnidades > 0 ? 'block' : 'none';
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // ... (Resto de tus event listeners: agregar, finalizar compra, buscar)
+
+            // Evento para agregar items al carrito (mantenido)
+            document.querySelectorAll('.btn-agregar-carrito').forEach(boton => {
+                boton.addEventListener('click', function() {
+                    const snack = this.getAttribute('data-snack');
+                    const precio = parseFloat(this.getAttribute('data-precio'));
+                    const stock = parseInt(this.getAttribute('data-stock'));
+                    const cineId = parseInt(this.getAttribute('data-cine-id'));
+                    const consumibleId = parseInt(this.getAttribute('data-consumible-id'));
+
+                    agregarAlCarrito({
+                        snack,
+                        precio,
+                        stock,
+                        cineId,
+                        consumibleId
+                    });
+                });
+            });
+
+            // Evento para finalizar compra (mantenido)
+            document.getElementById('btn-finalizar-compra').addEventListener('click', finalizarCompra);
+
+            // Evento para el buscador (mantenido)
+            document.getElementById('searchForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+                buscarSnacks(searchTerm);
+            });
+
+            // Evento para búsqueda en tiempo real (mantenido)
+            document.getElementById('searchInput').addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase().trim();
+                buscarSnacks(searchTerm);
+            });
+
+            // Inicializar al cargar
+            actualizarCarrito();
         });
 
-        document.getElementById('btnConfirmarCompra').addEventListener('click', function () {
-            var cantidad = parseInt(document.getElementById('modalCantidad').value);
-            var stock = parseInt(document.getElementById('modalStock').value);
-            var snack = document.getElementById('modalSnack').value;
-            var cineId = parseInt(document.getElementById('modalCineId').value);
-            var consumibleId = parseInt(document.getElementById('modalConsumibleId').value);
+        // --- LÓGICA DE BÚSQUEDA (MANTENIDA) ---
+        function buscarSnacks(searchTerm) {
+            const snackItems = document.querySelectorAll('.snack-item');
+            const cineSections = document.querySelectorAll('.cine-section');
 
-            if (cantidad > stock) {
-                alert('❌ No hay suficiente stock disponible.');
+            if (searchTerm === '') {
+                snackItems.forEach(item => item.style.display = 'block');
+                cineSections.forEach(section => section.style.display = 'block');
                 return;
             }
 
-            fetch('/Consumibles/Comprar', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'RequestVerificationToken': document.getElementsByName('__RequestVerificationToken')[0].value
-                },
-                body: JSON.stringify({
-                    cineId: cineId,
-                    consumibleId: consumibleId,
-                    cantidad: cantidad
-                })
-            })
-            .then(async response => {
-                if (!response.ok) {
-                    if (response.status === 401) {
-                        alert('🔐 Debes iniciar sesión para comprar.');
-                        return;
+            let algunResultadoEncontrado = false;
+
+            cineSections.forEach(section => {
+                const snacksEnSection = section.querySelectorAll('.snack-item');
+                let algunSnackVisibleEnSection = false;
+
+                snacksEnSection.forEach(item => {
+                    const snackName = item.querySelector('.snack-name').textContent.toLowerCase();
+                    const snackDesc = item.querySelector('.snack-desc').textContent.toLowerCase();
+
+                    if (snackName.includes(searchTerm) || snackDesc.includes(searchTerm)) {
+                        item.style.display = 'block';
+                        algunSnackVisibleEnSection = true;
+                        algunResultadoEncontrado = true;
+                    } else {
+                        item.style.display = 'none';
                     }
-                    const data = await response.json().catch(() => null);
-                    const mensaje = data?.mensaje || '❌ Error al realizar la compra.';
-                    alert(mensaje);
+                });
+
+                section.style.display = algunSnackVisibleEnSection ? 'block' : 'none';
+            });
+
+            if (!algunResultadoEncontrado) {
+                // ... (Manejo de "No se encontraron resultados" si lo necesitas)
+            }
+        }
+
+        // --- LÓGICA DE CARRITO (MANTENIDA Y MODIFICADA) ---
+        function agregarAlCarrito(item) {
+            const itemExistente = carrito.find(i => i.consumibleId === item.consumibleId && i.cineId === item.cineId);
+
+            if (itemExistente) {
+                if (itemExistente.cantidad < 10 && itemExistente.cantidad < item.stock) {
+                    itemExistente.cantidad++;
+                } else {
+                    alert('❌ No se puede agregar más de 10 unidades o no hay suficiente stock.');
                     return;
                 }
+            } else {
+                if (carrito.length >= 20) { // Límite de ítems diferentes más razonable
+                    alert('❌ Máximo 20 items diferentes en el carrito.');
+                    return;
+                }
+                carrito.push({
+                    ...item,
+                    cantidad: 1
+                });
+            }
 
-                const data = await response.json();
-                alert(data.mensaje);
-                var modal = bootstrap.Modal.getInstance(document.getElementById('comprarModal'));
-                modal.hide();
-                location.reload(); // Recargar para ver stock actualizado
-            })
-            .catch(() => {
-                alert('❌ Error al procesar la compra.');
+            actualizarCarrito();
+        }
+
+        function actualizarCarrito() {
+            const carritoItems = document.getElementById('carrito-items');
+            const carritoVacio = document.getElementById('carrito-vacio');
+            const carritoTotal = document.getElementById('carrito-total');
+            const totalPrecio = document.getElementById('total-precio');
+
+            // Actualizar la burbuja antes de salir
+            actualizarContadorBurbuja();
+
+            if (carrito.length === 0) {
+                carritoVacio.style.display = 'block';
+                carritoItems.style.display = 'none';
+                carritoTotal.style.display = 'none';
+                return;
+            }
+
+            carritoVacio.style.display = 'none';
+            carritoItems.style.display = 'block';
+            carritoTotal.style.display = 'block';
+
+            carritoItems.innerHTML = '';
+            let total = 0;
+
+            carrito.forEach((item, index) => {
+                const subtotal = item.precio * item.cantidad;
+                total += subtotal;
+
+                const itemHTML = `
+                    <div class="card mb-2">
+                        <div class="card-body p-2">
+                            <div class="d-flex justify-content-between align-items-start mb-1">
+                                <h6 class="card-title mb-0" style="font-size: 0.9rem;">${item.snack}</h6>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-secondary btn-restar" data-index="${index}">-</button>
+                                    <span class="btn btn-outline-light disabled">${item.cantidad}</span>
+                                    <button class="btn btn-outline-secondary btn-sumar" data-index="${index}">+</button>
+                                </div>
+                                <span style="font-size: 0.8rem; color: #6c757d;">$${subtotal.toFixed(2)}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                carritoItems.innerHTML += itemHTML;
             });
-        });
+
+            totalPrecio.textContent = `$${total.toFixed(2)}`;
+
+            // Agregar eventos a los botones de los items renderizados
+            document.querySelectorAll('.btn-restar').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const index = parseInt(this.getAttribute('data-index'));
+                    restarCantidad(index);
+                });
+            });
+
+            document.querySelectorAll('.btn-sumar').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const index = parseInt(this.getAttribute('data-index'));
+                    sumarCantidad(index);
+                });
+            });
+        }
+
+        // --- LÓGICA DE CANTIDAD Y FINALIZAR (MANTENIDA) ---
+        function restarCantidad(index) {
+            if (carrito[index].cantidad > 1) {
+                carrito[index].cantidad--;
+                actualizarCarrito();
+            } else {
+                carrito.splice(index, 1);
+                actualizarCarrito();
+            }
+        }
+
+        function sumarCantidad(index) {
+            if (carrito[index].cantidad < 10 && carrito[index].cantidad < carrito[index].stock) {
+                carrito[index].cantidad++;
+                actualizarCarrito();
+            } else {
+                alert('❌ No se puede agregar más de 10 unidades o no hay suficiente stock.');
+            }
+        }
+
+        function finalizarCompra() {
+            // ... (Tu función finalizarCompra con FETCH y lógica de C#/.NET)
+            if (carrito.length === 0) {
+                alert('❌ El carrito está vacío.');
+                return;
+            }
+
+            const comprasPorCine = {};
+            carrito.forEach(item => {
+                if (!comprasPorCine[item.cineId]) {
+                    comprasPorCine[item.cineId] = [];
+                }
+                comprasPorCine[item.cineId].push({
+                    consumibleId: item.consumibleId,
+                    cantidad: item.cantidad
+                });
+            });
+
+            const promises = Object.keys(comprasPorCine).map(cineId => {
+                return fetch('/Consumibles/Comprar', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // Asegúrate de que el token exista en tu página si usas CSRF
+                        'RequestVerificationToken': document.getElementsByName('__RequestVerificationToken')[0]?.value || ''
+                    },
+                    body: JSON.stringify({
+                        cineId: parseInt(cineId),
+                        items: comprasPorCine[cineId]
+                    })
+                });
+            });
+
+            Promise.all(promises)
+                .then(async responses => {
+                    let todosExitosos = true;
+                    let mensaje = '';
+
+                    for (let response of responses) {
+                        if (!response.ok) {
+                            if (response.status === 401) {
+                                alert('🔐 Debes iniciar sesión para comprar.');
+                                return;
+                            }
+                            todosExitosos = false;
+                            const data = await response.json().catch(() => null);
+                            mensaje = data?.mensaje || '❌ Error al realizar la compra.';
+                            break;
+                        }
+                    }
+
+                    if (todosExitosos) {
+                        alert('✅ Compra realizada con éxito!');
+                        carrito = [];
+                        actualizarCarrito();
+                        location.reload();
+                    } else {
+                        alert(mensaje);
+                    }
+                })
+                .catch(() => {
+                    alert('❌ Error al procesar la compra.');
+                });
+        }
     </script>
 }

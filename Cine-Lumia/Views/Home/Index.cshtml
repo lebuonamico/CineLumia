@@ -13,13 +13,13 @@
         return path; // ya es /ruta o url absoluta
     };
 
-    // Usar los banners provistos por el controlador (Model.BannerUrls) — mostrar como máximo3
+    // Usar los banners provistos por el controlador (Model.BannerUrls) ï¿½ mostrar como mï¿½ximo3
     var banners = Model.BannerUrls ?? new List<string>();
     var bannerCount = Math.Min(3, banners.Count);
 }
 
 <style>
-    /* Asegurar que el carrusel es solo para su sección y que sus controles estén dentro de él */
+    /* Asegurar que el carrusel es solo para su secciï¿½n y que sus controles estï¿½n dentro de ï¿½l */
     .carousel-wrapper { position: relative; margin-top: 0.5rem; margin-bottom: 1.5rem; z-index: 1; }
     #carouselBanner { position: relative; }
     #carouselBanner .carousel-control-prev, #carouselBanner .carousel-control-next { z-index: 1020; width: 4rem; }
@@ -77,15 +77,15 @@
                             <!-- Genero - Duracion -->
                             <div class="movie-meta">@string.Join(", ", pelicula.PeliculaGeneros.Select(pg => pg.Genero.GeneroNombre)) - @pelicula.Duracion min</div>
 
-                            <!-- Salas disponibles para esta película (rellenado por JS) -->
+                            <!-- Salas disponibles para esta pelï¿½cula (rellenado por JS) -->
                             <div class="salas-list mt-2" data-pelicula-id="@pelicula.Id_Pelicula">&nbsp;</div>
 
                             <div class="mt-auto">
-                                <!-- Ahora usamos un botón que hará POST al servidor para que se use TempData y no se expongan parámetros manipulables -->
+                                <!-- Ahora usamos un botï¿½n que harï¿½ POST al servidor para que se use TempData y no se expongan parï¿½metros manipulables -->
                                 <form method="post" action="@Url.Action("VerFunciones", "Peliculas")" class="d-block ver-mas-form">
                                     <input type="hidden" name="peliculaId" value="@pelicula.Id_Pelicula" />
-                                    <!-- cineId se añadirá desde JS tomando el valor de localStorage antes de enviar -->
-                                    <button type="submit" onclick="return handleVerMas(this.form);" class="btn btn-outline-primary w-100 ver-mas-btn" data-pelicula="@pelicula.Id_Pelicula">Ver más</button>
+                                    <!-- cineId se aï¿½adirï¿½ desde JS tomando el valor de localStorage antes de enviar -->
+                                    <button type="submit" onclick="return handleVerMas(this.form);" class="btn btn-outline-primary w-100 ver-mas-btn" data-pelicula="@pelicula.Id_Pelicula">Ver mï¿½s</button>
                                 </form>
                             </div>
                         </div>
@@ -173,11 +173,21 @@
                 containerEl.innerHTML = '<span class="text-muted small">Sin salas</span>';
                 return;
             }
+            
+            // Extraer solo los nombres de los formatos
+            var formatos = salas.map(function(s) {
+                return s.Formato || s.formato || '';
+            });
+
+            // Filtrar para obtener solo los formatos Ãºnicos y no vacÃ­os
+            var uniqueFormatos = [...new Set(formatos)].filter(f => f);
+
+            // Construir el HTML con los formatos Ãºnicos
             var html = '';
-            salas.forEach(function(s) {
-                var formato = s.Formato || s.formato || '';
+            uniqueFormatos.forEach(function(formato) {
                 html += '<span class="badge-sala">' + escapeHtml(formato) + '</span>';
             });
+
             containerEl.innerHTML = html;
         }
 
@@ -211,7 +221,7 @@
         (function() {
             var serverError = '@(TempData["ErrorSeleccionCine"] ?? "")';
             if (serverError && serverError.length > 0) {
-                Swal.fire({ icon: 'warning', title: 'Atención', text: serverError });
+                Swal.fire({ icon: 'warning', title: 'Atenciï¿½n', text: serverError });
             }
         })();
 

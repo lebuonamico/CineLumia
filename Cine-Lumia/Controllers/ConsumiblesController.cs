@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using Cine_Lumia.Entities;
 using System.Linq;
+ // This line needs to be added
 
 namespace Cine_Lumia.Controllers
 {
@@ -38,7 +39,7 @@ namespace Cine_Lumia.Controllers
         // ================================
         [HttpPost]
         [Authorize]
-        public IActionResult Comprar([FromBody] ComprarViewModel model)
+        public IActionResult Comprar([FromBody] CompraLoteViewModel model)
         {
             var userEmail = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
             if (userEmail == null)
@@ -52,44 +53,68 @@ namespace Cine_Lumia.Controllers
                 return Unauthorized(new { mensaje = "⚠️ Usuario no encontrado. Inicia sesión nuevamente." });
             }
 
-            var cineConsumible = _context.CineConsumibles
-                .Include(cc => cc.Consumible)
-                .Include(cc => cc.Cine)
-                .FirstOrDefault(cc => cc.Id_Cine == model.CineId && cc.Id_Consumible == model.ConsumibleId);
-
-            if (cineConsumible == null)
+            var cine = _context.Cines.Find(model.CineId);
+            if (cine == null)
             {
-                return NotFound(new { mensaje = "❌ Snack no encontrado para este cine." });
+                return NotFound(new { mensaje = "❌ Cine no encontrado." });
             }
 
-            if (cineConsumible.Stock < model.Cantidad)
+            // Usamos una transacción para asegurar que todas las operaciones se completen o ninguna lo haga.
+            using (var transaction = _context.Database.BeginTransaction())
             {
-                return BadRequest(new { mensaje = "🚫 No hay suficiente stock disponible para completar la compra." });
+                try
+                {
+                    foreach (var item in model.Items)
+                    {
+                        var cineConsumible = _context.CineConsumibles
+                            .FirstOrDefault(cc => cc.Id_Cine == model.CineId && cc.Id_Consumible == item.ConsumibleId);
+
+                        if (cineConsumible == null)
+                        {
+                            var consumible = _context.Consumibles.Find(item.ConsumibleId);
+                            var consumibleNombre = consumible?.Nombre ?? $"ID {item.ConsumibleId}";
+                            return NotFound(new { mensaje = $"❌ Snack '{consumibleNombre}' no encontrado para el cine '{cine.Nombre}'." });
+                        }
+
+                        if (cineConsumible.Stock < item.Cantidad)
+                        {
+                            var consumible = _context.Consumibles.Find(item.ConsumibleId);
+                            return BadRequest(new { mensaje = $"🚫 No hay suficiente stock de '{consumible?.Nombre}' para completar la compra." });
+                        }
+
+                        // Restar stock
+                        cineConsumible.Stock -= item.Cantidad;
+
+                        // Registrar la compra
+                        var espectadorConsumible = new EspectadorConsumible
+                        {
+                            Id_Espectador = espectador.Id_Espectador,
+                            Id_Consumible = item.ConsumibleId,
+                            Id_Cine = model.CineId,
+                            Cantidad = item.Cantidad,
+                            Fecha = System.DateTime.Now
+                        };
+                        _context.EspectadorConsumibles.Add(espectadorConsumible);
+                    }
+
+                    _context.SaveChanges();
+                    transaction.Commit();
+                }
+                catch (Exception)
+                {
+                    // Si algo falla, revertimos todos los cambios.
+                    transaction.Rollback();
+                    return StatusCode(500, new { mensaje = "🚨 Ocurrió un error inesperado al procesar la compra. Por favor, inténtalo de nuevo." });
+                }
             }
 
-            // Restar stock
-            cineConsumible.Stock -= model.Cantidad;
-
-            // Registrar la compra
-            var espectadorConsumible = new EspectadorConsumible
-            {
-                Id_Espectador = espectador.Id_Espectador,
-                Id_Consumible = model.ConsumibleId,
-                Id_Cine = model.CineId,
-                Cantidad = model.Cantidad,
-                Fecha = System.DateTime.Now
-            };
-
-            _context.EspectadorConsumibles.Add(espectadorConsumible);
-            _context.SaveChanges();
 
             // Generar resumen de compra actualizado
             GenerarResumenCompra(espectador.Id_Espectador);
 
             return Ok(new
             {
-                mensaje = $"✅ Compra realizada con éxito: {model.Cantidad}x {cineConsumible.Consumible.Nombre} en {cineConsumible.Cine.Nombre}.",
-                nuevoStock = cineConsumible.Stock
+                mensaje = $"✅ Compra realizada con éxito en {cine.Nombre}."
             });
         }
 
@@ -126,12 +151,17 @@ namespace Cine_Lumia.Controllers
     }
 
     // =====================================
-    // VIEWMODEL DE COMPRA
+    // VIEWMODELS DE COMPRA
     // =====================================
-    public class ComprarViewModel
+    public class CompraLoteViewModel
+    {
+        public int CineId { get; set; }
+        public List<ItemCompraViewModel> Items { get; set; } = new List<ItemCompraViewModel>();
+    }
+
+    public class ItemCompraViewModel
     {
         public int ConsumibleId { get; set; }
-        public int CineId { get; set; }
         public int Cantidad { get; set; }
     }
 }

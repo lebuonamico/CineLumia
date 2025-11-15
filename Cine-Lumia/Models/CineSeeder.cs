@@ -258,21 +258,67 @@ namespace Cine_Lumia.Data
             // =====================
             // CONSUMIBLES
             // =====================
-            var c1 = new Consumible { Nombre = "Pochoclos", Descripcion = "Pochoclos salados tamaño grande", Precio = 3500 };
-            var c2 = new Consumible { Nombre = "Gaseosa", Descripcion = "Coca-Cola 500ml", Precio = 2500 };
-            var c3 = new Consumible { Nombre = "Nachos", Descripcion = "Con queso cheddar", Precio = 3000 };
-            context.Consumibles.AddRange(c1, c2, c3);
-            context.SaveChanges();
+            // =====================
+            // CINE_CONSUMIBLE simplificado
+            // =====================
+            // =====================
+            // CONSUMIBLES - Lote 1 simplificado
+            // =====================
+if (!context.Consumibles.Any(c => c.Nombre.StartsWith("COMBO"))) // Comprobación más específica
+{
+    // Usar un inicializador de colección para agregar todos los objetos de una sola vez
+    var nuevosConsumibles = new List<Consumible>
+    {
+        new Consumible { Nombre = "COMBO TOY STORY 30 ANIVERSARIO", Descripcion = "1 Vaso metálico \"Toy Story 30 Aniversario\" (sin contenido) + 1 vaso de gaseosa grande + 1 Balde de pochoclos. UNIDADES LIMITADAS.", Precio = 44900, PosterUrl = "https://static.cinemarkhoyts.com.ar/Images/ConcessionItemImageN/A000004243.png?v=00002639" },
+        new Consumible { Nombre = "COMBO TRON: ARES", Descripcion = "1 ()Vaso \"Tron: Ares\" con gaseosa + 1 Balde de pochoclos. ()Con Luz LED. UNIDADES LIMITADAS.", Precio = 44900, PosterUrl = "https://static.cinemarkhoyts.com.ar/Images/ConcessionItemImageN/A000004261PR.png?v=00002639" },
+        new Consumible { Nombre = "COMBO PITUFOS", Descripcion = "1 Pochoclera \"Pitufos\" con pochoclos + 1 gaseosa grande. UNIDADES LIMITADAS.", Precio = 24900, PosterUrl = "https://static.cinemarkhoyts.com.ar/Images/ConcessionItemImageN/A000004216.png?v=00002639" },
+        new Consumible { Nombre = "COMBO EL CONJURO 4", Descripcion = "1 Vaso \"El Conjuro 4\" con gaseosa + 1 Balde de pochoclos. UNIDADES LIMITADAS.", Precio = 24900, PosterUrl = "https://static.cinemarkhoyts.com.ar/Images/ConcessionItemImageN/A000004236.png?v=00002639" },
+        new Consumible { Nombre = "COMBO SUPERMAN", Descripcion = "1 ()Vaso \"Superman\" con gaseosa + 1 balde de pochoclos. UNIDADES LIMITADAS. ()Tiene luz LED.", Precio = 24900, PosterUrl = "https://static.cinemarkhoyts.com.ar/Images/ConcessionItemImageN/A000004207.png?v=00002639" },
+        new Consumible { Nombre = "COMBO LOS 4 FANTASTICOS", Descripcion = "1 ()Vaso \"Los 4 Fantásticos: Primeros pasos\" sin contenido + 1 vaso de gaseosa + 1 balde de pochoclos. ()4 modelos disponibles a eleccion en el cine. UNIDADES LIMITADAS.", Precio = 24900, PosterUrl = "https://static.cinemarkhoyts.com.ar/Images/ConcessionItemImageN/A000004213.png?v=00002639" },
+        new Consumible { Nombre = "RECARGA VASO REUTILIZABLE", Descripcion = "1 Recarga de gaseosa de 910ml., válida exclusivamente para el Vaso Reutilizable Cinemark-Hoyts. Recordá llevar tu vaso al cine.", Precio = 2900, PosterUrl = "https://static.cinemarkhoyts.com.ar/Images/ConcessionItemImageN/A000004011.png?v=00002639" },
+        new Consumible { Nombre = "COMBO COMO ENTRENAR A TU DRAGON", Descripcion = "1 Vaso \"Cómo Entrenar a tu Dragón\" con gaseosa + 1 balde de pochoclos. UNIDADES LIMITADAS.", Precio = 48900, PosterUrl = "https://static.cinemarkhoyts.com.ar/Images/ConcessionItemImageN/A000004192.png?v=00002639" },
+        new Consumible { Nombre = "COMBO GABBY´S DOLLHOUSE", Descripcion = "1 ()Vaso \"Gabbys DollHouse\" con gaseosa + 1 Balde de pochoclos. ()2 modelos disponibles a eleccion en el cine. UNIDADES LIMITADAS.", Precio = 34900, PosterUrl = "https://static.cinemarkhoyts.com.ar/Images/ConcessionItemImageN/A000004253.png?v=00002639" },
+        new Consumible { Nombre = "COMBO MEGA EL CONJURO 4", Descripcion = "1 Vaso \"El Conjuro 4\" sin contenido + 1 Balde de pochoclos + 2 gaseosas grandes. UNIDADES LIMITADAS.", Precio = 29900, PosterUrl = "https://static.cinemarkhoyts.com.ar/Images/ConcessionItemImageN/A000004272.png?v=00002639" },
+    };
+
+    context.Consumibles.AddRange(nuevosConsumibles);
+    context.SaveChanges();
+    context.ChangeTracker.Clear();
+}
+
 
             // =====================
-            // CINE_CONSUMIBLE
+            // CINE_CONSUMIBLE para Lote 1 - Usando Single Save
             // =====================
-            context.CineConsumibles.AddRange(
-                new CineConsumible { Cine = cine1, Consumible = c1, Stock = 200 },
-                new CineConsumible { Cine = cine2, Consumible = c2, Stock = 150 },
-                new CineConsumible { Cine = cine3, Consumible = c3, Stock = 100 }
-            );
-            context.SaveChanges();
+
+            if (!context.CineConsumibles.Any())
+            {
+                // Obtener los consumibles recién creados o existentes
+                var consumiblesLote1 = context.Consumibles.AsNoTracking().ToList();
+                // Obtener los cines de la base de datos para asegurar que existan
+                var cinesLote = context.Cines.AsNoTracking().ToList();
+
+                if(cinesLote.Any() && consumiblesLote1.Any())
+                {
+                    // Creamos todas las relaciones CineConsumible en una sola lista
+                    var todasLasRelaciones = cinesLote
+                        .SelectMany(cine => consumiblesLote1
+                            .Select(consumible => new CineConsumible
+                            {
+                                // Usamos las propiedades ID del cine y consumible para evitar problemas de tracking
+                                Id_Cine = cine.Id_Cine,
+                                Id_Consumible = consumible.Id_Consumible,
+                                Stock = 200
+                            }))
+                        .ToList();
+
+                    // Agregamos todas las relaciones a la vez
+                    context.CineConsumibles.AddRange(todasLasRelaciones);
+                    context.SaveChanges();
+                    context.ChangeTracker.Clear();
+                }
+            }
+
         }
     }
 }

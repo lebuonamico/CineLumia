@@ -12,7 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Cine_Lumia.Migrations
 {
     [DbContext(typeof(CineDbContext))]
+<<<<<<<< HEAD:Cine-Lumia/Migrations/20251115015956_Inicial.Designer.cs
     [Migration("20251115015956_Inicial")]
+========
+    [Migration("20251114170043_Inicial")]
+>>>>>>>> abf3f8dce411a5ef82f5ac4e8534db3def477956:Cine-Lumia/Migrations/20251114170043_Inicial.Designer.cs
     partial class Inicial
     {
         /// <inheritdoc />
@@ -110,13 +114,18 @@ namespace Cine_Lumia.Migrations
 
                     b.Property<string>("Descripcion")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(400)
+                        .HasColumnType("nvarchar(400)");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("PosterUrl")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<decimal>("Precio")
                         .HasPrecision(10, 2)

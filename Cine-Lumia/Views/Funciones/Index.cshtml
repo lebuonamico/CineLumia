@@ -332,12 +332,13 @@
 
     document.getElementById('buyButton').addEventListener('click', () => {
         if (!idProyeccionSeleccionado) return;
-        const form = document.createElement('form');
-        form.method = 'get';
-        form.action = '@Url.Action("Index", "VentaEntradas")';
-        form.innerHTML = `<input type="hidden" name="idProyeccion" value="${idProyeccionSeleccionado}">`;
-        document.body.appendChild(form);
-        form.submit();
+            const form = document.createElement('form');
+    form.method = 'post';
+    form.action = '/Funciones/SeleccionarProyeccionOculta';
+    form.innerHTML = `<input type="hidden" name="idProyeccion" value="${idProyeccionSeleccionado}">`;
+    document.body.appendChild(form);
+    form.submit();
+
     });
 
         window.addEventListener("DOMContentLoaded", () => {

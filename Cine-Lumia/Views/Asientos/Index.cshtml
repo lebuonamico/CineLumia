@@ -401,7 +401,10 @@
     btnConfirmar.addEventListener('click', () => {
         const form = document.createElement('form');
         form.method = 'post';
-        form.action = '@Url.Action("ConfirmarSeleccion", "Asientos")?idProyeccion=@Model.Id_Proyeccion';
+        form.action = '@Url.Action("ConfirmarSeleccion", "Asientos")';
+
+
+
 
 
         seleccionados.forEach(id => {

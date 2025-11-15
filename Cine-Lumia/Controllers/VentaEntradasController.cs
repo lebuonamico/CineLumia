@@ -4,29 +4,30 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
+
 namespace Cine_Lumia.Controllers
 {
     [Authorize]
     public class VentaEntradasController : Controller
     {
         private readonly CineDbContext _context;
-        public VentaEntradasController(CineDbContext context)
+        public VentaEntradasController(CineDbContext context) => _context = context;
+
+        [HttpGet]
+        public async Task<IActionResult> Index()
         {
-            _context = context;
-        }
-        [Authorize]
-        [Authorize]
-        public async Task<IActionResult> Index(int idProyeccion)
-        {
+            if (!TempData.ContainsKey("IdProyeccionSeleccionado"))
+                return RedirectToAction("Index", "Funciones");
+
+            int idProyeccion = (int)TempData["IdProyeccionSeleccionado"];
+
             var proyeccion = await _context.Proyecciones
-                .Include(p => p.Sala)
-                    .ThenInclude(s => s.Formato)
+                .Include(p => p.Sala).ThenInclude(s => s.Formato)
                 .Include(p => p.Pelicula)
                 .Include(p => p.Sala.Cine)
                 .FirstOrDefaultAsync(p => p.Id_Proyeccion == idProyeccion);
 
-            if (proyeccion == null)
-                return NotFound();
+            if (proyeccion == null) return NotFound();
 
             var tiposEntrada = await _context.TipoEntrada
                 .Where(t => t.Id_Formato == proyeccion.Sala.Id_Formato)
@@ -44,46 +45,50 @@ namespace Cine_Lumia.Controllers
                 AsientosDisponibles = asientosDisponibles
             };
 
-            // ✅ Caso 1: si viene desde Funciones → limpiar TempData y dejar 1 entrada ya calculada
-            if (TempData.ContainsKey("DesdeFunciones"))
-            {
-                TempData.Remove("DesdeFunciones");
+            // --- Lógica de inicialización ---
+            bool desdeFunciones = TempData.ContainsKey("DesdeFunciones");
 
+            if (desdeFunciones)
+            {
+                // Inicializamos siempre en 1 si viene de funciones
                 var tipo = tiposEntrada.First();
-                int cantidad = 1;
-                decimal total = tipo.Precio;
+                vm.Total = tipo.Precio;
+                vm.CantidadesSeleccionadas = new Dictionary<int, int> { { tipo.Id_TipoEntrada, 1 } };
 
-                vm.Total = total;
-                vm.CantidadesSeleccionadas = new Dictionary<int, int> { { tipo.Id_TipoEntrada, cantidad } };
-
-                // Guardamos también en TempData para que el JS los lea correctamente
-                TempData["CantidadEntradas"] = cantidad;
-                TempData["TotalCompra"] = total.ToString(CultureInfo.InvariantCulture);
-                TempData["FormatoEntrada"] = tipo.Formato.Nombre;
-
-                ViewBag.CantidadEntradas = cantidad;
-                ViewBag.TotalCompra = total;
-                ViewBag.FormatoEntrada = tipo.Formato.Nombre;
+                // Limpiamos todos los valores previos que podrían existir
+                TempData.Remove("CantidadEntradas");
+                TempData.Remove("TotalCompra");
+                TempData.Remove("FormatoEntrada");
+                TempData.Remove("DesdeFunciones"); // eliminamos la bandera para futuras visitas
             }
-            // ✅ Caso 2: si viene de volver desde Selección de Asiento → restaurar valores guardados
-            else if (TempData.ContainsKey("CantidadEntradas"))
+            else if (TempData.ContainsKey("CantidadEntradas") && TempData.ContainsKey("TotalCompra"))
             {
-                int cantidad = int.Parse(TempData["CantidadEntradas"].ToString()!);
-                decimal total = decimal.Parse(TempData["TotalCompra"].ToString()!, CultureInfo.InvariantCulture);
-                string formato = TempData["FormatoEntrada"].ToString()!;
-
-                vm.Total = total;
-                vm.CantidadesSeleccionadas = new Dictionary<int, int> { { tiposEntrada.First().Id_TipoEntrada, cantidad } };
-
-                ViewBag.CantidadEntradas = cantidad;
-                ViewBag.TotalCompra = total;
-                ViewBag.FormatoEntrada = formato;
-
-                TempData.Keep();
+                // Viene de Selección de Asientos o regreso a VentaEntradas → conservamos los valores
+                vm.Total = decimal.Parse(TempData["TotalCompra"].ToString()!, CultureInfo.InvariantCulture);
+                vm.CantidadesSeleccionadas = new Dictionary<int, int>
+        {
+            { tiposEntrada.First().Id_TipoEntrada, int.Parse(TempData["CantidadEntradas"].ToString()!) }
+        };
+            }
+            else
+            {
+                // Fallback: inicializamos en 1
+                var tipo = tiposEntrada.First();
+                vm.Total = tipo.Precio;
+                vm.CantidadesSeleccionadas = new Dictionary<int, int> { { tipo.Id_TipoEntrada, 1 } };
             }
 
+            // Pasamos los valores al JS mediante ViewBag
+            ViewBag.CantidadEntradas = vm.CantidadesSeleccionadas.First().Value;
+            ViewBag.TotalCompra = vm.Total;
+            ViewBag.FormatoEntrada = tiposEntrada.First().Formato.Nombre;
+
+            TempData.Keep();
             return View(vm);
         }
+
+
+
 
 
         [HttpPost]
@@ -92,84 +97,50 @@ namespace Cine_Lumia.Controllers
             TempData["CantidadEntradas"] = cantidadEntradas;
             TempData["TotalCompra"] = totalCompra.ToString(CultureInfo.InvariantCulture);
             TempData["FormatoEntrada"] = formatoEntrada;
-
-            // redirige a Index GET limpio (sin datos en URL)
-            return RedirectToAction("Index", new { idProyeccion });
+            TempData.Keep();
+            return RedirectToAction("Index");
         }
+
         [HttpPost]
         public IActionResult DesdeFunciones(int idProyeccion, string fechaSeleccionada, string horaSeleccionada)
         {
             TempData["DesdeFunciones"] = true;
             TempData["FechaSeleccionada"] = fechaSeleccionada;
             TempData["HoraSeleccionada"] = horaSeleccionada;
+            TempData.Keep();
 
-            // 🔒 Si no está autenticado, ir al login y luego volver a la venta
             if (!User.Identity.IsAuthenticated)
             {
                 var returnUrl = Url.Action("Index", "VentaEntradas", new { idProyeccion });
                 return RedirectToAction("Login", "Account", new { returnUrl });
             }
 
-            // ✅ Si ya está logeado, ir directo a la venta
-            return RedirectToAction("Index", new { idProyeccion });
+            return RedirectToAction("Index");
         }
 
-
-
         [HttpPost]
-        [HttpPost]
-        public IActionResult VolverAFunciones(
-    int idProyeccion,
-    int cantidadEntradas,
-    decimal totalCompra,
-    string formatoEntrada,
-    string fechaSeleccionada,
-    string horaSeleccionada)
+        public IActionResult VolverAFunciones(int idProyeccion, int cantidadEntradas, decimal totalCompra, string formatoEntrada, string fechaSeleccionada, string horaSeleccionada)
         {
-            // ✅ Guardar datos de la compra
-            TempData["CantidadEntradas"] = cantidadEntradas;
+            TempData["IdProyeccionSeleccionado"] = idProyeccion;
+            TempData["CantidadEntradas"] = 1;
             TempData["TotalCompra"] = totalCompra.ToString(CultureInfo.InvariantCulture);
             TempData["FormatoEntrada"] = formatoEntrada;
-
-            // ✅ Guardar datos de navegación
             TempData["DesdeVentaEntradas"] = true;
             TempData["FechaSeleccionada"] = fechaSeleccionada;
             TempData["HoraSeleccionada"] = horaSeleccionada;
 
             var proyeccion = _context.Proyecciones
-                .Include(p => p.Sala)
-                .ThenInclude(s => s.Formato)
+                .Include(p => p.Sala).ThenInclude(s => s.Formato)
                 .FirstOrDefault(p => p.Id_Proyeccion == idProyeccion);
 
-            if (proyeccion == null)
-                return NotFound();
+            if (proyeccion == null) return NotFound();
 
             TempData["CineId"] = proyeccion.Sala.Id_Cine;
             TempData["PeliculaId"] = proyeccion.Id_Pelicula;
             TempData["SalaSeleccionada"] = "Sala " + proyeccion.Sala.Formato.Nombre;
 
-            // 🔹 Volvemos a Funciones sin pasar valores por URL
-            return RedirectToAction("VolverDesdeVentaEntradas", "Funciones");
-        }
-
-
-
-        [HttpGet]
-        public IActionResult VolverDesdeVentaEntradas()
-        {
-            if (!TempData.ContainsKey("CineId") || !TempData.ContainsKey("PeliculaId"))
-                return RedirectToAction("Index", "Home");
-
-            int cineId = Convert.ToInt32(TempData["CineId"]);
-            int peliculaId = Convert.ToInt32(TempData["PeliculaId"]);
-
-            TempData["DesdeVentaEntradas"] = true;
-
-            // Mantener valores en TempData y redirigir a Funciones para que consuma TempData sin exponer query string
             TempData.Keep();
             return RedirectToAction("VolverDesdeVentaEntradas", "Funciones");
         }
-
-
     }
 }

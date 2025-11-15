@@ -178,7 +178,7 @@ namespace Cine_Lumia.Data
             // =====================
             // ESPECTADORES
             // =====================
-            var espect1 = new Espectador { Nombre = "Juan", Apellido = "Perez",Telefono="1155485654",Dni = "40123123", Email = "espectador1@example.com", Password = "password123" };
+            var espect1 = new Espectador { Nombre = "Juan", Apellido = "Perez", Telefono = "1155485654", Dni = "40123123", Email = "espectador1@example.com", Password = "password123" };
             var espect2 = new Espectador { Nombre = "Maria", Apellido = "Gomez", Telefono = "1155485654", Dni = "39222444", Email = "espectador2@example.com", Password = "password123" };
             var espect3 = new Espectador { Nombre = "Pedro", Apellido = "Rodriguez", Telefono = "1155485654", Dni = "41555777", Email = "espectador3@example.com", Password = "password123" };
             context.Espectadores.AddRange(espect1, espect2, espect3);

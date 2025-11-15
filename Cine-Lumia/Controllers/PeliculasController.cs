@@ -1,10 +1,6 @@
-using Microsoft.AspNetCore.Mvc;
-using Cine_Lumia.Models;  
-using Cine_Lumia.Entities;
+using Cine_Lumia.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 
 namespace Cine_Lumia.Controllers
 {
@@ -23,7 +19,7 @@ namespace Cine_Lumia.Controllers
                 .Include(p => p.PeliculaGeneros)
                 .ThenInclude(pg => pg.Genero)
                 .ToListAsync();
-             
+
             //var peliculas = _context.Peliculas.ToList();
             return View(peliculas);
         }
@@ -31,6 +27,7 @@ namespace Cine_Lumia.Controllers
         [HttpPost]
         public IActionResult VerFunciones(int peliculaId, int? cineId)
         {
+            TempData.Clear();
             int cineSeleccionadoId = -1;
 
             // Si se envía cineId en el POST lo usamos (viene desde localStorage inyectado en el form)

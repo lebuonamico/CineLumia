@@ -10,6 +10,7 @@ namespace Cine_Lumia.Models.ViewModel
         public string FormatoEntrada { get; set; } = null!;
         public decimal TotalCompra { get; set; }
         public decimal CargoServicioEntradas { get; set; } = 1600m; // valor fijo, ajustable
+        public PagoViewModel PagoData { get; set; } = new PagoViewModel();
     }
 }
 

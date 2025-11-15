@@ -16,7 +16,6 @@
         gap: 40px;
     }
 
-    /* ---- IZQUIERDA ---- */
     .left {
         flex: 1;
     }
@@ -55,11 +54,6 @@
             color: #ccc;
         }
 
-    .entrada-precio {
-        font-weight: 700;
-        color: #ff253c;
-    }
-
     .entrada-cantidad {
         display: flex;
         align-items: center;
@@ -88,7 +82,6 @@
             font-weight: 600;
         }
 
-    /* ---- DERECHA ---- */
     .right {
         width: 360px;
         background: #141414;
@@ -167,15 +160,11 @@
             background: #ff253c;
             color: #fff;
         }
-
-
 </style>
 
 <div class="container-resumen">
-    <!-- IZQUIERDA -->
     <div class="left">
         <div class="section-title">ELEGÍ LAS ENTRADAS</div>
-
         @foreach (var tipo in Model.TiposEntrada)
         {
             <div class="entrada-card" data-id="@tipo.Id_TipoEntrada" data-precio="@tipo.Precio">
@@ -190,13 +179,10 @@
                 </div>
             </div>
         }
-
     </div>
 
-    <!-- DERECHA -->
     <div class="right">
         <div class="resumen-titulo">RESUMEN</div>
-
         <div class="pelicula-info">
             <img src="@Model.Proyeccion.Pelicula.PosterUrl" />
             <div>
@@ -220,8 +206,6 @@
 
         <button class="btn-continuar" id="btnContinuar" disabled>Continuar</button>
         <button class="btn-volver" id="btnVolver">Volver</button>
-
-
     </div>
 </div>
 
@@ -232,11 +216,10 @@
     const maxEntradas = @Model.AsientosDisponibles;
     const minEntradas = 1;
 
-    // --- Restaurar valores guardados desde ViewBag o TempData ---
-    const cantidadGuardada = parseInt("@(ViewBag.CantidadEntradas ?? 1)") || 1;
-    const totalGuardado = parseFloat("@(ViewBag.TotalCompra ?? 0)") || 0;
+    // --- Restaurar valores guardados desde ViewBag ---
+    const cantidadGuardada = parseInt("@(ViewBag.CantidadEntradas ?? 1)");
+    const totalGuardado = parseFloat("@(ViewBag.TotalCompra ?? 0)");
     const formatoGuardado = "@(ViewBag.FormatoEntrada ?? "")";
-
 
     function calcularTotal() {
         let total = 0;
@@ -245,9 +228,7 @@
         cards.forEach(card => {
             const precio = parseFloat(card.dataset.precio);
             const cantidad = parseInt(card.querySelector('.cantidad').innerText);
-            if (cantidad > 0) {
-                formato = card.querySelector('.entrada-info h4').innerText; // nombre del formato
-            }
+            if (cantidad > 0) formato = card.querySelector('.entrada-info h4').innerText;
             total += precio * cantidad;
             totalEntradas += cantidad;
         });
@@ -256,7 +237,7 @@
         return { totalEntradas, total, formato };
     }
 
-    // Inicializamos los listeners de suma y resta
+    // Listeners de suma y resta
     cards.forEach(card => {
         const btnSumar = card.querySelector('.btn-sumar');
         const btnRestar = card.querySelector('.btn-restar');
@@ -267,18 +248,7 @@
             if (totalEntradas < maxEntradas) {
                 cantidadSpan.innerText = parseInt(cantidadSpan.innerText) + 1;
                 calcularTotal();
-            } else {
-                Swal.fire({
-                    icon: 'warning',
-                    title: '¡Casi completo!',
-                    text: 'No hay más asientos disponibles para esta función.',
-                    confirmButtonText: 'Entendido',
-                    background: '#111',
-                    color: '#fff',
-                    confirmButtonColor: '#e50914',
-                    iconColor: '#e50914'
-                });
-            }
+            } else Swal.fire({ icon: 'warning', title: '¡Casi completo!', text: 'No hay más asientos disponibles para esta función.', confirmButtonText: 'Entendido', background: '#111', color: '#fff', confirmButtonColor: '#e50914', iconColor: '#e50914' });
         });
 
         btnRestar.addEventListener('click', () => {
@@ -286,68 +256,44 @@
             if (valor > minEntradas) {
                 cantidadSpan.innerText = valor - 1;
                 calcularTotal();
-            } else {
-                Swal.fire({
-                    icon: 'info',
-                    title: 'Cantidad mínima alcanzada',
-                    text: 'Debes seleccionar al menos una entrada.',
-                    confirmButtonText: 'Entendido',
-                    background: '#111',
-                    color: '#fff',
-                    confirmButtonColor: '#e50914',
-                    iconColor: '#e50914'
-                });
-            }
+            } else Swal.fire({ icon: 'info', title: 'Cantidad mínima alcanzada', text: 'Debes seleccionar al menos una entrada.', confirmButtonText: 'Entendido', background: '#111', color: '#fff', confirmButtonColor: '#e50914', iconColor: '#e50914' });
         });
     });
 
-    // --- Inicialización: mostrar cantidad guardada o 1 y total correcto ---
+    // Inicializar al cargar
     window.addEventListener("load", () => {
         const primeraCard = document.querySelector('.entrada-card');
         if (primeraCard) {
             const cantidadSpan = primeraCard.querySelector('.cantidad');
             const precio = parseFloat(primeraCard.dataset.precio);
 
-            // Si hay una cantidad guardada desde TempData, usarla
-            if (cantidadGuardada > 0) {
-                cantidadSpan.innerText = cantidadGuardada;
-            } else {
-                cantidadSpan.innerText = 1;
-            }
-
-            // Mostrar total inicial
-            let totalInicial = totalGuardado > 0 ? totalGuardado : precio * parseInt(cantidadSpan.innerText);
+            cantidadSpan.innerText = cantidadGuardada > 0 ? cantidadGuardada : 1;
+            const totalInicial = totalGuardado > 0 ? totalGuardado : precio * parseInt(cantidadSpan.innerText);
             totalSpan.textContent = totalInicial.toLocaleString('es-AR');
-            btnContinuar.disabled = false;
+            btnContinuar.disabled = totalInicial === 0;
         }
-
-        // Calcular total final para sincronizar
         calcularTotal();
     });
 
     // --- Continuar ---
     btnContinuar.addEventListener('click', () => {
         const { totalEntradas, total, formato } = calcularTotal();
-
-        // Guardamos datos en TempData mediante POST, sin mostrar nada en la URL
         const form = document.createElement('form');
         form.method = "post";
         form.action = "/Asientos/Index";
-
         form.innerHTML = `
             <input type="hidden" name="idProyeccion" value="@Model.Proyeccion.Id_Proyeccion" />
             <input type="hidden" name="cantidadEntradas" value="${totalEntradas}" />
             <input type="hidden" name="totalCompra" value="${total}" />
             <input type="hidden" name="formatoEntrada" value="${formato}" />
         `;
-
         document.body.appendChild(form);
         form.submit();
     });
-        // --- Volver a Funciones ---
-        document.getElementById("btnVolver").addEventListener("click", () => {
-        const { totalEntradas, total, formato } = calcularTotal();
 
+    // --- Volver a Funciones ---
+    document.getElementById("btnVolver").addEventListener("click", () => {
+        const { totalEntradas, total, formato } = calcularTotal();
         const form = document.createElement("form");
         form.method = "post";
         form.action = "/VentaEntradas/VolverAFunciones";
@@ -362,15 +308,4 @@
         document.body.appendChild(form);
         form.submit();
     });
-
-
-    // Inicializar el total apenas carga
-    calcularTotal();
 </script>
-
-
-
-
-
-
-

@@ -151,16 +151,14 @@
 </style>
 
 <!-- BOTÓN VOLVER -->
-<a class="btn-volver-top"
-   href="@Url.Action("Seleccion", "Asientos", new { 
-       idProyeccion = Model.Proyeccion.Id_Proyeccion,
-       cantidadEntradas = Model.CantidadEntradas,
-       totalCompra = Model.TotalCompra,
-       formatoEntrada = Model.FormatoEntrada,
-       asientos = string.Join(",", Model.AsientosSeleccionados.Select(a => a.Id_Asiento))
-   })">
-    <i class="bi bi-arrow-left"></i> Volver
-</a>
+<form method="post" asp-action="VolverPago" asp-controller="ResumenCompra">
+    <button type="submit" class="btn-volver-top">
+        <i class="bi bi-arrow-left"></i> Volver
+    </button>
+</form>
+
+
+
 
 <div class="resumen-container">
     <div class="poster">
@@ -217,57 +215,57 @@
         </div>
 
         <form id="formCompra" method="post" asp-action="Confirmar" asp-controller="ResumenCompra">
-            <input type="hidden" name="IdProyeccion" value="@Model.Proyeccion.Id_Proyeccion" />
-            <input type="hidden" name="CantidadEntradas" value="@Model.CantidadEntradas" />
-            <input type="hidden" name="TotalCompra" value="@Model.TotalCompra" />
-            <input type="hidden" name="FormatoEntrada" value="@Model.FormatoEntrada" />
-            @foreach (var asiento in Model.AsientosSeleccionados)
-            {
-                <input type="hidden" name="AsientosSeleccionadosIds" value="@asiento.Id_Asiento" />
-            }
-            <button type="submit" class="btn-confirmar">CONFIRMAR COMPRA</button>
-        </form>
+    <input type="hidden" name="IdProyeccion" value="@Model.Proyeccion.Id_Proyeccion" />
+    <input type="hidden" name="CantidadEntradas" value="@Model.CantidadEntradas" />
+    <input type="hidden" name="TotalCompra" value="@Model.TotalCompra" />
+    <input type="hidden" name="FormatoEntrada" value="@Model.FormatoEntrada" />
+    @foreach (var asiento in Model.AsientosSeleccionados)
+    {
+        <input type="hidden" name="AsientosSeleccionadosIds" value="@asiento.Id_Asiento" />
+    }
+    <button type="submit" class="btn-confirmar">CONFIRMAR COMPRA</button>
+</form>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-    document.querySelector('#formCompra').addEventListener('submit', async function (e) {
-        e.preventDefault();
+document.querySelector('#formCompra').addEventListener('submit', async function (e) {
+    e.preventDefault();
 
-        const form = e.target;
+    const form = e.target;
 
-        const response = await fetch(form.action, {
-            method: 'POST',
-            body: new FormData(form)
-        });
-
-        if (response.ok) {
-            Swal.fire({
-                icon: 'success',
-                title: '¡Compra confirmada!',
-                text: 'Tu compra fue procesada correctamente. Te enviamos el detalle a tu correo.',
-                confirmButtonText: 'Ir al inicio',
-                confirmButtonColor: '#e50914',
-                background: '#111',
-                color: '#fff',
-                allowOutsideClick: false,
-                allowEscapeKey: false
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = '@Url.Action("Index", "Home")';
-                }
-            });
-        } else {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error al procesar la compra',
-                text: 'Hubo un problema al guardar tus entradas. Intenta nuevamente.',
-                confirmButtonColor: '#e50914',
-                background: '#111',
-                color: '#fff'
-            });
-        }
+    const response = await fetch(form.action, {
+        method: 'POST',
+        body: new FormData(form)
     });
+
+    if (response.ok) {
+        Swal.fire({
+            icon: 'success',
+            title: '¡Compra confirmada!',
+            text: 'Tu compra fue procesada correctamente. Te enviamos el detalle a tu correo.',
+            confirmButtonText: 'Ir al inicio',
+            confirmButtonColor: '#e50914',
+            background: '#111',
+            color: '#fff',
+            allowOutsideClick: false,
+            allowEscapeKey: false
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = '@Url.Action("Index", "Home")';
+            }
+        });
+    } else {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error al procesar la compra',
+            text: 'Hubo un problema al guardar tus entradas. Intenta nuevamente.',
+            confirmButtonColor: '#e50914',
+            background: '#111',
+            color: '#fff'
+        });
+    }
+});
 </script>

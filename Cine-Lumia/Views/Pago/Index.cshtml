@@ -1,0 +1,381 @@
+﻿@model Cine_Lumia.Models.ViewModel.PagoViewModel
+@using System.Globalization
+
+@{
+    ViewData["Title"] = "Método de Pago";
+
+    var posterUrl = TempData["PosterUrl"] as string ?? Url.Content("~/images/default-poster.png");
+    var peliculaNombre = TempData["PeliculaNombre"] as string ?? "Película";
+    var cineNombre = TempData["CineNombre"] as string ?? "Cine";
+    var salaTexto = TempData["SalaTexto"] as string ?? "Sala X";
+    var fechaHoraTexto = TempData["FechaHoraTexto"] as string ?? "";
+}
+
+<style>
+    body {
+        background: #0d0d0d;
+        color: #fff;
+        font-family: 'Segoe UI',sans-serif;
+    }
+
+    .page-wrapper {
+        display: flex;
+        justify-content: center;
+        gap: 40px;
+        max-width: 1200px;
+        margin: 60px auto;
+    }
+
+    /* Formulario */
+    .form-box {
+        flex: 1;
+        background: #141414;
+        padding: 35px;
+        border-radius: 16px;
+        box-shadow: 0 0 25px rgba(255,37,60,0.15);
+    }
+
+    .titulo-pago {
+        font-size: 2rem;
+        color: #ff253c;
+        margin-bottom: 25px;
+        text-align: center;
+    }
+
+    .form-group {
+        margin-bottom: 18px;
+    }
+
+    label {
+        font-weight: 600;
+        display: block;
+        margin-bottom: 6px;
+        color: #e5e5e5;
+    }
+
+    input[type="text"], input[type="tel"], select, .checkbox-row {
+        width: 100%;
+        padding: 12px;
+        background: #1b1b1b;
+        border: 1px solid #333;
+        border-radius: 8px;
+        color: #fff;
+    }
+
+    .hint {
+        font-size: 0.9rem;
+        color: #bbb;
+        margin-top: 6px;
+    }
+
+    .validation {
+        color: #ff6969;
+        font-size: 0.85rem;
+        margin-top: 6px;
+        display: block;
+    }
+
+    .btn-continuar {
+        margin-top: 25px;
+        width: 100%;
+        padding: 14px;
+        background: #ff253c;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.15rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: .25s;
+    }
+
+        .btn-continuar:hover {
+            background: #e81e34;
+        }
+
+    /* Resumen */
+    .resumen {
+        width: 360px;
+        background: #141414;
+        padding: 25px;
+        border-radius: 16px;
+        box-shadow: 0 0 25px rgba(255,37,60,0.15);
+        height: fit-content;
+    }
+
+    .resumen-titulo {
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin-bottom: 12px;
+        letter-spacing: 0.5px;
+    }
+
+    .resumen .poster {
+        width: 65px;
+        border-radius: 6px;
+    }
+
+    .detalle-item {
+        margin-bottom: 10px;
+        color: #ddd;
+    }
+
+        .detalle-item strong {
+            color: #ff253c;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+    hr.resumen-hr {
+        border-color: #ffffff25;
+        margin: 18px 0;
+        border-top: 1px solid rgba(255,255,255,0.09);
+    }
+
+    .butaca-chip {
+        background: #222;
+        padding: 4px 8px;
+        border-radius: 6px;
+        margin-right: 6px;
+        display: inline-block;
+        margin-bottom: 6px;
+    }
+
+    .total-box {
+        margin-top: 20px;
+        font-size: 1.3rem;
+        font-weight: 700;
+        text-align: right;
+        color: #fff;
+    }
+
+    /* Botón volver estilo selección de asiento */
+    .btn-volver-top {
+        position: fixed;
+        top: 90px;
+        left: 40px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(0, 0, 0, 0.75);
+        border: 1px solid #ff253c;
+        color: #ff253c;
+        font-weight: 600;
+        font-size: 1rem;
+        padding: 10px 22px;
+        border-radius: 40px;
+        cursor: pointer;
+        z-index: 1050;
+        transition: all 0.25s ease;
+        backdrop-filter: blur(6px);
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        text-decoration: none;
+    }
+
+        .btn-volver-top:hover {
+            background: #ff253c;
+            color: #fff;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255, 37, 60, 0.4);
+        }
+
+        .btn-volver-top i {
+            font-size: 1.2rem;
+        }
+
+    @@media (max-width:1000px) {
+        .page-wrapper
+
+    {
+        flex-direction: column;
+        padding: 20px;
+    }
+
+    .resumen {
+        width: 100%;
+    }
+
+    }
+</style>
+
+<!-- BOTÓN VOLVER -->
+<form method="post" asp-action="VolverSeleccion" asp-controller="Pago">
+    <button type="submit" class="btn-volver-top">
+        <i class="bi bi-arrow-left"></i> Volver
+    </button>
+</form>
+
+
+
+
+<div class="page-wrapper">
+
+    <!-- FORMULARIO -->
+    <div class="form-box">
+        <h2 class="titulo-pago">Datos de Pago</h2>
+
+        <form id="formPago" method="post" asp-action="ConfirmarSeleccion" asp-controller="Pago" novalidate>
+            <input type="hidden" name="idProyeccion" value="@Model.Proyeccion.Id_Proyeccion" />
+            @foreach (var asiento in Model.AsientosSeleccionados)
+            {
+                <input type="hidden" name="asientosSeleccionados" value="@asiento.Id_Asiento" />
+            }
+
+            <div asp-validation-summary="ModelOnly" class="validation"></div>
+
+            <div class="form-group">
+                <label for="Titular">Titular de la Tarjeta</label>
+                <input asp-for="Titular" id="Titular" type="text" placeholder="Nombre del titular" />
+                <span asp-validation-for="Titular" class="validation"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="DNI">DNI del Titular</label>
+                <input asp-for="DNI" id="DNI" type="text" maxlength="10" placeholder="12345678" />
+                <span asp-validation-for="DNI" class="validation"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="NumeroTarjeta">N° de tarjeta crédito o débito</label>
+                <input asp-for="NumeroTarjeta" id="NumeroTarjeta"
+                       type="tel" inputmode="numeric" maxlength="19"
+                       placeholder="XXXX XXXX XXXX XXXX" autocomplete="cc-number" />
+                <span class="hint">Ingresá solo números. Se formatea automáticamente.</span>
+                <span asp-validation-for="NumeroTarjeta" class="validation"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="Vencimiento">Fecha de vencimiento (MM/YY)</label>
+                <input asp-for="Vencimiento" id="Vencimiento"
+                       type="tel" inputmode="numeric" maxlength="5" placeholder="MM/YY" autocomplete="cc-exp" />
+                <span asp-validation-for="Vencimiento" class="validation"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="CVV">Código de seguridad</label>
+                <input asp-for="CVV" id="CVV" type="tel" inputmode="numeric" maxlength="4" placeholder="123" autocomplete="cc-csc" />
+                <span asp-validation-for="CVV" class="validation"></span>
+            </div>
+
+            <div class="form-group">
+                <label class="checkbox-row">
+                    <input type="checkbox" id="acepto" /> &nbsp;He leído y aceptado los Términos y Condiciones.
+                </label>
+                <div class="hint" style="margin-top:8px;">
+                    <a href="#" style="color:#ff909a; text-decoration:underline;">Términos y Condiciones</a>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-continuar" id="btnEnviar">CONTINUAR</button>
+        </form>
+    </div>
+
+    <!-- RESUMEN -->
+    <div class="resumen">
+        <div class="resumen-titulo">RESUMEN</div>
+
+        <div style="display:flex; gap:14px; align-items:center;">
+            <img src="@posterUrl" class="poster" />
+            <div>
+                <strong>@peliculaNombre</strong><br />
+                @Model.FormatoEntrada
+            </div>
+        </div>
+
+        <hr class="resumen-hr" />
+
+        <div class="detalle-item">
+            <strong>Cine, día y horario:</strong>
+            <div>@cineNombre</div>
+            <div>@salaTexto</div>
+            <div>@fechaHoraTexto</div>
+        </div>
+
+        <hr class="resumen-hr" />
+
+        <div class="detalle-item">
+            <strong>Entradas:</strong>
+            <div>@Model.CantidadEntradas · entrada @Model.FormatoEntrada</div>
+        </div>
+
+        <hr class="resumen-hr" />
+
+        <div class="detalle-item">
+            <strong>Butacas:</strong>
+            <div style="margin-top:8px;">
+                @foreach (var asiento in Model.AsientosSeleccionados)
+                {
+                    <span class="butaca-chip">@asiento.Fila @asiento.Columna</span>
+                }
+            </div>
+        </div>
+
+        <hr class="resumen-hr" />
+
+        <div class="total-box">
+            Total: $@Model.TotalCompra.ToString("N0", CultureInfo.InvariantCulture)
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function justDigits(str) {
+            return (str || '').replace(/\D/g, '');
+        }
+
+        const numeroInput = document.getElementById('NumeroTarjeta');
+        numeroInput?.addEventListener('input', function () {
+            const digits = justDigits(this.value).slice(0, 19);
+            let formatted = digits.match(/.{1,4}/g);
+            this.value = formatted ? formatted.join(' ') : '';
+        });
+
+        const vencInput = document.getElementById('Vencimiento');
+        vencInput?.addEventListener('input', function () {
+            let v = justDigits(this.value).slice(0, 4);
+            this.value = v.length >= 3 ? v.slice(0,2)+'/'+v.slice(2) : v;
+        });
+
+        const cvvInput = document.getElementById('CVV');
+        cvvInput?.addEventListener('input', function () {
+            this.value = justDigits(this.value).slice(0,4);
+        });
+
+        document.getElementById('btnEnviar')?.addEventListener('click', function (e) {
+            if (!document.getElementById('acepto').checked) {
+                e.preventDefault();
+                alert('Debés aceptar los Términos y Condiciones.');
+                return false;
+            }
+
+            if (justDigits(numeroInput.value).length < 13) {
+                e.preventDefault();
+                alert('Ingresá un número de tarjeta válido.');
+                return false;
+            }
+
+            const venc = vencInput.value;
+            if (!/^\d{2}\/\d{2}$/.test(venc)) {
+                e.preventDefault();
+                alert('Ingresá vencimiento en formato MM/YY.');
+                return false;
+            }
+
+            const mes = parseInt(venc.split('/')[0], 10);
+            if (mes < 1 || mes > 12) {
+                e.preventDefault();
+                alert('Mes de vencimiento inválido.');
+                return false;
+            }
+
+            if (justDigits(cvvInput.value).length < 3) {
+                e.preventDefault();
+                alert('Ingresá un CVV válido.');
+                return false;
+            }
+        });
+    </script>
+}

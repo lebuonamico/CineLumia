@@ -43,7 +43,7 @@
                                         <div class="card-body d-flex flex-column">
                                             <h5 class="card-title snack-name">@item.Consumible.Nombre</h5>
                                             <p class="card-text flex-grow-1 snack-desc">@item.Consumible.Descripcion</p>
-                                            <p class="card-text"><strpng class="text-body-secondary">@item.Consumible.Precio.ToString("C")</strpng></p>
+                                            <p class="card-text"><strong class="text-body-secondary">@item.Consumible.Precio.ToString("C")</strong></p>
                                             <button class="btn btn-sm btn-danger mt-2 btn-agregar-carrito btn-lg" style="font-size:1.70rem!important"
                                                     data-snack="@item.Consumible.Nombre"
                                                     data-precio="@item.Consumible.Precio"
@@ -65,21 +65,18 @@
 </div>
 
 <button id="burbuja-carrito"
-        class="btn btn-info rounded-circle position-fixed bottom-0 end-0 m-4 shadow-lg"
+        class="btn btn-danger rounded-circle position-fixed bottom-0 end-0 m-4 shadow-lg"
         data-bs-toggle="offcanvas"
         data-bs-target="#CarritoOffcanvas"
-        aria-controls="CarritoOffcanvas"
-        style="width: 90px; height: 90px; font-size: 2.5rem; z-index: 1040;">
-    🍿
-    <span id="contador-carrito" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+        aria-controls="CarritoOffcanvas">Mi Compra 🍿<span id="contador-carrito" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning">
         0
     </span>
 </button>
 
 <div class="offcanvas offcanvas-end" tabindex="-1" id="CarritoOffcanvas" aria-labelledby="carritoLabel">
-    <div class="offcanvas-header bg-info text-white">
-        <h5 class="offcanvas-title btn-info" id="carritoLabel">🍿 Mi Compra</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
+    <div class="offcanvas-header bg-danger text-white">
+        <h5 class="offcanvas-title" id="carritoLabel">Mi Compra 🍿</h5>
+        <button type="button" class="btn-close btn-clos e-white" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
     </div>
     <div class="offcanvas-body">
 
@@ -94,10 +91,10 @@
             <hr>
             <div class="d-flex justify-content-between">
                 <strong>Total:</strong>
-                <strong id="total-precio" class="text-dark">$0.00</strong>
+                <strong id="total-precio" class="text-white">$0.00</strong>
             </div>
 
-            <button type="button" class="btn btn-outline-primary w-100 mt-3 btn-lg" data-bs-dismiss="offcanvas">
+            <button type="button" class="btn btn-outline-secondary w-100 mt-3 btn-lg" data-bs-dismiss="offcanvas">
                 Seguir Comprando
             </button>
 
@@ -128,7 +125,7 @@
             document.querySelectorAll('.btn-agregar-carrito').forEach(boton => {
                 boton.addEventListener('click', function() {
                     const snack = this.getAttribute('data-snack');
-                    const precio = parseFloat(this.getAttribute('data-precio'));
+                    const precio = parseFloat(this.getAttribute('data-precio').replace(',', '.'));
                     const stock = parseInt(this.getAttribute('data-stock'));
                     const cineId = parseInt(this.getAttribute('data-cine-id'));
                     const consumibleId = parseInt(this.getAttribute('data-consumible-id'));
@@ -312,7 +309,23 @@
         }
 
         function finalizarCompra() {
-            // ... (Tu función finalizarCompra con FETCH y lógica de C#/.NET)
+            var isAuthenticated = @User.Identity.IsAuthenticated.ToString().ToLower();
+            var hasCineSelectedInCart = carrito.length > 0 && carrito.every(item => item.cineId && item.cineId !== 0);
+
+            if (!isAuthenticated || !hasCineSelectedInCart) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Por favor Inicie Sesion',
+                    text: 'También seleccione su cine para Comprar',
+                    customClass: {
+                        popup: 'swal2-dark-popup',
+                        confirmButton: 'swal2-confirm-red'
+                    },
+                    confirmButtonText: 'Aceptar'
+                });
+                return; // Stop the function execution
+            }
+
             if (carrito.length === 0) {
                 alert('❌ El carrito está vacío.');
                 return;
@@ -363,12 +376,22 @@
                     }
 
                     if (todosExitosos) {
-                        alert('✅ Compra realizada con éxito!');
-                        carrito = [];
-                        actualizarCarrito();
-                        location.reload();
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Compra Exitosa',
+                            text: 'Que lo disfrute',
+                            customClass: {
+                                popup: 'swal2-dark-popup',
+                                confirmButton: 'swal2-confirm-red'
+                            },
+                            confirmButtonText: 'Aceptar'
+                        }).then(() => {
+                            carrito = [];
+                            actualizarCarrito();
+                            location.reload();
+                        });
                     } else {
-                        alert(mensaje);
+                        alert(mensaje); // Keep the regular alert for errors
                     }
                 })
                 .catch(() => {

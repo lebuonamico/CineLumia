@@ -1,8 +1,88 @@
+@model Cine_Lumia.Models.ViewModel.DarDeBajaViewModel
 @{
     ViewData["Title"] = "Dar de Baja la Cuenta";
 }
 
-<div class="text-center">
-    <h1 class="display-4 text-danger">@ViewData["Title"]</h1>
-    <p>Página en construcción. Aquí podrás iniciar el proceso para dar de baja tu cuenta.</p>
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h2 class="card-title text-center text-danger mb-3">¿Realmente quieres darte de baja?</h2>
+                <p class="card-text text-muted">
+                    Antes de proceder, queremos advertirte que una vez que borres tu cuenta, todos tus datos serán eliminados de nuestra base de datos. No podrás acceder de ninguna manera y para volver a tener la cuenta activa tendrás que enviar un mail a <a href="mailto:soportemail@clumia.com.ar">soportemail@clumia.com.ar</a> para reactivarla.
+                </p>
+                <p class="card-text text-muted">
+                    Sentimos que pienses en dejar la plataforma. Tómate tu tiempo para pensarlo, este paso es irreversible.
+                </p>
+                <p class="card-text text-right font-weight-bold mt-4">Atte. Grupo C.Lumia 2025.</p>
+
+                <hr class="my-4" />
+
+                <form asp-action="DarDeBaja" method="post" id="deleteAccountForm">
+                    <h5 class="mb-3">Deseamos mejorar, ¿por qué te vas?</h5>
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="motivos" value="fallas" id="motivoFallas">
+                            <label class="form-check-label" for="motivoFallas">
+                                Encontré fallas en la página
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="motivos" value="sin_interes" id="motivoInteres">
+                            <label class="form-check-label" for="motivoInteres">
+                                No tengo interés
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="motivos" value="mas_pago" id="motivoPago">
+                            <label class="form-check-label" for="motivoPago">
+                                Desearía que tuviera más opciones de pago
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="motivos" value="privacidad" id="motivoDatos">
+                            <label class="form-check-label" for="motivoDatos">
+                                No quiero que guarden mis datos
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="motivos" value="otro" id="motivoOtro" checked>
+                            <label class="form-check-label" for="motivoOtro">
+                                Otro
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <button type="button" class="btn btn-secondary" onclick="history.back()">Volver</button>
+                        <button type="submit" class="btn btn-danger">Borrar Cuenta</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.getElementById('deleteAccountForm').addEventListener('submit', function (event) {
+            event.preventDefault(); // Evita el envío inmediato del formulario
+
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: "Esta acción no se puede revertir. Se eliminará tu cuenta y todos tus datos asociados.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, borrar mi cuenta',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Si el usuario confirma, se envía el formulario
+                    this.submit();
+                }
+            });
+        });
+    </script>
+}

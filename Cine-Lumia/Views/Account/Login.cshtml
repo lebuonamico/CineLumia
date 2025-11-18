@@ -5,7 +5,7 @@
 }
 
 <div class="row justify-content-center">
-    <div class="col-md-6 col-lg-4">
+    <div class="col-md-6 col-lg-4 form-container-fixed-width">
         <div class="card mt-5">
             <div class="card-header text-center">
                 <h3 class="card-title">@ViewData["Title"]</h3>
@@ -18,7 +18,7 @@
                         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
                         <div class="mb-3">
-                            <label asp-for="LoginIdentifier" class="form-label">Correo Electrónico o Alias</label>
+                            <label asp-for="LoginIdentifier" class="form-label">Correo Electrónico</label>
                             <input asp-for="LoginIdentifier" class="form-control" />
                             <span asp-validation-for="LoginIdentifier" class="text-danger"></span>
                         </div>
@@ -39,9 +39,9 @@
                             <label class="form-check-label" asp-for="RememberMe">Recordarme</label>
                         </div>
 
-                        <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary w-100">Ingresar</button>
-                            <a asp-controller="Account" asp-action="Register" class="btn btn-danger w-100">Registrarme</a>
+                        <div class="d-flex gap-2 justify-content-start">
+                            <button type="submit" class="btn btn-primary" style="width: 440px;">Ingresar</button>
+                            <a asp-controller="Account" asp-action="Register" class="btn btn-danger">Registrarme</a>
                         </div>
 
                         <div class="text-center mt-3">

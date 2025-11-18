@@ -1,8 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@600&display=swap');
 
-html {
- font-size:14px;
-}
+@media (min-width:768px) {
+    html {
+        font-size: 1rem;
+        min-height: -webkit-fill-available !important;
+    }
 }
 
 /* Focus outlines */
@@ -13,12 +15,14 @@ html {
 html { position: relative; min-height:100%; }
 
 body {
- /* removed bottom margin to prevent footer overlap */
- margin-bottom:0;
- background-color: #000000; /* fondo negro */
- color: #ffffff; /* texto en blanco */
- font-family: 'Oswald', sans-serif; /* fuente Oswald */
- font-weight:600; /* peso600 */
+    /* removed bottom margin to prevent footer overlap */
+    display: flex; /*new*/
+    flex-direction: column; /*new*/
+    margin-bottom: 0;
+    background-color: #000000; /* fondo negro */
+    color: #ffffff; /* texto en blanco */
+    font-family: 'Oswald', sans-serif; /* fuente Oswald */
+    font-weight: 600; /* peso600 */
 }
 
 /* Navbar should match page background */
@@ -39,10 +43,10 @@ body {
  color: #ffffff; /* texto en blanco dentro de card */
  border:0;
 }
-.card .text-muted { color: #bdb6b0 !important; }
+.card .text-muted { color: #bdb6b0; }
 
 /* Footer text color (ensure links readable) */
-footer, .footer { color: #ffffff !important; }
+footer, .footer { color: #ffffff !important; min-height:auto; }
 footer a, .footer a { color: #ffffff !important; }
 
 .form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
@@ -123,4 +127,58 @@ footer a, .footer a { color: #ffffff !important; }
 
 .carousel-indicators .active {
     background-color: #ffffff !important;
+}
+
+/* Custom class for fixed width forms */
+.form-container-fixed-width {
+    margin-left: auto; /* Center the div */
+    margin-right: auto; /* Center the div */
+}
+
+/* Apply this only on larger screens, similar to col-lg-* behavior */
+@media (min-width: 992px) { /* Bootstrap's 'lg' breakpoint */
+    .form-container-fixed-width {
+        min-width: 650px; /* Changed from max-width to min-width */
+        width: auto; /* Allow it to grow beyond 650px if content needs, but at least 650px */
+    }
+}
+
+/* For smaller screens, let Bootstrap's col-md-6 take over */
+@media (max-width: 991.98px) { /* Before 'lg' breakpoint */
+    .form-container-fixed-width {
+        width: 100%; /* Ensure it doesn't break smaller layouts */
+        min-width: unset; /* Remove min-width constraint on smaller screens */
+    }
+}
+
+#snow {
+    pointer-events: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999;
+}
+
+.snowflake {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: white;
+    border-radius: 50%;
+    filter: blur(1px);
+    animation: snow-fall linear infinite;
+}
+
+#burbuja-carrito {
+    width: 302px !important;
+    height: 82px !important;
+    font-size: 2.5rem !important;
+    z-index: 1040 !important;
+    right: 9% !important;
+    color: white !important;
+    background-color: #d20000;
+    text-shadow: 2px 2px 5px #710000;
+    box-shadow: 2px 2px 2px 2px #ffffff !important;
 }

@@ -75,7 +75,7 @@
                                 @if (User.Identity.IsAuthenticated)
                                 {
                                     <i class="bi bi-person-square"></i>
-                                    <span>Hola, @(User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.GivenName)?.Value)</span>
+                                    <span>Hola @(User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.GivenName)?.Value)</span>
                                 }
                                 else
                                 {
@@ -86,11 +86,19 @@
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                                 @if (User.Identity.IsAuthenticated)
                                 {
-                                    <li><a class="dropdown-item" asp-controller="Account" asp-action="Profile">Ver Perfil</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Account" asp-action="Manage">Gestionar Cuenta</a></li>
-                                    <li><a class="dropdown-item" asp-controller="ComprasRealizadas" asp-action="Index">Compras Realizadas</a></li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Account" asp-action="Profile"><i class="bi bi-person-lines-fill"></i> Ver Perfil</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Account" asp-action="Manage"><i class="bi bi-gear-fill"></i> Gestionar Cuenta</a>
+                                    </li>
+                                    <li><a class="dropdown-item" asp-controller="ComprasRealizadas" asp-action="Index"><i class="bi bi-cart-fill"></i> Compras Realizadas</a></li>
                                     <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" asp-controller="Account" asp-action="Logout">Cerrar Sesión</a></li>
+                                    <li>
+                                        <form asp-controller="Account" asp-action="Logout" method="post">
+                                            <button type="submit" class="dropdown-item"><i class="bi bi-x-lg"></i> Cerrar Sesión</button>
+                                        </form>
+                                    </li>
                                 }
                                 else
                                 {
@@ -99,12 +107,13 @@
     <a class="dropdown-item"
        asp-controller="Account"
        asp-action="Login"
-       asp-route-returnUrl="@returnUrl">
-       Login
-    </a>
+                                           asp-route-returnUrl="@returnUrl">
+                                            <i class="bi bi-person-vcard-fill"></i> Iniciar sesion</a>
 </li>
 
-                                    <li><a class="dropdown-item" asp-controller="Account" asp-action="Register">Registrarse</a></li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Account" asp-action="Register"><i class="bi bi-person-bounding-box"></i> Registrarse</a>
+                                    </li>
                                 }
                             </ul>
                         </li>
@@ -237,6 +246,8 @@
                         confirmButton: 'swal2-confirm-red'
                     },
                     confirmButtonText: 'Aceptar'
+                }).then(() => {
+                    location.reload(); // Refresh the page
                 });
             } catch {
                 Swal.fire({
@@ -279,5 +290,73 @@
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- CODIGO NUEVO NIEVE-->
+    <div id="snow"></div>
+
+    <script>
+        let snowflakes_count = 50;
+
+        const spawnSnow = (density = 100) => {
+            const snowContainer = document.getElementById('snow');
+            snowContainer.innerHTML = '';
+
+            for (let i = 0; i < density; i++) {
+                const snowflake = document.createElement('div');
+                snowflake.className = "snowflake";
+
+                // Configuración individual para cada copo
+                const randomX = Math.random() * 100;
+                const randomOffset = (Math.random() * 20 - 10);
+                const randomXEnd = randomX + randomOffset;
+                const randomScale = Math.random() * 0.8 + 0.2;
+                const fallDuration = Math.random() * 20 + 10;
+                const fallDelay = Math.random() * 30 * -1;
+                const opacity = Math.random();
+
+                snowflake.style.opacity = opacity;
+                snowflake.style.transform = `translate(${randomX}vw, -10px) scale(${randomScale})`;
+                snowflake.style.animationDuration = `${fallDuration}s`;
+                snowflake.style.animationDelay = `${fallDelay}s`;
+
+                // Animación con requestAnimationFrame para evitar keyframes
+
+                animateSnowflake(snowflake, randomX, randomXEnd, randomScale, fallDuration);
+
+                snowContainer.appendChild(snowflake);
+            }
+        };
+
+        function animateSnowflake(snowflake, startX, endX, scale, duration) {
+            let startTime = null;
+
+            function animate(currentTime) {
+                if (!startTime) startTime = currentTime;
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / (duration * 1000), 1);
+
+                // Movimiento parabólico
+                const currentX = startX + (endX - startX) * progress;
+                const currentY = progress * 100;
+
+                snowflake.style.transform = `translate(${currentX}vw, ${currentY}vh) scale(${scale})`;
+
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    // Reiniciar animación
+                    snowflake.style.transform = `translate(${startX}vw, -10px) scale(${scale})`;
+                    startTime = null;
+                    requestAnimationFrame(animate);
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            spawnSnow(snowflakes_count);
+        });
+    </script>
+
 </body>
 </html>

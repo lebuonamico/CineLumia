@@ -13,13 +13,13 @@
         return path; // ya es /ruta o url absoluta
     };
 
-    // Usar los banners provistos por el controlador (Model.BannerUrls) � mostrar como m�ximo3
+    // Usar los banners provistos por el controlador (Model.BannerUrls)
     var banners = Model.BannerUrls ?? new List<string>();
     var bannerCount = Math.Min(3, banners.Count);
 }
 
 <style>
-    /* Asegurar que el carrusel es solo para su secci�n y que sus controles est�n dentro de �l */
+    /* Asegurar que el carrusel es solo para su seccion y que sus controles esten dentro de el */
     .carousel-wrapper { position: relative; margin-top: 0.5rem; margin-bottom: 1.5rem; z-index: 1; }
     #carouselBanner { position: relative; }
     #carouselBanner .carousel-control-prev, #carouselBanner .carousel-control-next { z-index: 1020; width: 4rem; }
@@ -34,16 +34,16 @@
 
 <div class="container">
     <!-- BANNERS / SLIDER (publicidad) -->
-    @if (bannerCount >0)
+    @if (bannerCount > 0)
     {
         <div class="carousel-wrapper">
             <div id="carouselBanner" class="carousel slide" data-bs-ride="carousel">
                 <div class="carousel-inner rounded shadow-sm">
-                    @for (int i =0; i < bannerCount; i++)
+                    @for (int i = 0; i < bannerCount; i++)
                     {
                         var src = banners[i];
-                        <div class="carousel-item @(i ==0 ? "active" : "")">
-                            <img src="@Url.Content(src)" onerror="this.onerror=null;this.src='@Url.Content("~/images/placeholder-movie.png")';" class="d-block w-100" alt="Banner @(i +1)" />
+                        <div class="carousel-item @(i == 0 ? "active" : "")">
+                            <img src="@Url.Content(src)" onerror="this.onerror=null;this.src='@Url.Content("~/images/placeholder-movie.png")';" class="d-block w-100" alt="Banner @(i + 1)" />
                         </div>
                     }
                 </div>
@@ -77,15 +77,15 @@
                             <!-- Genero - Duracion -->
                             <div class="movie-meta">@string.Join(", ", pelicula.PeliculaGeneros.Select(pg => pg.Genero.GeneroNombre)) - @pelicula.Duracion min</div>
 
-                            <!-- Salas disponibles para esta pel�cula (rellenado por JS) -->
+                            <!-- Salas disponibles para esta pelicula (rellenado por JS) -->
                             <div class="salas-list mt-2" data-pelicula-id="@pelicula.Id_Pelicula">&nbsp;</div>
 
                             <div class="mt-auto">
-                                <!-- Ahora usamos un bot�n que har� POST al servidor para que se use TempData y no se expongan par�metros manipulables -->
+                                <!-- Ahora usamos un boton que hara POST al servidor para que se use TempData y no se expongan parametros manipulables -->
                                 <form method="post" action="@Url.Action("VerFunciones", "Peliculas")" class="d-block ver-mas-form">
                                     <input type="hidden" name="peliculaId" value="@pelicula.Id_Pelicula" />
-                                    <!-- cineId se a�adir� desde JS tomando el valor de localStorage antes de enviar -->
-                                    <button type="submit" onclick="return handleVerMas(this.form);" class="btn btn-outline-primary w-100 ver-mas-btn" data-pelicula="@pelicula.Id_Pelicula">Ver m�s</button>
+                                    <!-- cineId se anadira desde JS tomando el valor de localStorage antes de enviar -->
+                                    <button type="submit" onclick="return handleVerMas(this.form);" class="btn btn-outline-primary w-100 ver-mas-btn" data-pelicula="@pelicula.Id_Pelicula">Ver más</button>
                                 </form>
                             </div>
                         </div>
@@ -100,14 +100,14 @@
     <script>
         var myCarousel = document.querySelector('#carouselBanner');
         if (myCarousel) {
-            var carousel = new bootstrap.Carousel(myCarousel, { interval:5000 });
+            var carousel = new bootstrap.Carousel(myCarousel, { interval: 5000 });
         }
 
         // Cache de salas por pelicula+cine para evitar llamadas repetidas
         var salasCache = {};
 
         function renderSalasForAll() {
-            document.querySelectorAll('.salas-list').forEach(function(el) {
+            document.querySelectorAll('.salas-list').forEach(function (el) {
                 var peliculaId = el.dataset.peliculaId;
                 renderSalas(peliculaId, el);
             });
@@ -127,43 +127,35 @@
             var url = '/Cines/SalasPorPelicula?peliculaId=' + encodeURIComponent(peliculaId);
             if (cineSeleccionado) url += '&cineId=' + encodeURIComponent(cineSeleccionado);
 
-            console.debug('Fetching salas for', peliculaId, 'url=', url);
             try {
                 var response = await fetch(url);
-                console.debug('Response status', response.status);
                 if (!response.ok) throw new Error('Network error');
                 var data = await response.json();
-                console.debug('Salas data', data);
 
-                // Normalize response keys (IdSala / idSala, Formato / formato)
-                data = (data || []).map(function(d) {
+                data = (data || []).map(function (d) {
                     return {
-                        IdSala: d.IdSala || d.idSala || d.idSala || 0,
-                        Formato: d.Formato || d.formato || d.formato || ''
+                        IdSala: d.IdSala || d.idSala || 0,
+                        Formato: d.Formato || d.formato || ''
                     };
                 });
 
-                // If filtering by cine returned empty, try fallback without cineId to show available formats
                 if ((data == null || data.length === 0) && cineSeleccionado) {
-                    console.debug('Filtered salas empty, fetching without cineId');
                     var fallbackUrl = '/Cines/SalasPorPelicula?peliculaId=' + encodeURIComponent(peliculaId);
                     var r2 = await fetch(fallbackUrl);
                     if (r2.ok) {
                         data = await r2.json();
-                        data = (data || []).map(function(d) {
+                        data = (data || []).map(function (d) {
                             return {
-                                IdSala: d.IdSala || d.idSala || d.idSala || 0,
-                                Formato: d.Formato || d.formato || d.formato || ''
+                                IdSala: d.IdSala || d.idSala || 0,
+                                Formato: d.Formato || d.formato || ''
                             };
                         });
-                        console.debug('Fallback salas data', data);
                     }
                 }
 
                 salasCache[cacheKey] = data || [];
                 buildBadges(salasCache[cacheKey], containerEl);
             } catch (e) {
-                console.warn('No se pudieron cargar las salas para pelicula', peliculaId, e);
                 containerEl.innerHTML = '<span class="text-muted small">Sin salas</span>';
             }
         }
@@ -174,17 +166,14 @@
                 return;
             }
             
-            // Extraer solo los nombres de los formatos
-            var formatos = salas.map(function(s) {
+            var formatos = salas.map(function (s) {
                 return s.Formato || s.formato || '';
             });
 
-            // Filtrar para obtener solo los formatos únicos y no vacíos
             var uniqueFormatos = [...new Set(formatos)].filter(f => f);
 
-            // Construir el HTML con los formatos únicos
             var html = '';
-            uniqueFormatos.forEach(function(formato) {
+            uniqueFormatos.forEach(function (formato) {
                 html += '<span class="badge-sala">' + escapeHtml(formato) + '</span>';
             });
 
@@ -192,7 +181,7 @@
         }
 
         function escapeHtml(unsafe) {
-            return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;").replace(/'/g, "&#039;");
+            return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         }
 
         function handleVerMas(form) {
@@ -218,17 +207,27 @@
             return false;
         }
 
-        (function() {
-            var serverError = '@(TempData["ErrorSeleccionCine"] ?? "")';
+        (function () {
+            var serverError = '@(TempData["ErrorSeleccionCine"] as string)';
             if (serverError && serverError.length > 0) {
-                Swal.fire({ icon: 'warning', title: 'Atenci�n', text: serverError });
+                Swal.fire({ icon: 'warning', title: 'Atención', text: serverError });
+            }
+
+            var successMessage = '@(TempData["SuccessMessage"] as string)';
+            if (successMessage && successMessage.length > 0) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Cuenta Eliminada',
+                    text: successMessage,
+                    confirmButtonText: 'Aceptar'
+                });
             }
         })();
 
-        document.addEventListener('DOMContentLoaded', function() { renderSalasForAll(); });
-        document.addEventListener('click', function(e) {
+        document.addEventListener('DOMContentLoaded', function () { renderSalasForAll(); });
+        document.addEventListener('click', function (e) {
             if (e.target && (e.target.id === 'btnSeleccionar' || e.target.closest('#btnSeleccionar'))) {
-                setTimeout(function() { renderSalasForAll(); }, 150);
+                setTimeout(function () { renderSalasForAll(); }, 150);
             }
         });
     </script>

@@ -1,5 +1,6 @@
 using Cine_Lumia.Entities;
 using Cine_Lumia.Models;
+using Cine_Lumia.Models.ViewModel;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -193,11 +194,6 @@ namespace Cine_Lumia.Controllers
             // Cierra la sesión y elimina la cookie de autenticación
             await HttpContext.SignOutAsync("LumiaCookieAuth");
 
-            // 🔒 Evita que el navegador almacene en caché las páginas protegidas
-            Response.Headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0";
-            Response.Headers["Pragma"] = "no-cache";
-            Response.Headers["Expires"] = "-1";
-
             // Redirige al Home (o podrías redirigir al Login si preferís)
             return RedirectToAction("Index", "Home");
         }
@@ -390,7 +386,46 @@ namespace Cine_Lumia.Controllers
         [Authorize]
         public IActionResult DarDeBaja()
         {
-            return View();
+            return View(new DarDeBajaViewModel());
+        }
+
+        [HttpPost, ActionName("DarDeBaja")]
+        [ValidateAntiForgeryToken]
+        [Authorize]
+        public async Task<IActionResult> DarDeBajaConfirmed(DarDeBajaViewModel model)
+        {
+            // Although the 'motivos' are not used in the logic, receiving the model is the correct approach.
+            // You could add logging here to save the feedback for analysis.
+            // For example: _logger.LogInformation("User '{Email}' is deleting their account for reasons: {Reasons}", user.Email, string.Join(", ", model.Motivos));
+
+            var user = GetCurrentUser();
+            if (user == null)
+            {
+                // Should not happen if user is authorized, but as a safeguard
+                return RedirectToAction("Login");
+            }
+
+            // 1. Find and remove related data
+            var entradas = _context.Entradas.Where(e => e.Id_Espectador == user.Id_Espectador);
+            _context.Entradas.RemoveRange(entradas);
+
+            var consumibles = _context.EspectadorConsumibles.Where(ec => ec.Id_Espectador == user.Id_Espectador);
+            _context.EspectadorConsumibles.RemoveRange(consumibles);
+
+            // 2. Remove the user
+            _context.Espectadores.Remove(user);
+
+            // 3. Save changes to the database
+            await _context.SaveChangesAsync();
+
+            // 4. Sign out the user
+            await HttpContext.SignOutAsync("LumiaCookieAuth");
+
+            // Optional: Add a success message to TempData to be displayed on the home page
+            TempData["SuccessMessage"] = "Tu cuenta ha sido eliminada exitosamente. Esperamos verte de nuevo.";
+
+            // 5. Redirect to home page
+            return RedirectToAction("Index", "Home");
         }
 
         [HttpGet]

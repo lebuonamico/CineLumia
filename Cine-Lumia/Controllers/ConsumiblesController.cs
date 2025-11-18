@@ -23,10 +23,31 @@ namespace Cine_Lumia.Controllers
         // ================================
         public IActionResult Index()
         {
-            var consumiblesPorCine = _context.CineConsumibles
-                .Include(cc => cc.Cine)
-                .Include(cc => cc.Consumible)
-                .ToList();
+            var selectedCineId = HttpContext.Session.GetInt32("CineSeleccionado");
+            List<CineConsumible> consumiblesPorCine;
+
+            if (!selectedCineId.HasValue)
+            {
+                var firstCine = _context.Cines.FirstOrDefault();
+                if (firstCine != null)
+                {
+                    selectedCineId = firstCine.Id_Cine;
+                    HttpContext.Session.SetInt32("CineSeleccionado", selectedCineId.Value);
+                }
+            }
+
+            if (selectedCineId.HasValue)
+            {
+                consumiblesPorCine = _context.CineConsumibles
+                    .Include(cc => cc.Cine)
+                    .Include(cc => cc.Consumible)
+                    .Where(cc => cc.Id_Cine == selectedCineId.Value)
+                    .ToList();
+            }
+            else
+            {
+                consumiblesPorCine = new List<CineConsumible>(); // Return empty list if no cine selected
+            }
 
             // Si hay un resumen de compra previo, lo pasamos a la vista
             ViewBag.ResumenCompra = TempData["ResumenCompra"];

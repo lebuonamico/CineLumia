@@ -1,11 +1,12 @@
-using Microsoft.AspNetCore.Mvc;
-using Cine_Lumia.Models;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims;
 using Cine_Lumia.Entities;
-using System.Linq;
- // This line needs to be added
+using Cine_Lumia.Models;
+using Cine_Lumia.Models.ViewModel;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
+using System.Text.Json;
+// This line needs to be added
 
 namespace Cine_Lumia.Controllers
 {
@@ -51,6 +52,7 @@ namespace Cine_Lumia.Controllers
 
             // Si hay un resumen de compra previo, lo pasamos a la vista
             ViewBag.ResumenCompra = TempData["ResumenCompra"];
+            ViewBag.Modo = "Normal";
 
             return View(consumiblesPorCine);
         }
@@ -138,6 +140,61 @@ namespace Cine_Lumia.Controllers
                 mensaje = $"✅ Compra realizada con éxito en {cine.Nombre}."
             });
         }
+        [HttpPost]
+        public IActionResult FinalizarSnacks()
+        {
+            TempData["SnacksOK"] = "1";  // Marca de que pasaste por snacks
+            TempData.Keep();
+
+            return RedirectToAction("Index", "Pago");
+        }
+        [HttpPost]
+        public IActionResult VolverAAsientos()
+        {
+            TempData.Keep(); // Mantiene asientos, entradas, total, etc.
+            return RedirectToAction("Seleccion", "Asientos");
+        }
+
+        [HttpGet]
+        public IActionResult EntradaSnaks()
+        {
+            TempData.Keep();
+            // Verificamos que venimos del flujo correcto
+            if (!TempData.ContainsKey("IdProyeccionSeleccionado"))
+                return RedirectToAction("Index", "Home");
+
+            int idProyeccion = int.Parse(TempData["IdProyeccionSeleccionado"].ToString());
+
+            var proyeccion = _context.Proyecciones
+                .Include(p => p.Sala).ThenInclude(s => s.Cine)
+                .FirstOrDefault(p => p.Id_Proyeccion == idProyeccion);
+
+            if (proyeccion == null)
+                return RedirectToAction("Index", "Home");
+
+            int cineId = proyeccion.Sala.Id_Cine;
+
+            var snacks = _context.CineConsumibles
+                .Include(cc => cc.Cine)
+                .Include(cc => cc.Consumible)
+                .Where(cc => cc.Id_Cine == cineId)
+                .ToList();
+
+            // Guardamos el cine por si el usuario vuelve
+            TempData["CineSnacks"] = cineId;
+            ViewBag.Modo = "Asientos";
+            TempData.Keep();
+            return View("Index", snacks);
+        }
+        [HttpPost]
+        public IActionResult GuardarCarrito([FromBody] List<CarritoItemViewModel> carrito)
+        {
+            if (carrito == null) return BadRequest();
+            HttpContext.Session.SetString("CarritoSnacks", JsonSerializer.Serialize(carrito));
+            return Ok();
+        }
+
+
 
         // =====================================
         // MÉTODO PRIVADO: GENERAR RESUMEN COMPRA

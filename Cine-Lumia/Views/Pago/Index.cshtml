@@ -1,5 +1,6 @@
 ﻿@model Cine_Lumia.Models.ViewModel.PagoViewModel
 @using System.Globalization
+@using Cine_Lumia.Models.ViewModel
 
 @{
     ViewData["Title"] = "Método de Pago";
@@ -12,6 +13,7 @@
 }
 
 <style>
+    /* ====== ESTILOS ====== */
     body {
         background: #0d0d0d;
         color: #fff;
@@ -21,41 +23,40 @@
     .page-wrapper {
         display: flex;
         justify-content: center;
-        gap: 40px;
+        gap: 20px; /* reducido de 40px */
         max-width: 1200px;
         margin: 60px auto;
     }
 
-    /* Formulario */
     .form-box {
         flex: 1;
         background: #141414;
-        padding: 35px;
+        padding: 20px; /* reducido de 35px */
         border-radius: 16px;
         box-shadow: 0 0 25px rgba(255,37,60,0.15);
     }
 
     .titulo-pago {
-        font-size: 2rem;
+        font-size: 1.5rem; /* reducido de 2rem */
         color: #ff253c;
-        margin-bottom: 25px;
+        margin-bottom: 15px; /* reducido de 25px */
         text-align: center;
     }
 
     .form-group {
-        margin-bottom: 18px;
+        margin-bottom: 10px; /* reducido de 18px */
     }
 
     label {
         font-weight: 600;
         display: block;
-        margin-bottom: 6px;
+        margin-bottom: 4px; /* reducido de 6px */
         color: #e5e5e5;
     }
 
     input[type="text"], input[type="tel"], select, .checkbox-row {
         width: 100%;
-        padding: 12px;
+        padding: 10px; /* reducido de 12px */
         background: #1b1b1b;
         border: 1px solid #333;
         border-radius: 8px;
@@ -63,93 +64,151 @@
     }
 
     .hint {
-        font-size: 0.9rem;
+        font-size: 0.85rem; /* ligeramente más pequeño */
         color: #bbb;
-        margin-top: 6px;
+        margin-top: 4px; /* reducido de 6px */
     }
 
     .validation {
         color: #ff6969;
-        font-size: 0.85rem;
-        margin-top: 6px;
+        font-size: 0.8rem; /* ligeramente más pequeño */
+        margin-top: 4px; /* reducido de 6px */
         display: block;
     }
 
     .btn-continuar {
-        margin-top: 25px;
+        margin-top: 15px; /* reducido de 25px */
         width: 100%;
-        padding: 14px;
+        padding: 10px; /* reducido de 14px */
         background: #ff253c;
         color: #fff;
         border: none;
         border-radius: 8px;
-        font-size: 1.15rem;
+        font-size: 1rem; /* reducido de 1.15rem */
         font-weight: 700;
         cursor: pointer;
         transition: .25s;
     }
 
-        .btn-continuar:hover {
-            background: #e81e34;
-        }
+    .btn-continuar:hover {
+        background: #e81e34;
+    }
 
-    /* Resumen */
     .resumen {
         width: 360px;
         background: #141414;
-        padding: 25px;
+        padding: 15px; /* reducido de 25px */
         border-radius: 16px;
         box-shadow: 0 0 25px rgba(255,37,60,0.15);
         height: fit-content;
     }
 
     .resumen-titulo {
-        font-size: 1.4rem;
+        font-size: 1.2rem; /* reducido de 1.4rem */
         font-weight: 700;
-        margin-bottom: 12px;
+        margin-bottom: 8px; /* reducido de 12px */
         letter-spacing: 0.5px;
     }
 
     .resumen .poster {
-        width: 65px;
+        width: 60px; /* ligeramente más pequeño */
         border-radius: 6px;
     }
 
     .detalle-item {
-        margin-bottom: 10px;
+        margin-bottom: 6px; /* reducido de 10px */
         color: #ddd;
     }
 
-        .detalle-item strong {
-            color: #ff253c;
-            display: block;
-            margin-bottom: 6px;
-        }
+    .detalle-item strong {
+        color: #ff253c;
+        display: block;
+        margin-bottom: 4px; /* reducido de 6px */
+    }
 
     hr.resumen-hr {
         border-color: #ffffff25;
-        margin: 18px 0;
+        margin: 10px 0; /* reducido de 18px */
         border-top: 1px solid rgba(255,255,255,0.09);
     }
 
     .butaca-chip {
         background: #222;
-        padding: 4px 8px;
+        padding: 3px 6px; /* reducido de 4px 8px */
         border-radius: 6px;
-        margin-right: 6px;
+        margin-right: 4px; /* reducido de 6px */
         display: inline-block;
-        margin-bottom: 6px;
+        margin-bottom: 3px; /* reducido de 6px */
     }
 
     .total-box {
-        margin-top: 20px;
-        font-size: 1.3rem;
+        margin-top: 15px; /* reducido de 20px */
+        font-size: 1.2rem; /* reducido de 1.3rem */
         font-weight: 700;
         text-align: right;
         color: #fff;
     }
 
-    /* Botón volver estilo selección de asiento */
+    .snacks-resumen {
+        margin-top: 10px; /* reducido de 15px */
+    }
+
+    .snacks-titulo {
+        font-weight: 700;
+        color: #ff253c;
+        margin-bottom: 6px; /* reducido de 8px */
+        display: block;
+    }
+
+    .snacks-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px; /* reducido de 12px */
+        max-height: 150px; /* reducido de 180px */
+        overflow-y: auto;
+        padding-right: 4px;
+    }
+
+    .snack-item {
+        display: flex;
+        align-items: center;
+        background: #1b1b1b;
+        padding: 8px; /* reducido de 10px */
+        border-radius: 10px;
+        gap: 8px; /* reducido de 12px */
+        transition: background 0.25s;
+    }
+
+    .snack-item:hover {
+        background: #222;
+    }
+
+    .snack-img {
+        width: 50px; /* reducido de 60px */
+        height: 50px; /* reducido de 60px */
+        object-fit: cover;
+        border-radius: 8px;
+        flex-shrink: 0;
+    }
+
+    .snack-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px; /* reducido de 3px */
+        color: #ddd;
+    }
+
+    .snack-nombre {
+        font-weight: 700;
+        color: #fff;
+    }
+
+    .snack-cantidad,
+    .snack-precio {
+        font-size: 0.85rem; /* ligeramente más pequeño */
+        color: #ccc;
+    }
+
     .btn-volver-top {
         position: fixed;
         top: 90px;
@@ -162,7 +221,7 @@
         color: #ff253c;
         font-weight: 600;
         font-size: 1rem;
-        padding: 10px 22px;
+        padding: 8px 18px; /* reducido de 10px 22px */
         border-radius: 40px;
         cursor: pointer;
         z-index: 1050;
@@ -172,29 +231,26 @@
         text-decoration: none;
     }
 
-        .btn-volver-top:hover {
-            background: #ff253c;
-            color: #fff;
-            transform: scale(1.05);
-            box-shadow: 0 0 20px rgba(255, 37, 60, 0.4);
-        }
+    .btn-volver-top:hover {
+        background: #ff253c;
+        color: #fff;
+        transform: scale(1.05);
+        box-shadow: 0 0 20px rgba(255, 37, 60, 0.4);
+    }
 
-        .btn-volver-top i {
-            font-size: 1.2rem;
-        }
+    .btn-volver-top i {
+        font-size: 1.1rem; /* ligeramente más pequeño */
+    }
 
     @@media (max-width:1000px) {
-        .page-wrapper
+        .page-wrapper {
+            flex-direction: column;
+            padding: 15px; /* reducido de 20px */
+        }
 
-    {
-        flex-direction: column;
-        padding: 20px;
-    }
-
-    .resumen {
-        width: 100%;
-    }
-
+        .resumen {
+            width: 100%;
+        }
     }
 </style>
 
@@ -204,9 +260,6 @@
         <i class="bi bi-arrow-left"></i> Volver
     </button>
 </form>
-
-
-
 
 <div class="page-wrapper">
 
@@ -261,7 +314,7 @@
                 <label class="checkbox-row">
                     <input type="checkbox" id="acepto" /> &nbsp;He leído y aceptado los Términos y Condiciones.
                 </label>
-                <div class="hint" style="margin-top:8px;">
+                <div class="hint" style="margin-top:6px;">
                     <a href="#" style="color:#ff909a; text-decoration:underline;">Términos y Condiciones</a>
                 </div>
             </div>
@@ -274,7 +327,7 @@
     <div class="resumen">
         <div class="resumen-titulo">RESUMEN</div>
 
-        <div style="display:flex; gap:14px; align-items:center;">
+        <div style="display:flex; gap:12px; align-items:center;">
             <img src="@posterUrl" class="poster" />
             <div>
                 <strong>@peliculaNombre</strong><br />
@@ -302,7 +355,7 @@
 
         <div class="detalle-item">
             <strong>Butacas:</strong>
-            <div style="margin-top:8px;">
+            <div style="margin-top:4px;">
                 @foreach (var asiento in Model.AsientosSeleccionados)
                 {
                     <span class="butaca-chip">@asiento.Fila @asiento.Columna</span>
@@ -310,13 +363,49 @@
             </div>
         </div>
 
+        @if (ViewBag.Snacks != null && ((List<CarritoItemViewModel>)ViewBag.Snacks).Count > 0)
+        {
+            <div class="snacks-resumen">
+                <strong class="snacks-titulo">Snacks:</strong>
+                <div class="snacks-list">
+                    @foreach (var snack in (List<CarritoItemViewModel>)ViewBag.Snacks)
+                    {
+                        <div class="snack-item">
+                            <img src="@snack.ImagenUrl" alt="@snack.Snack" class="snack-img" />
+                            <div class="snack-info">
+                                <span class="snack-nombre">@snack.Snack</span>
+                                <span class="snack-cantidad">Cantidad: @snack.Cantidad</span>
+                                <span class="snack-precio">$@snack.Precio</span>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; background:#1b1b1b; padding:8px 12px; border-radius:8px; margin-top:8px;">
+                    <div style="font-weight:700; color:#ff253c;">Cargo por servicio Candy</div>
+                    <div style="font-weight:700; color:#fff;">$@((ViewBag.CargoSnacks ?? 0).ToString("N0"))</div>
+                </div>
+            </div>
+        }
+
+        <div style="display:flex; justify-content:space-between; align-items:center; background:#1b1b1b; padding:8px 12px; border-radius:8px; margin-top:8px;">
+            <div style="font-weight:700; color:#ff253c;">Cargo por servicio entradas</div>
+            <div style="font-weight:700; color:#fff;">$@((ViewBag.CargoEntradas ?? 0).ToString("N0"))</div>
+        </div>
+
         <hr class="resumen-hr" />
 
         <div class="total-box">
-            Total: $@Model.TotalCompra.ToString("N0", CultureInfo.InvariantCulture)
+            @{
+                var total = Model.TotalCompra + (ViewBag.CargoEntradas ?? 0);
+                if (ViewBag.Snacks != null && ((List<CarritoItemViewModel>)ViewBag.Snacks).Count > 0)
+                {
+                    total += (ViewBag.CargoSnacks ?? 0);
+                }
+            }
+            Total: $@total.ToString("N0", CultureInfo.InvariantCulture)
         </div>
     </div>
-
 </div>
 
 @section Scripts {

@@ -22,7 +22,25 @@ namespace Cine_Lumia.Controllers
         [HttpGet]
         public IActionResult Index()
         {
-            TempData.Keep("PagoData");  // <<< NECESARIO PARA NO PERDER DATOS
+            TempData.Keep("PagoData");
+
+            var carritoJson = HttpContext.Session.GetString("CarritoSnacks");
+            List<CarritoItemViewModel> snacks = new();
+
+            if (!string.IsNullOrEmpty(carritoJson))
+            {
+                snacks = JsonSerializer.Deserialize<List<CarritoItemViewModel>>(carritoJson) ?? new List<CarritoItemViewModel>();
+
+                foreach (var snack in snacks)
+                {
+                    snack.ImagenUrl = _context.Consumibles
+                        .Where(c => c.Id_Consumible == snack.Id)
+                        .Select(c => c.PosterUrl)
+                        .FirstOrDefault() ?? "/images/snack_placeholder.png";
+                }
+            }
+
+            ViewBag.Snacks = snacks;
 
             if (TempData["IdProyeccion"] == null)
                 return RedirectToAction("Index", "Home");
@@ -38,7 +56,7 @@ namespace Cine_Lumia.Controllers
             if (proy == null)
                 return RedirectToAction("Index", "Home");
 
-            // Recuperar asientos seleccionados
+            // Obtener asientos seleccionados
             var idsAsientos = (TempData["Asientos"]?.ToString() ?? "")
                               .Split(',', StringSplitOptions.RemoveEmptyEntries)
                               .Select(int.Parse)
@@ -47,20 +65,6 @@ namespace Cine_Lumia.Controllers
             var asientosSeleccionados = _context.Asientos
                 .Where(a => idsAsientos.Contains(a.Id_Asiento))
                 .ToList();
-
-            // Armado fecha
-            var fecha = proy.Fecha;
-            var hora = proy.Hora.ToString(@"hh\:mm");
-            string textoFecha;
-
-            if (fecha.Date == DateTime.Today)
-                textoFecha = $"Hoy {fecha:dd/MM} · {hora}";
-            else
-            {
-                var diaSemana = fecha.ToString("dddd", new CultureInfo("es-AR"));
-                diaSemana = char.ToUpper(diaSemana[0]) + diaSemana.Substring(1);
-                textoFecha = $"{diaSemana} {fecha:dd/MM} · {hora}";
-            }
 
             // Crear VM
             var vm = new PagoViewModel
@@ -72,10 +76,19 @@ namespace Cine_Lumia.Controllers
                 FormatoEntrada = TempData["FormatoEntrada"]!.ToString()!
             };
 
-            // =================================================
-            //    RESTAURAR DATOS DEL FORMULARIO SI EXISTEN
-            // =================================================
+            // 🔥 CÁLCULOS DE CARGOS
+            decimal cargoEntradas = 1600; // ejemplo: cargo por servicio entradas
+            decimal cargoSnacks = 700;    // ejemplo: cargo por servicio snacks
+            decimal totalSnacks = snacks.Sum(s => s.Precio * s.Cantidad);
 
+            ViewBag.CargoEntradas = cargoEntradas;
+            ViewBag.CargoSnacks = cargoSnacks;
+            ViewBag.TotalSnacks = totalSnacks;
+
+            // Actualizamos TotalCompra incluyendo cargos
+            vm.TotalCompra += totalSnacks + cargoSnacks + cargoEntradas;
+
+            // Restaurar datos previos
             if (TempData.Peek("PagoData") is string pagoJson)
             {
                 var pagoTemp = JsonSerializer.Deserialize<PagoViewModel>(pagoJson);
@@ -89,25 +102,10 @@ namespace Cine_Lumia.Controllers
                 }
             }
 
-            TempData["PosterUrl"] = proy.Pelicula.PosterUrl;
-            TempData["PeliculaNombre"] = proy.Pelicula.Nombre;
-            TempData["CineNombre"] = proy.Sala.Cine.Nombre;
-            TempData["SalaTexto"] = "Sala " + proy.Sala.Id_Sala;
-            TempData["FechaHoraTexto"] = textoFecha;
-
-            // Mantener todo
             TempData.Keep();
-            TempData.Keep("IdProyeccion");
-            TempData.Keep("CantidadEntradas");
-            TempData.Keep("TotalCompra");
-            TempData.Keep("FormatoEntrada");
-            TempData.Keep("Asientos");
-            TempData.Keep("PagoData");
 
             return View(vm);
         }
-
-
 
         // ===========================================================
         //                  POST – CONFIRMAR PAGO
@@ -157,8 +155,6 @@ namespace Cine_Lumia.Controllers
 
             return View("~/Views/ResumenCompra/Index.cshtml", vm);
         }
-
-
 
         // ===========================================================
         //                 BOTÓN VOLVER (desde PAGO)

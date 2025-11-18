@@ -152,7 +152,7 @@ namespace Cine_Lumia.Controllers
             TempData.Keep("FormatoEntrada");
             TempData.Keep("Asientos");
             TempData.Keep("PagoData");
-            return RedirectToAction("Index", "Pago");
+            return RedirectToAction("EntradaSnaks", "Consumibles");
         }
 
         // ---------------------- VOLVER A VENTA DE ENTRADAS -------------------------

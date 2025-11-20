@@ -10,12 +10,15 @@ namespace Cine_Lumia.Models.ViewModel
 
     public class TicketPurchaseViewModel
     {
+        public int EntradaId { get; set; }
         public string PeliculaNombre { get; set; }
         public string Horario { get; set; }
         public string Asiento { get; set; }
         public string CineNombre { get; set; }
         public string CineDireccion { get; set; }
         public string ImagenUrl { get; set; } // Movie poster
+        public DateTime FechaCompra { get; set; }
+        public DateTime FechaHoraProyeccion { get; set; }
     }
 
     public class SnackPurchaseViewModel

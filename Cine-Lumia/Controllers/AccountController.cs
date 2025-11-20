@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
+using Microsoft.EntityFrameworkCore; // Added for FirstOrDefaultAsync
 
 namespace Cine_Lumia.Controllers
 {
@@ -433,6 +434,45 @@ namespace Cine_Lumia.Controllers
         public IActionResult PreguntasFrecuentes()
         {
             return View();
+        }
+
+        [HttpGet]
+        [Authorize]
+        public IActionResult CambioReembolso(int id)
+        {
+            ViewData["EntradaId"] = id;
+            return View();
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ProcesarCambioDeEntrada(int id)
+        {
+            var user = GetCurrentUser();
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
+            var entrada = await _context.Entradas.FirstOrDefaultAsync(e => e.Id_Entrada == id && e.Id_Espectador == user.Id_Espectador);
+
+            if (entrada == null)
+            {
+                return NotFound();
+            }
+
+            _context.Entradas.Remove(entrada);
+            var recordsAffected = await _context.SaveChangesAsync();
+
+            if (recordsAffected > 0)
+            {
+                return Json(new { success = true });
+            }
+            else
+            {
+                return Json(new { success = false, message = "La base de datos no confirmó la eliminación." });
+            }
         }
 
         // Internal class for password confirmation in DeleteAccountConfirmed action

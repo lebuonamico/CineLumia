@@ -1,0 +1,221 @@
+@{
+    ViewData["Title"] = "Solicitud de Cambio o Reembolso";
+    var entradaId = ViewData["EntradaId"];
+}
+
+<style>
+    .reembolso-container {
+        max-width: 700px;
+        margin: 40px auto;
+        padding: 30px;
+        background-color: #212529;
+        border-radius: 8px;
+        border: 1px solid #343a40;
+    }
+
+    .reembolso-header h2 {
+        color: #ffc107; /* Amarillo para destacar */
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .form-check-label {
+        font-size: 1.1rem;
+    }
+
+    .politica-box {
+        font-size: 0.9rem;
+        color: #adb5bd;
+        margin-top: 25px;
+        padding: 15px;
+        background-color: #343a40;
+        border-radius: 5px;
+    }
+
+        .politica-box p {
+            margin-bottom: 5px;
+        }
+
+    .btn-continuar {
+        background-color: #ffc107;
+        border-color: #ffc107;
+        color: #212529;
+        font-weight: bold;
+    }
+
+    .btn-continuar:disabled {
+        background-color: #6c757d;
+        border-color: #6c757d;
+    }
+
+</style>
+
+<div class="reembolso-container">
+    <div class="reembolso-header">
+        <h2><i class="bi bi-arrow-repeat"></i> Solicitud de Cambio o Reembolso</h2>
+    </div>
+
+    <p class="text-light">Estimado usuario, está a punto de iniciar un proceso importante. Por favor, seleccione la operación que desea realizar.</p>
+
+    <form id="formReembolso">
+        @Html.AntiForgeryToken()
+        <div class="my-4">
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="tipoOperacion" id="radioCambio" value="cambio" required>
+                <label class="form-check-label text-light" for="radioCambio">
+                    <strong>Cambio de Entradas:</strong> Solicitar un cambio de fecha, hora o asientos para la misma película (sujeto a disponibilidad).
+                </label>
+            </div>
+            <div class="form-check mt-2">
+                <input class="form-check-input" type="radio" name="tipoOperacion" id="radioReembolso" value="reembolso" required>
+                <label class="form-check-label text-light" for="radioReembolso">
+                    <strong>Reembolso Completo:</strong> Solicitar la devolución del importe total de la compra al método de pago original.
+                </label>
+            </div>
+        </div>
+
+        <div class="politica-box">
+            <p class="fw-bold">Política de Tratamiento de Datos y Condiciones del Proceso:</p>
+            <p>Al continuar, usted acepta que CineLumia utilice los datos de su compra (ID de entrada, fecha y película) exclusivamente para procesar esta solicitud. Este proceso es irreversible una vez confirmado. Los cambios están sujetos a la disponibilidad y los reembolsos pueden tardar hasta 72 horas hábiles en reflejarse en su cuenta.</p>
+        </div>
+
+        <div class="form-check mt-4">
+            <input class="form-check-input" type="checkbox" value="" id="checkAcuerdo" required>
+            <label class="form-check-label text-warning" for="checkAcuerdo">
+                Entiendo y acepto las condiciones. Reconozco que este es un proceso importante y definitivo.
+            </label>
+        </div>
+
+        <div class="text-center mt-4">
+            <button type="submit" id="btnContinuar" class="btn btn-continuar" disabled>Continuar</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const checkAcuerdo = document.getElementById('checkAcuerdo');
+        const btnContinuar = document.getElementById('btnContinuar');
+        const form = document.getElementById('formReembolso');
+        const entradaId = @Html.Raw(Json.Serialize(ViewData["EntradaId"]));
+
+        checkAcuerdo.addEventListener('change', function () {
+            btnContinuar.disabled = !this.checked;
+        });
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            try {
+                const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+                if (!tokenInput) {
+                    throw new Error("El token de seguridad no se encontró en el formulario.");
+                }
+                const token = tokenInput.value;
+
+                const operacion = document.querySelector('input[name="tipoOperacion"]:checked');
+                if (!operacion) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Por favor, seleccione si desea un cambio o un reembolso.',
+                        background: '#212529',
+                        color: '#fff'
+                    });
+                    return;
+                }
+
+                const tipoOperacion = operacion.value;
+                const fetchUrl = `@Url.Action("ProcesarCambioDeEntrada", "Account")/${entradaId}`;
+                const fetchOptions = {
+                    method: 'POST',
+                    headers: {
+                        'RequestVerificationToken': token
+                    }
+                };
+
+                if (tipoOperacion === 'reembolso') {
+                    fetch(fetchUrl, fetchOptions)
+                      .then(response => response.json())
+                      .then(data => {
+                          if (data.success) {
+                              Swal.fire({
+                                  title: 'Se ha devuelto su dinero',
+                                  icon: 'success',
+                                  background: '#212529',
+                                  color: '#fff',
+                                  confirmButtonText: 'Volver a Compras Realizadas',
+                                  confirmButtonColor: '#ffc107'
+                              }).then((result) => {
+                                  if (result.isConfirmed) {
+                                      window.location.href = '@Url.Action("Index", "ComprasRealizadas")';
+                                  }
+                              });
+                          } else {
+                              Swal.fire({
+                                  icon: 'error',
+                                  title: 'Error',
+                                  text: data.message || 'No se pudo procesar el reembolso. Inténtelo de nuevo.',
+                                  background: '#212529',
+                                  color: '#fff'
+                              });
+                          }
+                      }).catch(error => {
+                          Swal.fire({
+                              icon: 'error',
+                              title: 'Error de Conexión',
+                              text: 'Hubo un problema al conectar con el servidor.',
+                              background: '#212529',
+                              color: '#fff'
+                          });
+                      });
+                } else if (tipoOperacion === 'cambio') {
+                    fetch(fetchUrl, fetchOptions)
+                      .then(response => response.json())
+                      .then(data => {
+                          if (data.success) {
+                              Swal.fire({
+                                  title: 'Cambio de Entrada Exitoso',
+                                  text: 'Su entrada ha sido borrada, por favor elija una nueva película.',
+                                  icon: 'success',
+                                  background: '#212529',
+                                  color: '#fff',
+                                  confirmButtonText: 'Seleccionar nueva película',
+                                  confirmButtonColor: '#ffc107'
+                              }).then((result) => {
+                                  if (result.isConfirmed) {
+                                      window.location.href = '@Url.Action("Index", "Home")';
+                                  }
+                              });
+                          } else {
+                              Swal.fire({
+                                  icon: 'error',
+                                  title: 'Error',
+                                  text: data.message || 'No se pudo procesar el cambio. Inténtelo de nuevo.',
+                                  background: '#212529',
+                                  color: '#fff'
+                              });
+                          }
+                      }).catch(error => {
+                          Swal.fire({
+                              icon: 'error',
+                              title: 'Error de Conexión',
+                              text: 'Hubo un problema al conectar con el servidor.',
+                              background: '#212529',
+                              color: '#fff'
+                          });
+                      });
+                }
+            } catch (err) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de Página',
+                    text: err.message || 'Ocurrió un error inesperado al intentar procesar la solicitud.',
+                    background: '#212529',
+                    color: '#fff'
+                });
+            }
+        });
+    });
+</script>

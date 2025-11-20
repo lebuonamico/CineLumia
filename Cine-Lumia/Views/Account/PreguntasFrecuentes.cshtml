@@ -2,7 +2,152 @@
     ViewData["Title"] = "Preguntas Frecuentes";
 }
 
-<div class="text-center">
-    <h1 class="display-4">@ViewData["Title"]</h1>
-    <p>Página en construcción. Aquí encontrarás respuestas a preguntas frecuentes.</p>
+<style>
+    .faq-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+        .faq-header h1 {
+            font-size: 2.8rem;
+            font-weight: bold;
+            color: #ff253c; /* Color principal de la marca */
+        }
+
+        .faq-header p {
+            font-size: 1.2rem;
+            color: #adb5bd; /* Un gris claro que funciona bien en fondo oscuro */
+        }
+
+    .accordion-item {
+        background-color: #212529; /* Un poco más claro que el fondo para destacar */
+        border: 1px solid #343a40;
+        margin-bottom: 15px;
+        border-radius: .5rem;
+    }
+
+    .accordion-button {
+        color: #fff;
+        font-weight: 500;
+        background-color: #343a40;
+        border-radius: .5rem;
+    }
+
+        .accordion-button:not(.collapsed) {
+            color: #fff;
+            background-color: #ff253c;
+            box-shadow: none;
+        }
+
+        .accordion-button:focus {
+            box-shadow: 0 0 0 0.25rem rgba(255, 37, 60, 0.25);
+        }
+
+    .accordion-body {
+        color: #ced4da;
+        background-color: #212529;
+        border-bottom-left-radius: .5rem;
+        border-bottom-right-radius: .5rem;
+    }
+
+    .btn-volver {
+        background-color: #6c757d;
+        border-color: #6c757d;
+        color: white;
+        font-weight: bold;
+        padding: 10px 30px;
+        transition: background-color 0.3s, transform 0.3s;
+    }
+
+        .btn-volver:hover {
+            background-color: #5a6268;
+            transform: scale(1.05);
+        }
+</style>
+
+<div class="container mt-5">
+    <div class="faq-header">
+        <h1><i class="bi bi-question-circle-fill"></i> Preguntas Frecuentes</h1>
+        <p>¿Tienes dudas? Aquí encontrarás las respuestas a las consultas más comunes.</p>
+    </div>
+
+    <div class="accordion" id="faqAccordion">
+
+        <!-- Pregunta 1: Compra de Entradas -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                    ¿Cómo puedo comprar entradas?
+                </button>
+            </h2>
+            <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                    Es muy fácil. Primero, selecciona tu cine de preferencia en el menú "Seleccionar Cine". Luego, ve a la sección "Películas", elige la que quieras ver y busca la función que más te convenga. A partir de ahí, el sistema te guiará para seleccionar la cantidad de entradas, tus asientos en el mapa de la sala y, finalmente, te llevará a la pasarela de pago.
+                </div>
+            </div>
+        </div>
+
+        <!-- Pregunta 2: Snacks -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingTwo">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                    ¿Puedo comprar snacks por adelantado?
+                </button>
+            </h2>
+            <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                    ¡Claro que sí! Puedes añadir tus snacks favoritos a tu compra de entradas. Después de seleccionar tus asientos, el sistema te ofrecerá nuestra selección de combos y productos. También puedes visitar la sección "Snacks" en el menú principal para ver todo lo que ofrecemos.
+                </div>
+            </div>
+        </div>
+
+        <!-- Pregunta 3: Métodos de Pago -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingThree">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                    ¿Qué métodos de pago aceptan?
+                </button>
+            </h2>
+            <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                    Aceptamos las principales tarjetas de crédito y débito (Visa, MasterCard, American Express). Todo el proceso de pago es 100% seguro y está encriptado para proteger tus datos.
+                </div>
+            </div>
+        </div>
+
+        <!-- Pregunta 4: Ver Compras -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingFour">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                    ¿Dónde puedo ver mis compras realizadas?
+                </button>
+            </h2>
+            <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                    Si has iniciado sesión, puedes acceder a tu historial de compras desde el menú de tu cuenta (el icono de persona en la esquina superior derecha) y seleccionando la opción "Compras Realizadas". Allí encontrarás los detalles de todas tus transacciones, incluyendo un código QR para presentar en el cine.
+                </div>
+            </div>
+        </div>
+
+        <!-- Pregunta 5: Cancelaciones -->
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingFive">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
+                    ¿Puedo cancelar o cambiar mis entradas?
+                </button>
+            </h2>
+            <div id="collapseFive" class="accordion-collapse collapse" aria-labelledby="headingFive" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                    Actualmente, las compras realizadas a través de nuestra plataforma online son finales y no admiten cambios ni devoluciones. Te recomendamos revisar muy bien tu selección (película, horario, asientos) antes de confirmar el pago.
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="text-center mt-5">
+        <a href="javascript:history.back()" class="btn btn-volver">
+            <i class="bi bi-arrow-left-circle"></i> Volver
+        </a>
+    </div>
 </div>

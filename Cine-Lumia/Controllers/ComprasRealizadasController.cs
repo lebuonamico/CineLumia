@@ -31,25 +31,34 @@ namespace Cine_Lumia.Controllers
 
             var viewModel = new ComprasRealizadasViewModel();
 
-            // Fetch movie ticket purchases
-            var entradas = await _context.Entradas
+            var ticketData = await _context.Entradas
                 .Where(e => e.Id_Espectador == user.Id_Espectador)
-                .Include(e => e.Proyeccion)
-                    .ThenInclude(p => p.Pelicula)
-                .Include(e => e.Proyeccion)
-                    .ThenInclude(p => p.Sala)
-                        .ThenInclude(s => s.Cine) // Include Cine for address
-                .Include(e => e.Asiento)
+                .Select(e => new
+                {
+                    e.Id_Entrada,
+                    e.FechaCompra,
+                    PeliculaNombre = e.Proyeccion.Pelicula.Nombre,
+                    Horario = e.Proyeccion.Hora,
+                    FechaHoraProyeccion = e.Proyeccion.Fecha.Add(e.Proyeccion.Hora),
+                    AsientoFila = e.Asiento.Fila,
+                    AsientoColumna = e.Asiento.Columna,
+                    CineNombre = e.Proyeccion.Sala.Cine.Nombre,
+                    CineDireccion = e.Proyeccion.Sala.Cine.Direccion,
+                    ImagenUrl = e.Proyeccion.Pelicula.PosterUrl
+                })
                 .ToListAsync();
 
-            viewModel.Tickets = entradas.Select(e => new TicketPurchaseViewModel
+            viewModel.Tickets = ticketData.Select(t => new TicketPurchaseViewModel
             {
-                PeliculaNombre = e.Proyeccion.Pelicula.Nombre,
-                Horario = e.Proyeccion.Hora.ToString(@"hh\:mm"),
-                Asiento = e.Asiento.Fila + e.Asiento.Columna.ToString(),
-                CineNombre = e.Proyeccion.Sala.Cine.Nombre,
-                CineDireccion = e.Proyeccion.Sala.Cine.Direccion,
-                ImagenUrl = e.Proyeccion.Pelicula.PosterUrl
+                EntradaId = t.Id_Entrada,
+                PeliculaNombre = t.PeliculaNombre,
+                Horario = t.Horario.ToString(@"hh\:mm"),
+                Asiento = t.AsientoFila.ToString() + t.AsientoColumna.ToString(),
+                CineNombre = t.CineNombre,
+                CineDireccion = t.CineDireccion,
+                ImagenUrl = t.ImagenUrl,
+                FechaCompra = t.FechaCompra,
+                FechaHoraProyeccion = t.FechaHoraProyeccion
             }).ToList();
 
             // Fetch snack purchases
@@ -63,6 +72,16 @@ namespace Cine_Lumia.Controllers
                 ConsumibleNombre = ec.Consumible.Nombre,
                 Cantidad = ec.Cantidad
             }).ToList();
+
+            // Temporary code for demonstration if no snacks are found
+            if (!viewModel.Snacks.Any())
+            {
+                viewModel.Snacks.Add(new SnackPurchaseViewModel
+                {
+                    ConsumibleNombre = "Combo Amigos (Ejemplo)",
+                    Cantidad = 1
+                });
+            }
 
             return View(viewModel);
         }

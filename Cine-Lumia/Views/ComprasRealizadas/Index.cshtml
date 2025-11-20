@@ -23,14 +23,26 @@
                                 <div class="card-body">
                                     <h5 class="card-title">@ticket.PeliculaNombre</h5>
                                     <p class="card-text">
-                                        Horario: @ticket.Horario<br />
-                                        Asiento: @ticket.Asiento<br />
-                                        Cine: @ticket.CineNombre<br />
-                                        Dirección: @ticket.CineDireccion
+                                        <strong>Nombre de Película:</strong> @ticket.PeliculaNombre<br />
+                                        <strong>Cine Lugar:</strong> @ticket.CineNombre - @ticket.CineDireccion<br />
+                                        <strong>Asiento/s:</strong> @ticket.Asiento<br />
+                                        <strong>Día de Proyección:</strong> @ticket.FechaHoraProyeccion.ToString("dd/MM/yyyy")<br />
+                                        <strong>Horario:</strong> @ticket.FechaHoraProyeccion.ToString("HH:mm")
                                     </p>
                                     <div class="d-flex justify-content-between mt-3">
                                         <a href="#" class="btn btn-sm btn-outline-primary">Ver Más</a>
-                                        <a href="#" class="btn btn-sm btn-outline-secondary">Gestionar</a>
+                                        @{
+                                            bool esElegible = ticket.FechaHoraProyeccion.Date > DateTime.Now.Date;
+                                        }
+
+                                        @if (esElegible)
+                                        {
+                                            <a asp-controller="Account" asp-action="CambioReembolso" asp-route-id="@ticket.EntradaId" class="btn btn-sm btn-warning">Solicitar Cambio/Reembolso</a>
+                                        }
+                                        else
+                                        {
+                                            <a class="btn btn-sm btn-secondary disabled" style="pointer-events: none;" aria-disabled="true">Solicitar Cambio/Reembolso</a>
+                                        }
                                     </div>
                                 </div>
                             </div>

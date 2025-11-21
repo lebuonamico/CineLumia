@@ -24,6 +24,17 @@ namespace Cine_Lumia.Controllers
         // ================================
         public IActionResult Index()
         {
+            string modo = TempData["Modo"]?.ToString() ?? "Normal";
+
+            // Si NO es Asientos → limpiar modo + carrito
+            if (modo != "Asientos")
+            {
+                HttpContext.Session.Remove("CarritoSnacks");  // limpia el carrito viejo
+                modo = "Normal";
+            }
+
+            ViewBag.Modo = modo;
+
             var selectedCineId = HttpContext.Session.GetInt32("CineSeleccionado");
             List<CineConsumible> consumiblesPorCine;
 
@@ -47,15 +58,26 @@ namespace Cine_Lumia.Controllers
             }
             else
             {
-                consumiblesPorCine = new List<CineConsumible>(); // Return empty list if no cine selected
+                consumiblesPorCine = new List<CineConsumible>();
             }
 
-            // Si hay un resumen de compra previo, lo pasamos a la vista
+            // RESTAURAR CARRITO
+            var carritoJson = HttpContext.Session.GetString("CarritoSnacks");
+            if (carritoJson != null && modo == "Asientos")
+            {
+                ViewBag.CarritoSnacks = carritoJson;
+            }
+
+            // Resumen compra
             ViewBag.ResumenCompra = TempData["ResumenCompra"];
-            ViewBag.Modo = "Normal";
+
+            // ⚠ IMPORTANTE: NO volver a tocar TempData["Modo"]
+            TempData.Remove("Modo");
 
             return View(consumiblesPorCine);
         }
+
+
 
         // ================================
         // COMPRAR SNACK
@@ -193,6 +215,7 @@ namespace Cine_Lumia.Controllers
             HttpContext.Session.SetString("CarritoSnacks", JsonSerializer.Serialize(carrito));
             return Ok();
         }
+
 
 
 

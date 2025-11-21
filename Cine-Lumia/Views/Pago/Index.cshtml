@@ -5,11 +5,16 @@
 @{
     ViewData["Title"] = "Método de Pago";
 
-    var posterUrl = TempData["PosterUrl"] as string ?? Url.Content("~/images/default-poster.png");
-    var peliculaNombre = TempData["PeliculaNombre"] as string ?? "Película";
-    var cineNombre = TempData["CineNombre"] as string ?? "Cine";
-    var salaTexto = TempData["SalaTexto"] as string ?? "Sala X";
-    var fechaHoraTexto = TempData["FechaHoraTexto"] as string ?? "";
+    var posterUrl = Model.Proyeccion?.Pelicula?.PosterUrl ?? Url.Content("~/images/default-poster.png");
+
+    var peliculaNombre = Model.Proyeccion?.Pelicula?.Nombre ?? "Película";
+    var cineNombre = Model.Proyeccion?.Sala?.Cine?.Nombre ?? "Cine";
+    var salaTexto = "Sala " + (Model.Proyeccion?.Sala?.Id_Sala ?? 0);
+    var fechaHoraTexto = Model.Proyeccion != null
+        ? $"{Model.Proyeccion.Fecha:dd/MM/yyyy} · {Model.Proyeccion.Hora:hh\\:mm}"
+        : "";
+
+
 }
 
 <style>
@@ -255,10 +260,11 @@
 </style>
 
 <!-- BOTÓN VOLVER -->
-<form method="post" asp-action="VolverSeleccion" asp-controller="Pago">
-    <button type="submit" class="btn-volver-top">
+<form method="post" asp-action="VolverConsumibles" asp-controller="Pago">
+    <button type="button" class="btn-volver-top" onclick="volverAConsumibles()">
         <i class="bi bi-arrow-left"></i> Volver
     </button>
+
 </form>
 
 <div class="page-wrapper">
@@ -409,6 +415,7 @@
 </div>
 
 @section Scripts {
+
     <partial name="_ValidationScriptsPartial" />
     <script>
         function justDigits(str) {
@@ -466,5 +473,43 @@
                 return false;
             }
         });
+    </script>
+    <script>
+        // reconstruye el carrito usando los snacks que ya recibiste del controller
+        let carrito = [];
+        console.log("RECONSTRUYENDO CARRITO EN PAGO...");
+        @if (ViewBag.Snacks != null)
+        {
+                foreach (var s in (List<CarritoItemViewModel>)ViewBag.Snacks)
+                {
+                        <text>
+                            carrito.push({
+                                id: @s.Id,
+                                snack: "@s.Snack",
+                                cantidad: @s.Cantidad,
+                                        precio: Number(@s.Precio)
+
+                            });
+                        </text>
+                }
+        }
+    </script>
+
+    <script>
+
+        function volverAConsumibles() {
+            fetch('/Consumibles/GuardarCarrito', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(carrito) // carrito DEBE venir de Session
+            })
+            .then(r => {
+                if (r.ok) {
+                    window.location.href = '/Pago/VolverConsumibles';
+                } else {
+                    alert("Error guardando carrito en sesión");
+                }
+            });
+        }
     </script>
 }

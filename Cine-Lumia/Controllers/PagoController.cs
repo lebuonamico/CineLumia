@@ -103,6 +103,13 @@ namespace Cine_Lumia.Controllers
             }
 
             TempData.Keep();
+            Console.WriteLine("===== DEBUG TOTAL COMPRA =====");
+            Console.WriteLine($"TotalCompra inicial (TempData): {TempData["TotalCompra"]}");
+            Console.WriteLine($"totalSnacks: {totalSnacks}");
+            Console.WriteLine($"cargoSnacks: {cargoSnacks}");
+            Console.WriteLine($"cargoEntradas: {cargoEntradas}");
+            Console.WriteLine($"vm.TotalCompra final: {vm.TotalCompra}");
+            Console.WriteLine("================================");
 
             return View(vm);
         }
@@ -155,7 +162,7 @@ namespace Cine_Lumia.Controllers
 
             return View("~/Views/ResumenCompra/Index.cshtml", vm);
         }
-
+        /*
         // ===========================================================
         //                 BOTÓN VOLVER (desde PAGO)
         // ===========================================================
@@ -172,6 +179,40 @@ namespace Cine_Lumia.Controllers
             TempData.Keep("PagoData");
 
             return RedirectToAction("Seleccion", "Asientos");
+        }*/
+        [HttpPost]
+        public IActionResult VolverConsumible(PagoViewModel model)
+        {
+            TempData["PagoData"] = JsonSerializer.Serialize(model);
+
+            TempData.Keep("IdProyeccion");
+            TempData.Keep("Asientos");
+            TempData.Keep("CantidadEntradas");
+            TempData.Keep("TotalCompra");
+            TempData.Keep("FormatoEntrada");
+            TempData.Keep("PagoData");
+
+            // Indicar modo
+            TempData["Modo"] = "Asientos";
+            TempData.Keep("Modo");
+
+            return RedirectToAction("Index", "Consumibles");
         }
+
+        [HttpGet]
+        public IActionResult VolverConsumibles()
+        {
+            TempData.Keep("IdProyeccion");
+            TempData.Keep("Asientos");
+            TempData.Keep("CantidadEntradas");
+            TempData.Keep("TotalCompra");
+            TempData.Keep("FormatoEntrada");
+            TempData.Keep("PagoData");
+
+            TempData["Modo"] = "Asientos";
+
+            return RedirectToAction("Index", "Consumibles");
+        }
+
     }
 }

@@ -19,6 +19,12 @@
             <i class="bi bi-arrow-left"></i> Volver
         </button>
     </form>
+    <form method="get" action="/Pago/Index">
+        <button type="button" class="btn-continuar-top" onclick="continuarAlPago()">
+            Continuar al pago <i class="bi bi-arrow-right"></i>
+        </button>
+    </form>
+
 }
 
 <style>
@@ -55,6 +61,48 @@
             font-size: 1.2rem;
         }
 </style>
+<style>
+    .btn-continuar-top {
+        position: fixed;
+        top: 90px;
+        right: 40px;
+        align-items: center;
+        gap: 8px;
+        background: rgba(0, 0, 0, 0.75);
+        border: 1px solid #28a745;
+        color: #28a745;
+        font-weight: 600;
+        font-size: 1rem;
+        padding: 10px 22px;
+        border-radius: 40px;
+        cursor: pointer;
+        z-index: 1100;
+        transition: all 0.25s ease;
+        backdrop-filter: blur(6px);
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        text-decoration: none;
+        display: none; /* Oculto por defecto */
+    }
+
+        .btn-continuar-top:hover {
+            background: #28a745;
+            color: #fff;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(40, 167, 69, 0.4);
+        }
+
+        .btn-continuar-top i {
+            font-size: 1.2rem;
+            z-index: 1000;
+        }
+    /* Offcanvas siempre por encima */
+    .offcanvas {
+        z-index: 1200 !important; /* asegurate que esté encima de los botones fijos */
+    }
+
+</style>
+
+
 <nav class="navbar navbar-expand-lg bg-body-tertiary">
     <div class="container-fluid">
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -117,13 +165,16 @@
 </div>
 
 <button id="burbuja-carrito"
-        class="btn btn-danger rounded-circle position-fixed bottom-0 end-0 m-4 shadow-lg"
+        class="btn-burbuja-profesional"
         data-bs-toggle="offcanvas"
         data-bs-target="#CarritoOffcanvas"
-        aria-controls="CarritoOffcanvas">Mi Compra 🍿<span id="contador-carrito" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning">
+        aria-controls="CarritoOffcanvas">
+    Mi Compra 🍿
+    <span id="contador-carrito" class="badge-burbuja">
         0
     </span>
 </button>
+
 
 <div class="offcanvas offcanvas-end" tabindex="-1" id="CarritoOffcanvas" aria-labelledby="carritoLabel">
     <div class="offcanvas-header bg-danger text-white">
@@ -178,7 +229,114 @@
 
 
 @section Scripts {
-    
+    <style>
+        .btn-burbuja-profesional {
+            position: fixed;
+            bottom: 40px; /* subí un poco para que no tape los snacks */
+            right: 40px; /* más a la derecha para no tapar la grilla */
+            width: 70px; /* un poquito más pequeño */
+            height: 70px;
+            font-size: 1.8rem;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #ff3d3d, #ff253c);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(255, 37, 60, 0.6);
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+            z-index: 1080;
+            color: #fff;
+        }
+
+
+        .btn-burbuja-profesional:hover {
+            transform: scale(1.15);
+            box-shadow: 0 10px 30px rgba(255, 37, 60, 0.8);
+            background: linear-gradient(135deg, #ff5a5a, #ff1a2c);
+        }
+
+        .btn-burbuja-profesional:active {
+            transform: scale(1);
+            box-shadow: 0 5px 15px rgba(255, 37, 60, 0.7);
+        }
+
+        /* Contador de items */
+        .badge-burbuja {
+            position: absolute;
+            top: 0;
+            right: 0;
+            transform: translate(50%, -50%);
+            background: #ffc107;
+            color: #000;
+            font-weight: 700;
+            border-radius: 50%;
+            width: 36px; /* antes 28px */
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            box-shadow: 0 0 8px rgba(0,0,0,0.3);
+        }
+
+        /* Animación de rebote (mantener) */
+        @@keyframes rebote {
+            0% { transform: translateY(0); }
+            25% { transform: translateY(-12px); }
+            50% { transform: translateY(0); }
+            75% { transform: translateY(-6px); }
+            100% { transform: translateY(0); }
+        }
+
+        .rebote {
+            animation: rebote 0.5s ease;
+        }
+        /* Tarjeta de cada item en el carrito */
+        .carrito-item-card {
+            background: #1e1e1e; /* fondo oscuro */
+            color: #fff; /* texto blanco */
+            border-radius: 12px;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+            /* Nombre del snack */
+            .carrito-item-card .snack-nombre {
+                font-size: 1rem;
+                font-weight: 600;
+                margin-bottom: 4px;
+            }
+
+            /* Precio de cada item más visible */
+            .carrito-item-card .snack-precio {
+                font-size: 1.1rem;
+                font-weight: 700;
+                color: #fff; /* blanco para que se vea más */
+            }
+
+            /* Botones de sumar/restar más grandes */
+            .carrito-item-card .btn-restar,
+            .carrito-item-card .btn-sumar {
+                font-size: 1.2rem;
+                padding: 6px 12px;
+                border-radius: 8px;
+            }
+
+            /* Cantidad en medio de los botones */
+            .carrito-item-card .cantidad-item {
+                min-width: 30px;
+                text-align: center;
+                font-weight: 600;
+                color: #fff;
+            }
+
+        </style >
 
     <script>
         // Declaración del array de carrito (mantenida)
@@ -186,6 +344,9 @@
 
         // Elementos DOM para la burbuja y el carrito (agregados)
         const contadorCarritoDOM = document.getElementById('contador-carrito');
+                // 🔥 botones que vamos a ocultar/mostrar
+        const btnContinuarTop = document.querySelector('.btn-continuar-top');
+        const btnBurbujaCarrito = document.getElementById('burbuja-carrito');
 
         // Función para actualizar el contador de la burbuja (total de unidades)
         function actualizarContadorBurbuja() {
@@ -195,6 +356,46 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
+            actualizarCarrito();
+                    // ===========================
+        // RESTAURAR CARRITO DESDE SESSION
+        // ===========================
+                               @if (modo == "Asientos" && ViewBag.CarritoSnacks != null)
+        {
+                <text>
+                    carrito = [];
+                    try {
+                        let data = @Html.Raw(Json.Serialize(ViewBag.CarritoSnacks));
+                        console.log("RAW SESSION DATA:", data);
+
+                        if (data && data !== null && data !== "") {
+                            carrito = JSON.parse(data);
+                            carrito = carrito.map(x => ({
+                                id: x.Id,
+                                consumibleId: x.Id,
+                                snack: x.Snack,
+                                precio: Number(x.Precio),
+                                cantidad: x.Cantidad,
+                                cineId: x.CineId,
+                                imagenUrl: x.ImagenUrl || "/images/snack_placeholder.png",
+                                stock: 999
+                            }));
+                        }
+
+                        console.log("CARRITO DESPUÉS DEL PARSEO:", carrito);
+
+                    } catch (e) {
+                        console.log("ERROR PARSEANDO SESSION:", e);
+                        carrito = [];
+                    }
+
+                    actualizarCarrito();
+                </text>
+        }
+
+
+
+
             // ... (Resto de tus event listeners: agregar, finalizar compra, buscar)
 
             // Evento para agregar items al carrito (mantenido)
@@ -318,6 +519,11 @@
             }
 
             actualizarCarrito();
+                    // Hacer que el botón de la burbuja rebote al agregar un snack
+        btnBurbujaCarrito.classList.remove('rebote'); // reinicia la animación
+        void btnBurbujaCarrito.offsetWidth; // forzar reflow para reiniciar la animación
+        btnBurbujaCarrito.classList.add('rebote');
+
         }
 
         function actualizarCarrito() {
@@ -328,6 +534,16 @@
 
             // Actualizar la burbuja antes de salir
             actualizarContadorBurbuja();
+                    // 🔥 Mostrar/ocultar botón "Continuar al pago"
+        if (btnContinuarTop) {
+            btnContinuarTop.style.display = carrito.length > 0 ? 'none' : 'flex';
+
+        }
+
+        // 🔥 Mostrar/ocultar burbuja Carrito
+        if (btnBurbujaCarrito) {
+            btnBurbujaCarrito.style.display = carrito.length > 0 ? 'block' : 'none';
+        }
 
             if (carrito.length === 0) {
                 carritoVacio.style.display = 'block';
@@ -347,23 +563,20 @@
                 const subtotal = item.precio * item.cantidad;
                 total += subtotal;
 
-                const itemHTML = `
-                    <div class="card mb-2">
-                        <div class="card-body p-2">
-                            <div class="d-flex justify-content-between align-items-start mb-1">
-                                <h6 class="card-title mb-0" style="font-size: 0.9rem;">${item.snack}</h6>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="btn-group btn-group-sm">
-                                    <button class="btn btn-outline-secondary btn-restar" data-index="${index}">-</button>
-                                    <span class="btn btn-outline-light disabled">${item.cantidad}</span>
-                                    <button class="btn btn-outline-secondary btn-sumar" data-index="${index}">+</button>
-                                </div>
-                                <span style="font-size: 0.8rem; color: #6c757d;">$${subtotal.toFixed(2)}</span>
-                            </div>
-                        </div>
-                    </div>
-                `;
+                        const itemHTML = `
+        <div class="carrito-item-card">
+            <div>
+                <div class="snack-nombre">${item.snack}</div>
+                <div class="snack-precio">$${subtotal.toFixed(2)}</div>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <button class="btn btn-outline-secondary btn-restar" data-index="${index}">-</button>
+                <span class="cantidad-item">${item.cantidad}</span>
+                <button class="btn btn-outline-secondary btn-sumar" data-index="${index}">+</button>
+            </div>
+        </div>
+        `;
+
                 carritoItems.innerHTML += itemHTML;
             });
 
@@ -396,14 +609,20 @@
             }
         }
 
-        function sumarCantidad(index) {
+                function sumarCantidad(index) {
             if (carrito[index].cantidad < 10 && carrito[index].cantidad < carrito[index].stock) {
                 carrito[index].cantidad++;
                 actualizarCarrito();
+
+                // Rebote al sumar
+                btnBurbujaCarrito.classList.remove('rebote');
+                void btnBurbujaCarrito.offsetWidth;
+                btnBurbujaCarrito.classList.add('rebote');
             } else {
                 alert('❌ No se puede agregar más de 10 unidades o no hay suficiente stock.');
             }
         }
+
 
         function finalizarCompra() {
             var isAuthenticated = @User.Identity.IsAuthenticated.ToString().ToLower();
@@ -506,6 +725,22 @@
                 else alert("Error enviando el carrito");
             });
         }
+                       function continuarAlPago() {
+            // Vaciar carrito en JS
+            carrito = [];
+            actualizarCarrito();
+
+            // Vaciar carrito en sesión en el servidor
+            fetch('/Consumibles/GuardarCarrito', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(carrito)
+            }).then(() => {
+                // Redirigir al pago
+                window.location.href = '/Pago/Index';
+            });
+        }
+
 
     </script>
 }

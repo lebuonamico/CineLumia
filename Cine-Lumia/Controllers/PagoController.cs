@@ -77,16 +77,17 @@ namespace Cine_Lumia.Controllers
             };
 
             // 🔥 CÁLCULOS DE CARGOS
-            decimal cargoEntradas = 1600; // ejemplo: cargo por servicio entradas
-            decimal cargoSnacks = 700;    // ejemplo: cargo por servicio snacks
             decimal totalSnacks = snacks.Sum(s => s.Precio * s.Cantidad);
-
+            decimal cargoEntradas = 1600; // ejemplo
+            decimal cargoSnacks = 700;    // ejemplo
+            decimal subtotalEntradas = decimal.Parse(TempData["TotalCompra"]!.ToString()!, CultureInfo.InvariantCulture);
             ViewBag.CargoEntradas = cargoEntradas;
-            ViewBag.CargoSnacks = cargoSnacks;
+            ViewBag.CargoSnacks = snacks.Any() ? cargoSnacks : 0; // ⚡ solo si hay snacks
             ViewBag.TotalSnacks = totalSnacks;
+            ViewBag.SubtotalEntradas = subtotalEntradas;
+            // Model.TotalCompra = subtotal (entradas + snacks)
+            vm.TotalCompra += totalSnacks; // aquí no sumamos cargos
 
-            // Actualizamos TotalCompra incluyendo cargos
-            vm.TotalCompra += totalSnacks + cargoSnacks + cargoEntradas;
 
             // Restaurar datos previos
             if (TempData.Peek("PagoData") is string pagoJson)

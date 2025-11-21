@@ -8,11 +8,11 @@
     var posterUrl = Model.Proyeccion?.Pelicula?.PosterUrl ?? Url.Content("~/images/default-poster.png");
 
     var peliculaNombre = Model.Proyeccion?.Pelicula?.Nombre ?? "Película";
-    var cineNombre = Model.Proyeccion?.Sala?.Cine?.Nombre ?? "Cine";
-    var salaTexto = "Sala " + (Model.Proyeccion?.Sala?.Id_Sala ?? 0);
-    var fechaHoraTexto = Model.Proyeccion != null
-        ? $"{Model.Proyeccion.Fecha:dd/MM/yyyy} · {Model.Proyeccion.Hora:hh\\:mm}"
-        : "";
+var cineNombre = Model.Proyeccion?.Sala?.Cine?.Nombre ?? "Cine";
+var salaTexto = "Sala " + (Model.Proyeccion?.Sala?.Id_Sala ?? 0);
+var fechaHoraTexto = Model.Proyeccion != null 
+    ? $"{Model.Proyeccion.Fecha:dd/MM/yyyy} · {Model.Proyeccion.Hora:hh\\:mm}" 
+    : "";
 
 
 }
@@ -331,19 +331,19 @@
 
     <!-- RESUMEN -->
     <div class="resumen">
-        <div class="resumen-titulo">RESUMEN</div>
+        <div class="resumen-titulo" style="color:#ff253c;">RESUMEN</div>
 
         <div style="display:flex; gap:12px; align-items:center;">
             <img src="@posterUrl" class="poster" />
             <div>
-                <strong>@peliculaNombre</strong><br />
-                @Model.FormatoEntrada
+                <strong style="color:#fff;">@peliculaNombre</strong><br />
+                <span style="color:#aaa;">@Model.FormatoEntrada</span>
             </div>
         </div>
 
         <hr class="resumen-hr" />
 
-        <div class="detalle-item">
+        <div class="detalle-item" style="color:#aaa;">
             <strong>Cine, día y horario:</strong>
             <div>@cineNombre</div>
             <div>@salaTexto</div>
@@ -351,15 +351,17 @@
         </div>
 
         <hr class="resumen-hr" />
-
-        <div class="detalle-item">
+        <div class="detalle-item" style="color:#aaa;">
             <strong>Entradas:</strong>
             <div>@Model.CantidadEntradas · entrada @Model.FormatoEntrada</div>
+            <div style="margin-top:4px; color:#fff; font-weight:500;">
+                $@((ViewBag.SubtotalEntradas ?? 0).ToString("N0", new System.Globalization.CultureInfo("es-AR")))
+            </div>
         </div>
 
         <hr class="resumen-hr" />
 
-        <div class="detalle-item">
+        <div class="detalle-item" style="color:#aaa;">
             <strong>Butacas:</strong>
             <div style="margin-top:4px;">
                 @foreach (var asiento in Model.AsientosSeleccionados)
@@ -372,19 +374,22 @@
         @if (ViewBag.Snacks != null && ((List<CarritoItemViewModel>)ViewBag.Snacks).Count > 0)
         {
             <div class="snacks-resumen">
-                <strong class="snacks-titulo">Snacks:</strong>
+                <strong class="snacks-titulo" style="color:#e5e5e5;">Snacks:</strong>
                 <div class="snacks-list">
                     @foreach (var snack in (List<CarritoItemViewModel>)ViewBag.Snacks)
                     {
-                        <div class="snack-item">
+                        <div class="snack-item" style="color:#aaa;">
                             <img src="@snack.ImagenUrl" alt="@snack.Snack" class="snack-img" />
                             <div class="snack-info">
-                                <span class="snack-nombre">@snack.Snack</span>
-                                <span class="snack-cantidad">Cantidad: @snack.Cantidad</span>
-                                <span class="snack-precio">$@snack.Precio</span>
+                                <span class="snack-nombre" style="color:#e5e5e5;">@snack.Snack</span>
+                                <span class="snack-cantidad" style="color:#aaa;">Cantidad: @snack.Cantidad</span>
+                                <span class="snack-precio" style="color:#fff;">
+                                    $@( (snack.Precio * snack.Cantidad).ToString("N0", new System.Globalization.CultureInfo("es-AR")) )
+                                </span>
                             </div>
                         </div>
                     }
+
                 </div>
 
                 <div style="display:flex; justify-content:space-between; align-items:center; background:#1b1b1b; padding:8px 12px; border-radius:8px; margin-top:8px;">
@@ -403,15 +408,15 @@
 
         <div class="total-box">
             @{
-                var total = Model.TotalCompra + (ViewBag.CargoEntradas ?? 0);
-                if (ViewBag.Snacks != null && ((List<CarritoItemViewModel>)ViewBag.Snacks).Count > 0)
-                {
-                    total += (ViewBag.CargoSnacks ?? 0);
-                }
+                var total = Model.TotalCompra;
+                total += (ViewBag.CargoEntradas ?? 0);
+                total += (ViewBag.CargoSnacks ?? 0);
             }
             Total: $@total.ToString("N0", CultureInfo.InvariantCulture)
         </div>
     </div>
+
+
 </div>
 
 @section Scripts {

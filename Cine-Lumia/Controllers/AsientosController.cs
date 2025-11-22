@@ -30,6 +30,11 @@ namespace Cine_Lumia.Controllers
             // No guardamos asientos todavía
             TempData.Remove("Asientos");
             TempData.Remove("PagoData");
+            TempData.Remove("CarritoSnacks");
+            TempData.Remove("ResumenCompra");
+            // Limpia la sesión de snacks
+            HttpContext.Session.Remove("CarritoSnacks");
+
             TempData.Keep();
 
             return RedirectToAction("Seleccion");

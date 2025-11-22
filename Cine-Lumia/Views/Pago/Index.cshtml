@@ -417,12 +417,18 @@ var fechaHoraTexto = Model.Proyeccion != null
 
         <div class="total-box">
             @{
-                var total = Model.TotalCompra;
-                total += (ViewBag.CargoEntradas ?? 0);
-                total += (ViewBag.CargoSnacks ?? 0);
+                decimal total = Model.TotalCompra; // default
+                if (TempData["TotalFinal"] != null)
+                {
+                    decimal.TryParse(TempData["TotalFinal"].ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out total);
+                }
             }
-            Total: $@total.ToString("N0", CultureInfo.InvariantCulture)
+            <div class="total-box">
+                Total: $@total.ToString("N0", CultureInfo.InvariantCulture)
+            </div>
+
         </div>
+
     </div>
 
 

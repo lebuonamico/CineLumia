@@ -206,10 +206,8 @@
             </div>
 
             <div class="totales">
-                <div>Subtotal: $@Model.TotalCompra.ToString("N0", CultureInfo.InvariantCulture)</div>
-                <div>Cargo por servicio entradas: $@Model.CargoServicioEntradas.ToString("N0", CultureInfo.InvariantCulture)</div>
                 <div class="total-final">
-                    TOTAL: $@((Model.TotalCompra + Model.CargoServicioEntradas).ToString("N0", CultureInfo.InvariantCulture))
+                    TOTAL: $@((Model.TotalCompra).ToString("N0", CultureInfo.InvariantCulture))
                 </div>
             </div>
         </div>

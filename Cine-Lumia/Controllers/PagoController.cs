@@ -89,17 +89,32 @@ namespace Cine_Lumia.Controllers
                 FormatoEntrada = TempData["FormatoEntrada"]!.ToString()!
             };
 
-            // 🔥 CÁLCULOS DE CARGOS
             decimal totalSnacks = snacks.Sum(s => s.Precio * s.Cantidad);
-            decimal cargoEntradas = 1600; // ejemplo
-            decimal cargoSnacks = 700;    // ejemplo
             decimal subtotalEntradas = decimal.Parse(TempData["TotalCompra"]!.ToString()!, CultureInfo.InvariantCulture);
+
+            decimal cargoEntradas = 0;
+            decimal cargoSnacks = 0;
+
+            // Aplica cargo por entradas solo si hay entradas
+            if (subtotalEntradas > 0)
+                cargoEntradas = 1600; // ejemplo
+
+            // Aplica cargo por snacks solo si hay snacks
+            if (snacks.Any())
+                cargoSnacks = 700;
+
+            decimal totalFinal = subtotalEntradas + totalSnacks + cargoEntradas + cargoSnacks;
+
+            // Guardamos en TempData para Resumen
+            TempData["TotalFinal"] = totalFinal.ToString(CultureInfo.InvariantCulture);
+
+
+            // Pasamos info a la vista
             ViewBag.CargoEntradas = cargoEntradas;
-            ViewBag.CargoSnacks = snacks.Any() ? cargoSnacks : 0; // ⚡ solo si hay snacks
+            ViewBag.CargoSnacks = cargoSnacks;
             ViewBag.TotalSnacks = totalSnacks;
             ViewBag.SubtotalEntradas = subtotalEntradas;
-            // Model.TotalCompra = subtotal (entradas + snacks)
-            vm.TotalCompra += totalSnacks; // aquí no sumamos cargos
+
 
 
             // Restaurar datos previos
@@ -182,6 +197,11 @@ namespace Cine_Lumia.Controllers
 
             // --- CÁLCULO DE TOTALES ---
             decimal totalSnacks = snacks.Sum(s => s.Precio * s.Cantidad);
+            decimal totalCompra = 0;
+            if (TempData["TotalFinal"] != null)
+            {
+                decimal.TryParse(TempData["TotalFinal"].ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out totalCompra);
+            }
 
             var vm = new ResumenCompraViewModel
             {
@@ -189,8 +209,10 @@ namespace Cine_Lumia.Controllers
                 AsientosSeleccionados = asientos,
                 CantidadEntradas = cantidad,
                 FormatoEntrada = formato,
-                TotalCompra = totalEntradas + totalSnacks // <-- Calcular total final
+                TotalCompra = totalCompra
             };
+
+
 
             TempData.Keep();
             TempData.Keep("PagoData");

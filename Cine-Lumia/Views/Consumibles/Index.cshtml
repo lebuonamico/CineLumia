@@ -220,11 +220,9 @@
 </div>
 @if (modo == "Asientos")
 {
-    <form method="post" action="/Consumibles/FinalizarSnacks">
-        <button type="submit" class="btn btn-danger btn-lg w-100 mt-4">
-            Ir al pago
-        </button>
-    </form>
+    <button type="button" class="btn btn-danger btn-lg w-100 mt-4" onclick="enviarCarritoAPago()">
+        Ir al pago
+    </button>
 }
 
 
@@ -344,7 +342,6 @@
 
         // Elementos DOM para la burbuja y el carrito (agregados)
         const contadorCarritoDOM = document.getElementById('contador-carrito');
-                // 🔥 botones que vamos a ocultar/mostrar
         const btnContinuarTop = document.querySelector('.btn-continuar-top');
         const btnBurbujaCarrito = document.getElementById('burbuja-carrito');
 
@@ -355,22 +352,19 @@
             contadorCarritoDOM.style.display = totalUnidades > 0 ? 'block' : 'none';
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            actualizarCarrito();
-                    // ===========================
-        // RESTAURAR CARRITO DESDE SESSION
-        // ===========================
-                               @if (modo == "Asientos" && ViewBag.CarritoSnacks != null)
-        {
+        document.addEventListener('DOMContentLoaded', function () {
+            // ===========================
+            // RESTAURAR CARRITO DESDE SESSION
+            // ===========================
+            @if (modo == "Asientos" && ViewBag.CarritoSnacks != null)
+            {
                 <text>
                     carrito = [];
                     try {
                         let data = @Html.Raw(Json.Serialize(ViewBag.CarritoSnacks));
-                        console.log("RAW SESSION DATA:", data);
-
                         if (data && data !== null && data !== "") {
-                            carrito = JSON.parse(data);
-                            carrito = carrito.map(x => ({
+                            let parsedData = JSON.parse(data);
+                            carrito = parsedData.map(x => ({
                                 id: x.Id,
                                 consumibleId: x.Id,
                                 snack: x.Snack,
@@ -381,26 +375,15 @@
                                 stock: 999
                             }));
                         }
-
-                        console.log("CARRITO DESPUÉS DEL PARSEO:", carrito);
-
                     } catch (e) {
-                        console.log("ERROR PARSEANDO SESSION:", e);
                         carrito = [];
                     }
-
-                    actualizarCarrito();
                 </text>
-        }
-
-
-
-
-            // ... (Resto de tus event listeners: agregar, finalizar compra, buscar)
+            }
 
             // Evento para agregar items al carrito (mantenido)
             document.querySelectorAll('.btn-agregar-carrito').forEach(boton => {
-                boton.addEventListener('click', function() {
+                boton.addEventListener('click', function () {
                     const snack = this.getAttribute('data-snack');
                     const precio = parseFloat(this.getAttribute('data-precio').replace(',', '.'));
                     const stock = parseInt(this.getAttribute('data-stock'));
@@ -420,54 +403,56 @@
             });
 
             // Evento para finalizar compra (mantenido)
-                    const botonFinalizar = document.getElementById('btn-finalizar-compra');
-        if (botonFinalizar) {
-            botonFinalizar.addEventListener('click', finalizarCompra);
-        }
-
+            const botonFinalizar = document.getElementById('btn-finalizar-compra');
+            if (botonFinalizar) {
+                botonFinalizar.addEventListener('click', finalizarCompra);
+            }
 
             // Evento para el buscador (mantenido)
-            document.getElementById('searchForm').addEventListener('submit', function(e) {
+            document.getElementById('searchForm').addEventListener('submit', function (e) {
                 e.preventDefault();
                 const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
                 buscarSnacks(searchTerm);
             });
 
             // Evento para búsqueda en tiempo real (mantenido)
-            document.getElementById('searchInput').addEventListener('input', function() {
+            document.getElementById('searchInput').addEventListener('input', function () {
                 const searchTerm = this.value.toLowerCase().trim();
                 buscarSnacks(searchTerm);
             });
 
-            // Inicializar al cargar
             actualizarCarrito();
+
+            document.getElementById('carrito-items').addEventListener('click', function(e) {
+                if (e.target && e.target.matches('.btn-restar')) {
+                    const index = parseInt(e.target.getAttribute('data-index'));
+                    restarCantidad(index);
+                }
+                if (e.target && e.target.matches('.btn-sumar')) {
+                    const index = parseInt(e.target.getAttribute('data-index'));
+                    sumarCantidad(index);
+                }
+            });
         });
 
-        // --- LÓGICA DE BÚSQUEDA (MANTENIDA) ---
         function buscarSnacks(searchTerm) {
             const snackItems = document.querySelectorAll('.snack-item');
             const cineSections = document.querySelectorAll('.cine-section');
 
-                    if (searchTerm === '') {
-            snackItems.forEach(item => item.style.display = 'block');
-
-            // si hay un solo cine, mostrarlo siempre
-            if (cineSections.length === 1) {
-                cineSections[0].style.display = 'block';
-            } else {
-                cineSections.forEach(section => section.style.display = 'block');
+            if (searchTerm === '') {
+                snackItems.forEach(item => item.style.display = 'block');
+                if (cineSections.length === 1) {
+                    cineSections[0].style.display = 'block';
+                } else {
+                    cineSections.forEach(section => section.style.display = 'block');
+                }
+                return;
             }
 
-            return;
-        }
-
-
             let algunResultadoEncontrado = false;
-
             cineSections.forEach(section => {
                 const snacksEnSection = section.querySelectorAll('.snack-item');
                 let algunSnackVisibleEnSection = false;
-
                 snacksEnSection.forEach(item => {
                     const snackName = item.querySelector('.snack-name').textContent.toLowerCase();
                     const snackDesc = item.querySelector('.snack-desc').textContent.toLowerCase();
@@ -481,23 +466,16 @@
                     }
                 });
 
-                        if (algunSnackVisibleEnSection) {
-            section.style.display = 'block';
-        } else {
-            section.style.display = 'none';
-        }
-
+                if (algunSnackVisibleEnSection) {
+                    section.style.display = 'block';
+                } else {
+                    section.style.display = 'none';
+                }
             });
-
-            if (!algunResultadoEncontrado) {
-                // ... (Manejo de "No se encontraron resultados" si lo necesitas)
-            }
         }
 
-        // --- LÓGICA DE CARRITO (MANTENIDA Y MODIFICADA) ---
         function agregarAlCarrito(item) {
             const itemExistente = carrito.find(i => i.consumibleId === item.consumibleId && i.cineId === item.cineId);
-
             if (itemExistente) {
                 if (itemExistente.cantidad < 10 && itemExistente.cantidad < item.stock) {
                     itemExistente.cantidad++;
@@ -506,24 +484,21 @@
                     return;
                 }
             } else {
-                if (carrito.length >= 20) { // Límite de ítems diferentes más razonable
+                if (carrito.length >= 20) {
                     alert('❌ Máximo 20 items diferentes en el carrito.');
                     return;
                 }
                 carrito.push({
-                   id: item.id,               // debe coincidir con Id_Consumible
+                    id: item.id,
                     ...item,
                     cantidad: 1,
-                    imagenUrl: item.imagenUrl   // agregamos la URL
+                    imagenUrl: item.imagenUrl
                 });
             }
-
             actualizarCarrito();
-                    // Hacer que el botón de la burbuja rebote al agregar un snack
-        btnBurbujaCarrito.classList.remove('rebote'); // reinicia la animación
-        void btnBurbujaCarrito.offsetWidth; // forzar reflow para reiniciar la animación
-        btnBurbujaCarrito.classList.add('rebote');
-
+            btnBurbujaCarrito.classList.remove('rebote');
+            void btnBurbujaCarrito.offsetWidth;
+            btnBurbujaCarrito.classList.add('rebote');
         }
 
         function actualizarCarrito() {
@@ -532,18 +507,13 @@
             const carritoTotal = document.getElementById('carrito-total');
             const totalPrecio = document.getElementById('total-precio');
 
-            // Actualizar la burbuja antes de salir
             actualizarContadorBurbuja();
-                    // 🔥 Mostrar/ocultar botón "Continuar al pago"
-        if (btnContinuarTop) {
-            btnContinuarTop.style.display = carrito.length > 0 ? 'none' : 'flex';
-
-        }
-
-        // 🔥 Mostrar/ocultar burbuja Carrito
-        if (btnBurbujaCarrito) {
-            btnBurbujaCarrito.style.display = carrito.length > 0 ? 'block' : 'none';
-        }
+            if (btnContinuarTop) {
+                btnContinuarTop.style.display = carrito.length > 0 ? 'none' : 'flex';
+            }
+            if (btnBurbujaCarrito) {
+                btnBurbujaCarrito.style.display = carrito.length > 0 ? 'block' : 'none';
+            }
 
             if (carrito.length === 0) {
                 carritoVacio.style.display = 'block';
@@ -560,69 +530,54 @@
             let total = 0;
 
             carrito.forEach((item, index) => {
-                const subtotal = item.precio * item.cantidad;
+                const precio = parseFloat(item.precio);
+                const cantidad = parseInt(item.cantidad);
+                if (isNaN(precio) || isNaN(cantidad)) {
+                    return; 
+                }
+                const subtotal = precio * cantidad;
                 total += subtotal;
 
-                        const itemHTML = `
-        <div class="carrito-item-card">
-            <div>
-                <div class="snack-nombre">${item.snack}</div>
-                <div class="snack-precio">$${subtotal.toFixed(2)}</div>
-            </div>
-            <div class="d-flex align-items-center gap-2">
-                <button class="btn btn-outline-secondary btn-restar" data-index="${index}">-</button>
-                <span class="cantidad-item">${item.cantidad}</span>
-                <button class="btn btn-outline-secondary btn-sumar" data-index="${index}">+</button>
-            </div>
-        </div>
-        `;
-
-                carritoItems.innerHTML += itemHTML;
+                const itemHTML = `
+                <div class="carrito-item-card">
+                    <div>
+                        <div class="snack-nombre">${item.snack || 'Snack desconocido'}</div>
+                        <div class="snack-precio">$${subtotal.toFixed(2)}</div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <button class="btn btn-outline-secondary btn-restar" data-index="${index}">-</button>
+                        <span class="cantidad-item">${cantidad}</span>
+                        <button class="btn btn-outline-secondary btn-sumar" data-index="${index}">+</button>
+                    </div>
+                </div>`;
+                
+                try {
+                    carritoItems.innerHTML += itemHTML;
+                } catch (e) {
+                    // Silently fail for now
+                }
             });
 
             totalPrecio.textContent = `$${total.toFixed(2)}`;
-
-            // Agregar eventos a los botones de los items renderizados
-            document.querySelectorAll('.btn-restar').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const index = parseInt(this.getAttribute('data-index'));
-                    restarCantidad(index);
-                });
-            });
-
-            document.querySelectorAll('.btn-sumar').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const index = parseInt(this.getAttribute('data-index'));
-                    sumarCantidad(index);
-                });
-            });
         }
 
-        // --- LÓGICA DE CANTIDAD Y FINALIZAR (MANTENIDA) ---
         function restarCantidad(index) {
             if (carrito[index].cantidad > 1) {
                 carrito[index].cantidad--;
-                actualizarCarrito();
             } else {
                 carrito.splice(index, 1);
-                actualizarCarrito();
             }
+            actualizarCarrito();
         }
 
-                function sumarCantidad(index) {
+        function sumarCantidad(index) {
             if (carrito[index].cantidad < 10 && carrito[index].cantidad < carrito[index].stock) {
                 carrito[index].cantidad++;
                 actualizarCarrito();
-
-                // Rebote al sumar
-                btnBurbujaCarrito.classList.remove('rebote');
-                void btnBurbujaCarrito.offsetWidth;
-                btnBurbujaCarrito.classList.add('rebote');
             } else {
                 alert('❌ No se puede agregar más de 10 unidades o no hay suficiente stock.');
             }
         }
-
 
         function finalizarCompra() {
             var isAuthenticated = @User.Identity.IsAuthenticated.ToString().ToLower();
@@ -639,7 +594,7 @@
                     },
                     confirmButtonText: 'Aceptar'
                 });
-                return; // Stop the function execution
+                return;
             }
 
             if (carrito.length === 0) {
@@ -663,7 +618,6 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        // Asegúrate de que el token exista en tu página si usas CSRF
                         'RequestVerificationToken': document.getElementsByName('__RequestVerificationToken')[0]?.value || ''
                     },
                     body: JSON.stringify({
@@ -680,10 +634,6 @@
 
                     for (let response of responses) {
                         if (!response.ok) {
-                            if (response.status === 401) {
-                                alert('🔐 Debes iniciar sesión para comprar.');
-                                return;
-                            }
                             todosExitosos = false;
                             const data = await response.json().catch(() => null);
                             mensaje = data?.mensaje || '❌ Error al realizar la compra.';
@@ -707,14 +657,15 @@
                             location.reload();
                         });
                     } else {
-                        alert(mensaje); // Keep the regular alert for errors
+                        alert(mensaje);
                     }
                 })
-                .catch(() => {
+                .catch(err => {
                     alert('❌ Error al procesar la compra.');
                 });
         }
-                function enviarCarritoAPago() {
+
+        function enviarCarritoAPago() {
             fetch('/Consumibles/GuardarCarrito', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -740,7 +691,6 @@
                 window.location.href = '/Pago/Index';
             });
         }
-
-
     </script>
 }
+

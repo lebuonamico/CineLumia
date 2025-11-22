@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.Text.Json;
-// This line needs to be added
+using System.Linq;
 
 namespace Cine_Lumia.Controllers
 {
@@ -25,13 +25,6 @@ namespace Cine_Lumia.Controllers
         public IActionResult Index()
         {
             string modo = TempData["Modo"]?.ToString() ?? "Normal";
-
-            // Si NO es Asientos → limpiar modo + carrito
-            if (modo != "Asientos")
-            {
-                HttpContext.Session.Remove("CarritoSnacks");  // limpia el carrito viejo
-                modo = "Normal";
-            }
 
             ViewBag.Modo = modo;
 
@@ -209,10 +202,31 @@ namespace Cine_Lumia.Controllers
             return View("Index", snacks);
         }
         [HttpPost]
-        public IActionResult GuardarCarrito([FromBody] List<CarritoItemViewModel> carrito)
+        public IActionResult GuardarCarrito([FromBody] List<CarritoItemViewModel> carritoRecibido)
         {
-            if (carrito == null) return BadRequest();
-            HttpContext.Session.SetString("CarritoSnacks", JsonSerializer.Serialize(carrito));
+            if (carritoRecibido == null)
+            {
+                // Si el cliente envía null, limpiar el carrito para estar en un estado consistente.
+                HttpContext.Session.Remove("CarritoSnacks");
+                return Ok();
+            }
+
+            // El cliente es la única fuente de verdad. Consolidar la lista que envía.
+            var carritoConsolidado = carritoRecibido
+                .GroupBy(item => item.Id) // Agrupar por el ID del consumible
+                .Select(grupo => new CarritoItemViewModel
+                {
+                    Id = grupo.Key,
+                    Snack = grupo.First().Snack,
+                    Cantidad = grupo.Sum(item => item.Cantidad), // Sumar cantidades si el cliente envía duplicados
+                    Precio = grupo.First().Precio,
+                    ImagenUrl = grupo.First().ImagenUrl,
+                    CineId = grupo.First().CineId
+                })
+                .ToList();
+
+            // Sobrescribir completamente la sesión con el nuevo estado del carrito.
+            HttpContext.Session.SetString("CarritoSnacks", JsonSerializer.Serialize(carritoConsolidado));
             return Ok();
         }
 

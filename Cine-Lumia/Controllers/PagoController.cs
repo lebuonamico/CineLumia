@@ -29,7 +29,20 @@ namespace Cine_Lumia.Controllers
 
             if (!string.IsNullOrEmpty(carritoJson))
             {
-                snacks = JsonSerializer.Deserialize<List<CarritoItemViewModel>>(carritoJson) ?? new List<CarritoItemViewModel>();
+                var snacksDeserializados = JsonSerializer.Deserialize<List<CarritoItemViewModel>>(carritoJson) ?? new List<CarritoItemViewModel>();
+
+                // Consolidar la lista para asegurarse de que no haya duplicados, sin importar el estado de la sesión.
+                snacks = snacksDeserializados
+                    .GroupBy(s => s.Id)
+                    .Select(g => new CarritoItemViewModel
+                    {
+                        Id = g.Key,
+                        Snack = g.First().Snack,
+                        Cantidad = g.Sum(item => item.Cantidad),
+                        Precio = g.First().Precio,
+                        ImagenUrl = g.First().ImagenUrl,
+                        CineId = g.First().CineId
+                    }).ToList();
 
                 foreach (var snack in snacks)
                 {
@@ -132,9 +145,10 @@ namespace Cine_Lumia.Controllers
                 TempData["FormatoEntrada"] == null)
                 return RedirectToAction("Index", "Home");
 
+            // --- LECTURA DE DATOS DE ENTRADAS ---
             int cantidad = int.Parse(TempData["CantidadEntradas"].ToString()!);
             string formato = TempData["FormatoEntrada"].ToString()!;
-            decimal total = decimal.Parse(TempData["TotalCompra"].ToString()!, CultureInfo.InvariantCulture);
+            decimal totalEntradas = decimal.Parse(TempData["TotalCompra"].ToString()!, CultureInfo.InvariantCulture);
 
             var proyeccion = _context.Proyecciones
                 .Include(p => p.Pelicula)
@@ -147,13 +161,38 @@ namespace Cine_Lumia.Controllers
                 .Where(a => asientosSeleccionados.Contains(a.Id_Asiento))
                 .ToList();
 
+            // --- LECTURA Y CONSOLIDACIÓN DE SNACKS ---
+            var carritoJson = HttpContext.Session.GetString("CarritoSnacks");
+            List<CarritoItemViewModel> snacks = new();
+            if (!string.IsNullOrEmpty(carritoJson))
+            {
+                var snacksDeserializados = JsonSerializer.Deserialize<List<CarritoItemViewModel>>(carritoJson) ?? new List<CarritoItemViewModel>();
+                snacks = snacksDeserializados
+                    .GroupBy(s => s.Id)
+                    .Select(g => new CarritoItemViewModel
+                    {
+                        Id = g.Key,
+                        Snack = g.First().Snack,
+                        Cantidad = g.Sum(item => item.Cantidad),
+                        Precio = g.First().Precio,
+                        ImagenUrl = g.First().ImagenUrl,
+                        CineId = g.First().CineId
+                    }).ToList();
+            }
+
+            // --- CÁLCULO DE TOTALES ---
+            decimal totalSnacks = snacks.Sum(s => s.Precio * s.Cantidad);
+            decimal cargoSnacks = snacks.Any() ? 700 : 0; // Ejemplo de cargo
+
             var vm = new ResumenCompraViewModel
             {
                 Proyeccion = proyeccion,
                 AsientosSeleccionados = asientos,
                 CantidadEntradas = cantidad,
                 FormatoEntrada = formato,
-                TotalCompra = total
+                Snacks = snacks, // <-- Pasar snacks limpios al ViewModel
+                CargoServicioSnacks = cargoSnacks,
+                TotalCompra = totalEntradas + totalSnacks // <-- Calcular total final
             };
 
             TempData.Keep();

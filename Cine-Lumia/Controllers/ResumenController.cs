@@ -31,6 +31,13 @@ public class ResumenCompraController : Controller
         TempData.Keep("Asientos");
         TempData.Keep("PagoData");
 
+        // Guardar snacks seleccionados en TempData para que estén disponibles en el POST de Confirmar
+        if (vm.SnacksSeleccionados != null && vm.SnacksSeleccionados.Any())
+        {
+            TempData["SnacksSeleccionados"] = System.Text.Json.JsonSerializer.Serialize(vm.SnacksSeleccionados);
+            TempData.Keep("SnacksSeleccionados"); // Asegurar que persista
+        }
+
         return View(vm);
     }
 
@@ -68,6 +75,7 @@ public class ResumenCompraController : Controller
 
         try
         {
+            // Guardar entradas
             foreach (var idAsiento in AsientosSeleccionadosIds)
             {
                 var asiento = await _context.Asientos.FindAsync(idAsiento);
@@ -88,6 +96,54 @@ public class ResumenCompraController : Controller
                 _context.Entradas.Add(entrada);
             }
 
+            // Guardar snacks (recuperar de TempData)
+            string snacksJson = TempData["SnacksSeleccionados"] as string;
+
+            if (string.IsNullOrEmpty(snacksJson))
+            {
+                // Log and return a specific error if snacks data is not found in TempData
+                Console.WriteLine("❌ No se encontraron datos de snacks en TempData.");
+                // For debugging, we can return a BadRequest to clearly indicate the issue
+                // return BadRequest("No se encontraron datos de snacks para guardar.");
+            }
+            else
+            {
+                List<SnackSeleccionadoViewModel> snacksSeleccionados = null;
+                try
+                {
+                    snacksSeleccionados = System.Text.Json.JsonSerializer.Deserialize<List<SnackSeleccionadoViewModel>>(snacksJson);
+                    Console.WriteLine($"✅ Snacks deserializados: {snacksSeleccionados?.Count ?? 0} items.");
+                }
+                catch (System.Text.Json.JsonException jsonEx)
+                {
+                    Console.WriteLine($"❌ Error de deserialización de snacks: {jsonEx.Message}");
+                    // For debugging, return a BadRequest
+                    // return BadRequest($"Error de formato de snacks: {jsonEx.Message}");
+                }
+
+
+                if (snacksSeleccionados != null && snacksSeleccionados.Any())
+                {
+                    foreach (var snack in snacksSeleccionados)
+                    {
+                        var espectadorConsumible = new EspectadorConsumible
+                        {
+                            Id_Espectador = espectador.Id_Espectador,
+                            Id_Consumible = snack.IdConsumible,
+                            Id_Cine = snack.IdCine,
+                            Cantidad = snack.Cantidad,
+                            Fecha = DateTime.Now
+                        };
+                        _context.EspectadorConsumibles.Add(espectadorConsumible);
+                    }
+                    Console.WriteLine("✅ EspectadorConsumibles agregados al contexto.");
+                }
+                else
+                {
+                    Console.WriteLine("⚠️ No hay snacks seleccionados para agregar al contexto.");
+                }
+            }
+
             await _context.SaveChangesAsync();
 
             TempData["CompraExitosa"] = "Compra realizada con éxito.";
@@ -95,8 +151,8 @@ public class ResumenCompraController : Controller
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"❌ Error al guardar entrada: {ex.Message}");
-            return StatusCode(500, "Error interno al guardar la compra.");
+            Console.WriteLine($"❌ Error al guardar la compra: {ex.Message}");
+            return StatusCode(500, $"Error interno al guardar la compra: {ex.Message}");
         }
     }
     [HttpPost]

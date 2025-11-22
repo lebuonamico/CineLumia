@@ -178,11 +178,13 @@ namespace Cine_Lumia.Controllers
 
             // --- LECTURA Y CONSOLIDACIÓN DE SNACKS ---
             var carritoJson = HttpContext.Session.GetString("CarritoSnacks");
-            List<CarritoItemViewModel> snacks = new();
+            List<CarritoItemViewModel> snacksCarrito = new();
+            List<SnackSeleccionadoViewModel> snacksParaResumen = new();
+
             if (!string.IsNullOrEmpty(carritoJson))
             {
                 var snacksDeserializados = JsonSerializer.Deserialize<List<CarritoItemViewModel>>(carritoJson) ?? new List<CarritoItemViewModel>();
-                snacks = snacksDeserializados
+                snacksCarrito = snacksDeserializados
                     .GroupBy(s => s.Id)
                     .Select(g => new CarritoItemViewModel
                     {
@@ -193,10 +195,23 @@ namespace Cine_Lumia.Controllers
                         ImagenUrl = g.First().ImagenUrl,
                         CineId = g.First().CineId
                     }).ToList();
+
+                // Convertir a SnackSeleccionadoViewModel para TempData
+                snacksParaResumen = snacksCarrito.Select(s => new SnackSeleccionadoViewModel
+                {
+                    IdConsumible = s.Id,
+                    Nombre = s.Snack!,
+                    Precio = s.Precio,
+                    Cantidad = s.Cantidad,
+                    IdCine = s.CineId // Asegurarse de que CineId se pasa correctamente
+                }).ToList();
             }
 
+            // Guardar snacks en TempData para que ResumenCompraController los recupere
+            TempData["SnacksSeleccionados"] = System.Text.Json.JsonSerializer.Serialize(snacksParaResumen);
+
             // --- CÁLCULO DE TOTALES ---
-            decimal totalSnacks = snacks.Sum(s => s.Precio * s.Cantidad);
+            decimal totalSnacks = snacksCarrito.Sum(s => s.Precio * s.Cantidad);
             decimal totalCompra = 0;
             if (TempData["TotalFinal"] != null)
             {
@@ -209,7 +224,8 @@ namespace Cine_Lumia.Controllers
                 AsientosSeleccionados = asientos,
                 CantidadEntradas = cantidad,
                 FormatoEntrada = formato,
-                TotalCompra = totalCompra
+                TotalCompra = totalCompra,
+                SnacksSeleccionados = snacksParaResumen // También poblar para la vista directa
             };
 
 
@@ -218,6 +234,7 @@ namespace Cine_Lumia.Controllers
             TempData.Keep("PagoData");
             TempData.Keep("Asientos");
             TempData.Keep("IdProyeccion");
+            TempData.Keep("SnacksSeleccionados"); // Asegurar que persista para el POST posterior
 
             return View("~/Views/ResumenCompra/Index.cshtml", vm);
         }

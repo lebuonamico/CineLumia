@@ -198,11 +198,7 @@
         }
 </style>
 <!-- BOTÓN VOLVER -->
-<form id="volverForm" method="post" action="/VentaEntradas/GuardarTempData">
-    <input type="hidden" name="idProyeccion" value="@Model.Id_Proyeccion" />
-    <input type="hidden" name="cantidadEntradas" value="@Model.CantidadEntradas" />
-    <input type="hidden" name="totalCompra" value="@Model.TotalCompra" />
-    <input type="hidden" name="formatoEntrada" value="@Model.FormatoEntrada" />
+<form id="volverForm" method="post" action="/Asientos/VolverVentaEntradas">
 </form>
 
 <button class="btn-volver-top" id="btnVolver">

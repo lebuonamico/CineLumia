@@ -14,11 +14,9 @@
 
 @if (modo == "Asientos")
 {
-    <form method="post" action="/Consumibles/VolverAAsientos">
-        <button class="btn-volver-top">
-            <i class="bi bi-arrow-left"></i> Volver
-        </button>
-    </form>
+    <button type="button" class="btn-volver-top" onclick="volverAAsientos()">
+        <i class="bi bi-arrow-left"></i> Volver
+    </button>
     <form method="get" action="/Pago/Index">
         <button type="button" class="btn-continuar-top" onclick="continuarAlPago()">
             Continuar al pago <i class="bi bi-arrow-right"></i>
@@ -689,6 +687,21 @@
             }).then(() => {
                 // Redirigir al pago
                 window.location.href = '/Pago/Index';
+            });
+        }
+
+        function volverAAsientos() {
+            fetch('/Consumibles/GuardarCarrito', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(carrito)
+            })
+            .then(r => {
+                if (r.ok) {
+                    window.location.href = '/Asientos/Seleccion';
+                } else {
+                    alert("Error al guardar el carrito antes de volver.");
+                }
             });
         }
     </script>

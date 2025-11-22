@@ -165,6 +165,9 @@ namespace Cine_Lumia.Controllers
             TempData.Keep("FormatoEntrada");
             TempData.Keep("IdProyeccionSeleccionado");
 
+            // Limpiar el carrito de snacks al volver a la selección de cantidad de entradas
+            HttpContext.Session.Remove("CarritoSnacks");
+
             // NO tocamos "Asientos", así se borran si venís de Funciones
             return RedirectToAction("Index", "VentaEntradas");
         }

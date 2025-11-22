@@ -197,6 +197,14 @@ namespace Cine_Lumia.Controllers
 
             // Guardamos el cine por si el usuario vuelve
             TempData["CineSnacks"] = cineId;
+
+            // Añadir el carrito existente al ViewBag para que la vista lo pueda restaurar
+            var carritoJson = HttpContext.Session.GetString("CarritoSnacks");
+            if (carritoJson != null)
+            {
+                ViewBag.CarritoSnacks = carritoJson;
+            }
+
             ViewBag.Modo = "Asientos";
             TempData.Keep();
             return View("Index", snacks);

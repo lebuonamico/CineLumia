@@ -182,7 +182,6 @@ namespace Cine_Lumia.Controllers
 
             // --- CÁLCULO DE TOTALES ---
             decimal totalSnacks = snacks.Sum(s => s.Precio * s.Cantidad);
-            decimal cargoSnacks = snacks.Any() ? 700 : 0; // Ejemplo de cargo
 
             var vm = new ResumenCompraViewModel
             {
@@ -190,8 +189,6 @@ namespace Cine_Lumia.Controllers
                 AsientosSeleccionados = asientos,
                 CantidadEntradas = cantidad,
                 FormatoEntrada = formato,
-                Snacks = snacks, // <-- Pasar snacks limpios al ViewModel
-                CargoServicioSnacks = cargoSnacks,
                 TotalCompra = totalEntradas + totalSnacks // <-- Calcular total final
             };
 

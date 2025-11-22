@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Cine_Lumia.Migrations
 {
     [DbContext(typeof(CineDbContext))]
-    [Migration("20251121125219_Inicial")]
+    [Migration("20251122083016_Inicial")]
     partial class Inicial
     {
         /// <inheritdoc />
@@ -172,6 +172,9 @@ namespace Cine_Lumia.Migrations
 
                     b.Property<int>("Id_TipoEntrada")
                         .HasColumnType("int");
+
+                    b.Property<decimal>("PrecioTotal")
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id_Entrada");
 

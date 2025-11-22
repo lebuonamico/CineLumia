@@ -170,6 +170,9 @@ namespace Cine_Lumia.Migrations
                     b.Property<int>("Id_TipoEntrada")
                         .HasColumnType("int");
 
+                    b.Property<decimal>("PrecioTotal")
+                        .HasColumnType("decimal(18,2)");
+
                     b.HasKey("Id_Entrada");
 
                     b.HasIndex("Id_Asiento");

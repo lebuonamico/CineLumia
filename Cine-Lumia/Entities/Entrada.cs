@@ -26,5 +26,8 @@ namespace Cine_Lumia.Entities
         public TipoEntrada TipoEntrada { get; set; } = null!;
 
         public DateTime FechaCompra { get; set; } = DateTime.Now;
+
+        [Required]
+        public decimal PrecioTotal { get; set; }
     }
 }

@@ -318,7 +318,8 @@ namespace Cine_Lumia.Migrations
                     Id_Espectador = table.Column<int>(type: "int", nullable: false),
                     Id_Asiento = table.Column<int>(type: "int", nullable: false),
                     Id_TipoEntrada = table.Column<int>(type: "int", nullable: false),
-                    FechaCompra = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    FechaCompra = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    PrecioTotal = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
                 },
                 constraints: table =>
                 {

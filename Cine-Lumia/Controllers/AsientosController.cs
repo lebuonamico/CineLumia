@@ -29,7 +29,7 @@ namespace Cine_Lumia.Controllers
 
             // No guardamos asientos todavía
             TempData.Remove("Asientos");
-
+            TempData.Remove("PagoData");
             TempData.Keep();
 
             return RedirectToAction("Seleccion");

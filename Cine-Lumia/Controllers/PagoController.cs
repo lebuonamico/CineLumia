@@ -232,24 +232,9 @@ namespace Cine_Lumia.Controllers
             // Indicar modo
             TempData["Modo"] = "Asientos";
             TempData.Keep("Modo");
+            TempData.Keep();
 
             return RedirectToAction("Index", "Consumibles");
         }
-
-        [HttpGet]
-        public IActionResult VolverConsumibles()
-        {
-            TempData.Keep("IdProyeccion");
-            TempData.Keep("Asientos");
-            TempData.Keep("CantidadEntradas");
-            TempData.Keep("TotalCompra");
-            TempData.Keep("FormatoEntrada");
-            TempData.Keep("PagoData");
-
-            TempData["Modo"] = "Asientos";
-
-            return RedirectToAction("Index", "Consumibles");
-        }
-
     }
 }

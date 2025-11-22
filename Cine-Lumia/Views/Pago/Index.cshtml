@@ -260,12 +260,21 @@ var fechaHoraTexto = Model.Proyeccion != null
 </style>
 
 <!-- BOTÓN VOLVER -->
-<form method="post" asp-action="VolverConsumibles" asp-controller="Pago">
-    <button type="button" class="btn-volver-top" onclick="volverAConsumibles()">
+<form id="formVolver" method="post" asp-action="VolverConsumible" asp-controller="Pago">
+
+    <input type="hidden" name="Titular" id="hiddenTitular" />
+    <input type="hidden" name="DNI" id="hiddenDNI" />
+    <input type="hidden" name="NumeroTarjeta" id="hiddenNumeroTarjeta" />
+    <input type="hidden" name="Vencimiento" id="hiddenVencimiento" />
+    <input type="hidden" name="CVV" id="hiddenCVV" />
+
+    <button type="submit" onclick="copiarDatosPago()" class="btn-volver-top">
         <i class="bi bi-arrow-left"></i> Volver
     </button>
-
 </form>
+
+
+
 
 <div class="page-wrapper">
 
@@ -497,6 +506,15 @@ var fechaHoraTexto = Model.Proyeccion != null
                             });
                         </text>
                 }
+        }
+    </script>
+    <script>
+        function copiarDatosPago() {
+            document.getElementById("hiddenTitular").value = document.getElementById("Titular").value;
+            document.getElementById("hiddenDNI").value = document.getElementById("DNI").value;
+            document.getElementById("hiddenNumeroTarjeta").value = document.getElementById("NumeroTarjeta").value;
+            document.getElementById("hiddenVencimiento").value = document.getElementById("Vencimiento").value;
+            document.getElementById("hiddenCVV").value = document.getElementById("CVV").value;
         }
     </script>
 

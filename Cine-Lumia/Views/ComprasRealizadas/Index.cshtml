@@ -1,100 +1,440 @@
 @model Cine_Lumia.Models.ViewModel.ComprasRealizadasViewModel
+@using System.Linq
 
 @{
     ViewData["Title"] = "Mis Compras Realizadas";
 }
 
-<h2 class="mt-4 mb-4 text-center"><i class="bi bi-cart-fill"></i> Compras Realizadas</h2>
+<style>
+    /* Estilos originales del ticket */
+    .ticket-container {
+        width: 100%;
+        color: #fff;
+        margin-bottom: 2em;
+        perspective: 1000px;
+    }
+
+    .ticket-card {
+        background: white;
+        height: auto;
+        min-height: 13em;
+        position: relative;
+        padding: 0.5em 1em 0.5em 2.5em;
+        border-radius: 7px 0px 0px 7px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease;
+        display: flex;
+    }
+
+    .ticket-left {
+        width: 70%;
+        border-radius: 8px;
+        padding-right: 1.5em;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .ticket-right {
+        width: 30%;
+        border-left: 0.18em dashed #ccc;
+        padding-left: 1.5em;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        position: relative;
+    }
+
+        .ticket-right::before,
+        .ticket-right::after {
+            content: "";
+            position: absolute;
+            display: block;
+            width: .9em;
+            height: .9em;
+            background: #fff;
+            border-radius: 50%;
+            left: -0.5em;
+        }
+
+        .ticket-right::before {
+            top: -0.4em;
+        }
+
+        .ticket-right::after {
+            bottom: -0.4em;
+        }
+
+    .ticket-title {
+        font-size: 1.3em;
+        margin-top: 0;
+        margin-bottom: 0.5em;
+    }
+
+        .ticket-title span {
+            font-weight: normal;
+        }
+
+    .ticket-field {
+        text-transform: uppercase;
+        font-weight: normal;
+        margin-bottom: 3px;
+        font-size: 1.1em;
+    }
+
+        .ticket-field h2 {
+            font-size: 1em;
+            color: #525252;
+            margin: 0;
+        }
+
+        .ticket-field span {
+            font-size: 0.8em;
+            color: #a2aeae;
+        }
+
+    .ticket-eye {
+        position: relative;
+        width: 2em;
+        height: 1.5em;
+        background: #fff;
+        margin: 0 auto;
+        border-radius: 1em/0.6em;
+        z-index: 1;
+    }
+
+        .ticket-eye:before, .ticket-eye:after {
+            content: "";
+            display: block;
+            position: absolute;
+            border-radius: 50%;
+        }
+
+        .ticket-eye:before {
+            width: 1em;
+            height: 1em;
+            background: #e84c3d;
+            z-index: 2;
+            left: 8px;
+            top: 4px;
+        }
+
+        .ticket-eye:after {
+            width: .5em;
+            height: .5em;
+            background: #fff;
+            z-index: 3;
+            left: 12px;
+            top: 8px;
+        }
+
+    .ticket-number {
+        text-align: center;
+        text-transform: uppercase;
+        margin: 1em 0;
+    }
+
+        .ticket-number h3 {
+            color: #e84c3d;
+            margin: 0;
+            font-size: 2.2em;
+            font-weight: bold;
+        }
+
+        .ticket-number span {
+            display: block;
+            color: #a2aeae;
+            font-size: 0.8em;
+            margin-top: 0.5em;
+        }
+
+    .ticket-image {
+        width: 80px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 4px;
+        margin-right: 1em;
+    }
+
+    .ticket-header {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 2em;
+    }
+
+    .ticket-content {
+        flex: 1;
+        font-size: 1.3em;
+    }
+
+    .ticket-actions {
+        margin-top: auto;
+        padding-top: 1em;
+        border-top: 1px solid #ddd;
+    }
+
+    .qr-placeholder {
+        width: 100px;
+        height: 100px;
+        background: #f8f9fa;
+        border: 2px dashed #dee2e6;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1em;
+    }
+
+        .qr-placeholder span {
+            color: #6c757d;
+            font-size: 0.7em;
+            text-align: center;
+            padding: 0.5em;
+        }
+
+    .container {
+        max-width: 100%;
+        padding: 0 2em;
+    }
+
+    .asientos-small {
+        font-size: 1.5em !important;
+    }
+
+    .snacks-ellipsis {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 250px;
+    }
+
+    .pagination {
+        justify-content: center;
+        margin-top: 20px;
+    }
+
+    /* Estilos Flickity para carruseles */
+    .carousel {
+        background: #FAFAFA;
+        margin-bottom: 40px;
+    }
+
+    .carousel-cell {
+        width: 100%; /* 1 item para tickets */
+        height: auto;
+        margin-right: 10px;
+        background: white;
+        border-radius: 5px;
+        counter-increment: carousel-cell;
+    }
+
+    .snacks-carousel .carousel-cell {
+        width: calc(25% - 10px); /* 4 items para snacks */
+    }
+
+    .progress-bar {
+        height: 4px;
+        width: 0;
+        background: #e84c3d;
+        margin-top: 10px;
+        transition: width 0.3s ease;
+    }
+
+    .flickity-page-dots {
+        bottom: -30px;
+    }
+
+        .flickity-page-dots .dot {
+            background: #ccc;
+        }
+
+            .flickity-page-dots .dot.is-selected {
+                background: #e84c3d;
+            }
+
+    /* Asegurar que los tickets se vean bien en el carrusel */
+    .tickets-carousel .ticket-container {
+        margin-bottom: 0;
+    }
+
+    .tickets-carousel .ticket-card {
+        margin: 10px;
+    }
+</style>
+
+<h2 class="mt-4 mb-4 text-center"><i class="bi bi-cart-fill"></i>Compras Realizadas</h2>
 
 <div class="container">
-    <h3>Entradas de Cine</h3>
-    @if (Model.Tickets != null && Model.Tickets.Any())
-    {
-        <div class="row">
-            @foreach (var ticket in Model.Tickets)
-            {
-                <div class="col-md-6 mb-4">
-                    <div class="card" style="max-width: 540px;">
-                        <div class="row g-0">
-                            <div class="col-md-4">
-                                <img src="@ticket.ImagenUrl" class="img-fluid rounded-start" alt="Poster de @ticket.PeliculaNombre" style="width: 100%; height: auto; object-fit: cover;">
-                            </div>
-                            <div class="col-md-8">
-                                <div class="card-body">
-                                    <h5 class="card-title">@ticket.PeliculaNombre</h5>
-                                    <p class="card-text">
-                                        <strong>Nombre de Película:</strong> @ticket.PeliculaNombre<br />
-                                        <strong>Cine Lugar:</strong> @ticket.CineNombre - @ticket.CineDireccion<br />
-                                        <strong>Asiento/s:</strong> @ticket.Asiento<br />
-                                        <strong>Día de Proyección:</strong> @ticket.FechaHoraProyeccion.ToString("dd/MM/yyyy")<br />
-                                        <strong>Horario:</strong> @ticket.FechaHoraProyeccion.ToString("HH:mm")
-                                    </p>
-                                    <div class="d-flex justify-content-between mt-3">
-                                        <a href="#" class="btn btn-sm btn-outline-primary">Ver Más</a>
+    <div id="tickets-section">
+        <h3>Entradas de Cine</h3>
+        @if (Model.Tickets != null && Model.Tickets.Any())
+        {
+            <!-- Carrusel para Tickets (1 item por slide) -->
+            <div class="carousel tickets-carousel" data-flickity='{ "cellAlign": "left", "contain": true, "pageDots": true }'>
+                @foreach (var ticket in Model.Tickets)
+                {
+                    <div class="carousel-cell">
+                        <!-- Ticket Estilizado -->
+                        <div class="ticket-container">
+                            <div class="ticket-card">
+                                <!-- Sección izquierda más ancha -->
+                                <div class="ticket-left">
+                                    <div class="ticket-header">
+                                        <img src="@ticket.ImagenUrl" class="ticket-image" alt="Poster de @ticket.PeliculaNombre">
+                                        <div class="ticket-content">
+                                            <div class="ticket-field">
+                                                <h2>@ticket.PeliculaNombre • @ticket.PeliculaAnio • @ticket.PeliculaDuracion min</h2>
+                                                <span>película, año y duración</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="ticket-field">
+                                        <h2><i class="bi bi-buildings-fill"></i> @ticket.CineNombre - @ticket.CineDireccion</h2>
+                                        <span>lugar</span>
+                                    </div>
+                                    <div class="ticket-field">
+                                        <h2><i class="bi bi-calendar-check-fill"></i> @ticket.FechaHoraProyeccion.ToString("dd MMM yyyy - HH:mm")</h2>
+                                        <span>Dia y horario de Funcion</span>
+                                    </div>
+                                    <div class="ticket-field">
                                         @{
-                                            bool esElegible = ticket.FechaHoraProyeccion.Date > DateTime.Now.Date;
+                                            var snacksText = "Sin consumibles";
+                                            if (ticket.ConsumiblesAsociados.Any())
+                                            {
+                                                snacksText = string.Join(" + ", ticket.ConsumiblesAsociados.Select(s => $"{s.Cantidad} {s.ConsumibleNombre}"));
+                                            }
                                         }
+                                        <h2 class="snacks-ellipsis" title="@snacksText"><i class="bi bi-bag-fill"></i> @snacksText</h2>
+                                        <span> snacks</span>
+                                    </div>
+                                    <div class="ticket-field">
+                                        <h2><i class="bi bi-person-badge"></i> @ticket.Cantidad Asiento(s) - Función 2D</h2>
+                                        <span>asientos y tipo</span>
+                                    </div>
+                                    <div class="ticket-field">
+                                        <h2><i class="bi bi-chevron-double-right"></i> Total Compra: @ticket.TotalCompra.ToString("C")</h2>
+                                        <span>Precio Total Final</span>
+                                    </div>
 
-                                        @if (esElegible)
-                                        {
-                                            <a asp-controller="Account" asp-action="CambioReembolso" asp-route-id="@ticket.EntradaId" class="btn btn-sm btn-warning">Solicitar Cambio/Reembolso</a>
+                                    <!-- Botones de Acción DENTRO del ticket -->
+                                    <div class="ticket-actions">
+                                        <div class="d-flex justify-content-end align-items-center">
+                                            @{
+                                                bool esElegible = ticket.FechaHoraProyeccion > DateTime.Now;
+                                            }
+                                            @if (esElegible)
+                                            {
+                                                <a asp-controller="Account" asp-action="CambioReembolso" asp-route-ids="@string.Join(",", ticket.EntradasIds)" class="btn btn-sm btn-warning">Solicitar Cambio/Reembolso</a>
+                                            }
+                                            else
+                                            {
+                                                <a class="btn btn-sm btn-secondary disabled" aria-disabled="true">No elegible para cambio</a>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Sección derecha con información de asientos -->
+                                <div class="ticket-right">
+                                    <div class="ticket-eye"></div>
+                                    <div class="ticket-number">
+                                        @{
+                                            var asientosDisplay = ticket.Asientos.Any() ? string.Join(", ", ticket.Asientos) : "N/A";
+                                            var asientosClass = ticket.Asientos.Count >= 7 ? "asientos-small" : "";
                                         }
-                                        else
-                                        {
-                                            <a class="btn btn-sm btn-secondary disabled" style="pointer-events: none;" aria-disabled="true">Solicitar Cambio/Reembolso</a>
-                                        }
+                                        <h3 class="@asientosClass">@asientosDisplay</h3>
+                                        <span>asientos</span>
+                                    </div>
+
+                                    <!-- Cuadrado para QR en lugar de código de barras -->
+                                    <div class="qr-placeholder">
+                                        <span>QR CODE</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            }
-        </div>
-    }
-    else
-    {
-        <p>No has comprado ninguna entrada de cine aún.</p>
-    }
+                }
+            </div>
 
-    <h3 class="mt-5">Snacks Comprados</h3>
-    @if (Model.Snacks != null && Model.Snacks.Any())
-    {
-        <div class="row">
-            @foreach (var snack in Model.Snacks)
-            {
-                <div class="col-md-6 mb-4">
-                    <div class="card" style="max-width: 540px;">
-                        <div class="row g-0">
-                            <div class="col-md-4">
-                                <img src="/images/snack_placeholder.png" class="img-fluid rounded-start" alt="Imagen de @snack.ConsumibleNombre" style="width: 100%; height: auto; object-fit: cover;">
-                            </div>
-                            <div class="col-md-8">
-                                <div class="card-body">
-                                    <h5 class="card-title">@snack.ConsumibleNombre</h5>
-                                    <p class="card-text">Cantidad: @snack.Cantidad</p>
-                                    <div class="d-flex justify-content-between mt-3">
-                                        <a href="#" class="btn btn-sm btn-outline-primary">Ver Más</a>
-                                        <a href="#" class="btn btn-sm btn-outline-secondary">Gestionar</a>
+            <!-- Progress Bar para Tickets -->
+            <div class="progress-bar tickets-progress-bar"></div>
+
+        }
+        else
+        {
+            <div class="ticket-container" style="color:black;background-color: white;height: 441.25px;width: auto;display: flex;justify-content: center;align-items: center;font-size:2em">
+                Sin Entradas Disponibles.
+            </div>
+        }
+    </div>
+
+    <div id="snacks-section">
+        <h3 class="mt-5">Snacks Comprados por Separado</h3>
+        @if (Model.Snacks != null && Model.Snacks.Any())
+        {
+            <!-- Carrusel para Snacks (4 items por slide) -->
+            <div class="carousel snacks-carousel" data-flickity='{ "cellAlign": "left", "contain": true, "pageDots": true, "groupCells": 4 }'>
+                @foreach (var combo in Model.Snacks)
+                {
+                    <div class="carousel-cell">
+                        <div class="card h-100 m-2">
+                            <div class="row g-0">
+                                <div class="col-12">
+                                    <img src="@combo.ImagenUrl" class="img-fluid rounded-top" alt="Combo de snacks" style="height: 150px; width: 100%; object-fit: cover;">
+                                </div>
+                                <div class="col-12">
+                                    <div class="card-body d-flex flex-column">
+                                        <h5 class="card-title">COMBO</h5>
+                                        <p class="card-text"><strong>@combo.CantidadTotalItems Items</strong></p>
+                                        <p class="card-text" style="font-size: 0.8rem; min-height: 40px;">@combo.DescripcionItems</p>
+                                        <p class="card-text mt-auto"><strong>Precio Total: @combo.PrecioTotal.ToString("C")</strong></p>
+                                        <small class="text-muted">Comprado el: @combo.FechaCompra.ToString("dd/MM/yyyy HH:mm")</small>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            }
-        </div>
-    }
-    else
-    {
-        <p>No has comprado ningún snack aún.</p>
-    }
+                }
+            </div>
+
+            <!-- Progress Bar para Snacks -->
+            <div class="progress-bar snacks-progress-bar"></div>
+        }
+        else
+        {
+            <div class="ticket-container" style="color:black;background-color: white;height: 370px;width: auto;display: flex;justify-content: center;align-items: center;font-size:2em">
+                Sin Snacks Disponibles.
+            </div>
+        }
+    </div>
 </div>
 
-@* Placeholder for snack image if not already present *@
 @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Flickity CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/flickity@2/dist/flickity.min.css">
+    <!-- Flickity JS -->
+    <script src="https://unpkg.com/flickity@2/dist/flickity.pkgd.min.js"></script>
+
     <script>
-        // You might want to ensure this image exists or create it.
-        // For now, it's a placeholder.
+        // Inicializar Flickity para Tickets
+        var ticketsFlkty = new Flickity('.tickets-carousel');
+        var ticketsProgressBar = document.querySelector('.tickets-progress-bar');
+
+        ticketsFlkty.on('scroll', function(progress) {
+            progress = Math.max(0, Math.min(1, progress));
+            ticketsProgressBar.style.width = progress * 100 + '%';
+        });
+
+        // Inicializar Flickity para Snacks
+        var snacksFlkty = new Flickity('.snacks-carousel');
+        var snacksProgressBar = document.querySelector('.snacks-progress-bar');
+
+        snacksFlkty.on('scroll', function(progress) {
+            progress = Math.max(0, Math.min(1, progress));
+            snacksProgressBar.style.width = progress * 100 + '%';
+        });
     </script>
 }

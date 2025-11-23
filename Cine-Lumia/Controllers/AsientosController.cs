@@ -47,7 +47,7 @@ namespace Cine_Lumia.Controllers
 
             // Solo preseleccionamos si TempData["Asientos"] existe (viene de Pago)
             List<int> asientosSeleccionadosIds = new List<int>();
-            if (TempData.ContainsKey("Asientos"))
+            if (TempData.ContainsKey("Asientos") && TempData["Asientos"] != null)
             {
                 var asientosStr = TempData["Asientos"]?.ToString() ?? "";
                 asientosSeleccionadosIds = asientosStr
@@ -59,18 +59,18 @@ namespace Cine_Lumia.Controllers
             ViewData["AsientosSeleccionados"] = string.Join(",", asientosSeleccionadosIds);
 
             // Validación básica
-            if (!TempData.ContainsKey("IdProyeccionSeleccionado") ||
-                !TempData.ContainsKey("CantidadEntradas") ||
-                !TempData.ContainsKey("TotalCompra") ||
-                !TempData.ContainsKey("FormatoEntrada"))
+            if (!TempData.ContainsKey("IdProyeccionSeleccionado") || TempData["IdProyeccionSeleccionado"] == null ||
+                !TempData.ContainsKey("CantidadEntradas") || TempData["CantidadEntradas"] == null ||
+                !TempData.ContainsKey("TotalCompra") || TempData["TotalCompra"] == null ||
+                !TempData.ContainsKey("FormatoEntrada") || TempData["FormatoEntrada"] == null)
             {
                 return RedirectToAction("Index", "VentaEntradas"); // fallback
             }
 
-            int idProyeccion = int.Parse(TempData["IdProyeccionSeleccionado"].ToString()!);
-            int cantidadEntradas = int.Parse(TempData["CantidadEntradas"].ToString()!);
-            decimal totalCompra = decimal.Parse(TempData["TotalCompra"].ToString()!, CultureInfo.InvariantCulture);
-            string formatoEntrada = TempData["FormatoEntrada"].ToString()!;
+            int idProyeccion = int.Parse(TempData["IdProyeccionSeleccionado"]!.ToString()!);
+            int cantidadEntradas = int.Parse(TempData["CantidadEntradas"]!.ToString()!);
+            decimal totalCompra = decimal.Parse(TempData["TotalCompra"]!.ToString()!, CultureInfo.InvariantCulture);
+            string formatoEntrada = TempData["FormatoEntrada"]!.ToString()!;
 
             var proyeccion = _context.Proyecciones
                 .Include(p => p.Pelicula)
@@ -129,13 +129,13 @@ namespace Cine_Lumia.Controllers
         [HttpPost]
         public IActionResult ConfirmarSeleccion(int[] asientosSeleccionados)
         {
-            if (TempData["CantidadEntradas"] == null || TempData["TotalCompra"] == null || TempData["FormatoEntrada"] == null)
+            if (TempData["CantidadEntradas"] == null || TempData["TotalCompra"] == null || TempData["FormatoEntrada"] == null || TempData["IdProyeccionSeleccionado"] == null)
                 return RedirectToAction("Index", "Home");
 
-            int cantidad = int.Parse(TempData["CantidadEntradas"].ToString()!);
-            string formato = TempData["FormatoEntrada"].ToString()!;
-            decimal total = decimal.Parse(TempData["TotalCompra"].ToString()!, CultureInfo.InvariantCulture);
-            int idProyeccion = int.Parse(TempData["IdProyeccionSeleccionado"].ToString()!);
+            int cantidad = int.Parse(TempData["CantidadEntradas"]!.ToString()!);
+            string formato = TempData["FormatoEntrada"]!.ToString()!;
+            decimal total = decimal.Parse(TempData["TotalCompra"]!.ToString()!, CultureInfo.InvariantCulture);
+            int idProyeccion = int.Parse(TempData["IdProyeccionSeleccionado"]!.ToString()!);
 
             var proyeccion = _context.Proyecciones
                 .Include(p => p.Pelicula)

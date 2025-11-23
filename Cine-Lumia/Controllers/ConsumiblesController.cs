@@ -175,10 +175,10 @@ namespace Cine_Lumia.Controllers
         {
             TempData.Keep();
             // Verificamos que venimos del flujo correcto
-            if (!TempData.ContainsKey("IdProyeccionSeleccionado"))
+            if (!TempData.ContainsKey("IdProyeccionSeleccionado") || TempData["IdProyeccionSeleccionado"] == null)
                 return RedirectToAction("Index", "Home");
 
-            int idProyeccion = int.Parse(TempData["IdProyeccionSeleccionado"].ToString());
+            int idProyeccion = int.Parse(TempData["IdProyeccionSeleccionado"]!.ToString()!);
 
             var proyeccion = _context.Proyecciones
                 .Include(p => p.Sala).ThenInclude(s => s.Cine)

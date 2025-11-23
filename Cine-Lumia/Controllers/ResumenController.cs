@@ -68,6 +68,9 @@ public class ResumenCompraController : Controller
             return BadRequest("Tipo de entrada no encontrado.");
 
         var userEmail = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+        if (userEmail == null)
+            return BadRequest("No se encontró el email del espectador logueado.");
+
         var espectador = await _context.Espectadores.FirstOrDefaultAsync(e => e.Email == userEmail);
 
         if (espectador == null)
@@ -104,11 +107,11 @@ public class ResumenCompraController : Controller
             }
 
             // Guardar snacks (recuperar de TempData)
-            string snacksJson = TempData["SnacksSeleccionados"] as string;
+            string? snacksJson = TempData["SnacksSeleccionados"] as string;
 
             if (!string.IsNullOrEmpty(snacksJson))
             {
-                List<SnackSeleccionadoViewModel> snacksSeleccionados = null;
+                List<SnackSeleccionadoViewModel>? snacksSeleccionados = null;
                 try
                 {
                     snacksSeleccionados = System.Text.Json.JsonSerializer.Deserialize<List<SnackSeleccionadoViewModel>>(snacksJson);

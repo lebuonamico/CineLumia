@@ -98,7 +98,7 @@
         const checkAcuerdo = document.getElementById('checkAcuerdo');
         const btnContinuar = document.getElementById('btnContinuar');
         const form = document.getElementById('formReembolso');
-        const entradaId = @Html.Raw(Json.Serialize(ViewData["EntradaId"]));
+        const entradaIds = @Html.Raw(Json.Serialize(ViewData["EntradaIds"]));
 
         checkAcuerdo.addEventListener('change', function () {
             btnContinuar.disabled = !this.checked;
@@ -126,20 +126,31 @@
                     return;
                 }
 
+                if (!entradaIds) {
+                    throw new Error("No se encontraron los IDs de las entradas para procesar.");
+                }
+
                 const tipoOperacion = operacion.value;
-                const fetchUrl = `@Url.Action("ProcesarCambioDeEntrada", "Account")/${entradaId}`;
+                const fetchUrl = `@Url.Action("ProcesarCambioDeEntradas", "Account")`;
+
+                const formData = new FormData();
+                formData.append('ids', entradaIds);
+
                 const fetchOptions = {
                     method: 'POST',
                     headers: {
                         'RequestVerificationToken': token
-                    }
+                    },
+                    body: formData
                 };
 
-                if (tipoOperacion === 'reembolso') {
-                    fetch(fetchUrl, fetchOptions)
-                      .then(response => response.json())
-                      .then(data => {
-                          if (data.success) {
+                // El resto del código de fetch es el mismo para 'reembolso' y 'cambio'
+                // así que podemos unificarlo.
+                fetch(fetchUrl, fetchOptions)
+                  .then(response => response.json())
+                  .then(data => {
+                      if (data.success) {
+                          if (tipoOperacion === 'reembolso') {
                               Swal.fire({
                                   title: 'Se ha devuelto su dinero',
                                   icon: 'success',
@@ -147,34 +158,10 @@
                                   color: '#fff',
                                   confirmButtonText: 'Volver a Compras Realizadas',
                                   confirmButtonColor: '#ffc107'
-                              }).then((result) => {
-                                  if (result.isConfirmed) {
-                                      window.location.href = '@Url.Action("Index", "ComprasRealizadas")';
-                                  }
+                              }).then(() => {
+                                  window.location.href = '@Url.Action("Index", "ComprasRealizadas")';
                               });
-                          } else {
-                              Swal.fire({
-                                  icon: 'error',
-                                  title: 'Error',
-                                  text: data.message || 'No se pudo procesar el reembolso. Inténtelo de nuevo.',
-                                  background: '#212529',
-                                  color: '#fff'
-                              });
-                          }
-                      }).catch(error => {
-                          Swal.fire({
-                              icon: 'error',
-                              title: 'Error de Conexión',
-                              text: 'Hubo un problema al conectar con el servidor.',
-                              background: '#212529',
-                              color: '#fff'
-                          });
-                      });
-                } else if (tipoOperacion === 'cambio') {
-                    fetch(fetchUrl, fetchOptions)
-                      .then(response => response.json())
-                      .then(data => {
-                          if (data.success) {
+                          } else { // tipoOperacion === 'cambio'
                               Swal.fire({
                                   title: 'Cambio de Entrada Exitoso',
                                   text: 'Su entrada ha sido borrada, por favor elija una nueva película.',
@@ -183,30 +170,29 @@
                                   color: '#fff',
                                   confirmButtonText: 'Seleccionar nueva película',
                                   confirmButtonColor: '#ffc107'
-                              }).then((result) => {
-                                  if (result.isConfirmed) {
-                                      window.location.href = '@Url.Action("Index", "Home")';
-                                  }
-                              });
-                          } else {
-                              Swal.fire({
-                                  icon: 'error',
-                                  title: 'Error',
-                                  text: data.message || 'No se pudo procesar el cambio. Inténtelo de nuevo.',
-                                  background: '#212529',
-                                  color: '#fff'
+                              }).then(() => {
+                                  window.location.href = '@Url.Action("Index", "Home")';
                               });
                           }
-                      }).catch(error => {
+                      } else {
                           Swal.fire({
                               icon: 'error',
-                              title: 'Error de Conexión',
-                              text: 'Hubo un problema al conectar con el servidor.',
+                              title: 'Error',
+                              text: data.message || 'No se pudo procesar la solicitud. Inténtelo de nuevo.',
                               background: '#212529',
                               color: '#fff'
                           });
+                      }
+                  }).catch(error => {
+                      Swal.fire({
+                          icon: 'error',
+                          title: 'Error de Conexión',
+                          text: 'Hubo un problema al conectar con el servidor.',
+                          background: '#212529',
+                          color: '#fff'
                       });
-                }
+                  });
+
             } catch (err) {
                 Swal.fire({
                     icon: 'error',

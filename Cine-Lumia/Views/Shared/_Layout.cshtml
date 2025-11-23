@@ -93,7 +93,7 @@
 
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle text-light" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                @if (User.Identity.IsAuthenticated)
+                                @if (User.Identity != null && User.Identity.IsAuthenticated)
                                 {
                                     <i class="bi bi-person-square"></i>
                                     <span>Hola @(User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.GivenName)?.Value)</span>
@@ -105,7 +105,7 @@
                                 }
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                @if (User.Identity.IsAuthenticated)
+                                @if (User.Identity != null && User.Identity.IsAuthenticated)
                                 {
                                     <li>
                                         <a class="dropdown-item" asp-controller="Account" asp-action="Profile"><i class="bi bi-person-lines-fill"></i> Ver Perfil</a>

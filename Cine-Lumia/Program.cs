@@ -7,7 +7,12 @@ var builder = WebApplication.CreateBuilder(args);
 // ============================
 // CADENA DE CONEXIÓN
 // ============================
-string connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+string? connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrEmpty(connectionString))
+{
+    throw new InvalidOperationException("The connection string 'DefaultConnection' was not found.");
+}
+
 
 // ============================
 // CONFIGURACIÓN DE DbContext

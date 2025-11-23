@@ -578,7 +578,7 @@
         }
 
         function finalizarCompra() {
-            var isAuthenticated = @User.Identity.IsAuthenticated.ToString().ToLower();
+            var isAuthenticated = @((User.Identity != null && User.Identity.IsAuthenticated).ToString().ToLower());
             var hasCineSelectedInCart = carrito.length > 0 && carrito.every(item => item.cineId && item.cineId !== 0);
 
             if (!isAuthenticated || !hasCineSelectedInCart) {

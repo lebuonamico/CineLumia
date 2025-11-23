@@ -58,7 +58,7 @@ namespace Cine_Lumia.Controllers
             if (TempData["IdProyeccion"] == null)
                 return RedirectToAction("Index", "Home");
 
-            int idProy = int.Parse(TempData["IdProyeccion"].ToString()!);
+            int idProy = int.Parse(TempData["IdProyeccion"]!.ToString()!);
 
             var proy = _context.Proyecciones
                 .Include(p => p.Pelicula)
@@ -85,12 +85,12 @@ namespace Cine_Lumia.Controllers
                 Proyeccion = proy,
                 AsientosSeleccionados = asientosSeleccionados,
                 CantidadEntradas = idsAsientos.Count,
-                TotalCompra = decimal.Parse(TempData["TotalCompra"]!.ToString()!, CultureInfo.InvariantCulture),
-                FormatoEntrada = TempData["FormatoEntrada"]!.ToString()!
+                TotalCompra = decimal.Parse(TempData["TotalCompra"]?.ToString() ?? "0", CultureInfo.InvariantCulture),
+                FormatoEntrada = TempData["FormatoEntrada"]?.ToString() ?? ""
             };
 
             decimal totalSnacks = snacks.Sum(s => s.Precio * s.Cantidad);
-            decimal subtotalEntradas = decimal.Parse(TempData["TotalCompra"]!.ToString()!, CultureInfo.InvariantCulture);
+            decimal subtotalEntradas = decimal.Parse(TempData["TotalCompra"]?.ToString() ?? "0", CultureInfo.InvariantCulture);
 
             decimal cargoEntradas = 0;
             decimal cargoSnacks = 0;
@@ -161,9 +161,9 @@ namespace Cine_Lumia.Controllers
                 return RedirectToAction("Index", "Home");
 
             // --- LECTURA DE DATOS DE ENTRADAS ---
-            int cantidad = int.Parse(TempData["CantidadEntradas"].ToString()!);
-            string formato = TempData["FormatoEntrada"].ToString()!;
-            decimal totalEntradas = decimal.Parse(TempData["TotalCompra"].ToString()!, CultureInfo.InvariantCulture);
+            int cantidad = int.Parse(TempData["CantidadEntradas"]!.ToString()!);
+            string formato = TempData["FormatoEntrada"]!.ToString()!;
+            decimal totalEntradas = decimal.Parse(TempData["TotalCompra"]!.ToString()!, CultureInfo.InvariantCulture);
 
             var proyeccion = _context.Proyecciones
                 .Include(p => p.Pelicula)
@@ -215,7 +215,7 @@ namespace Cine_Lumia.Controllers
             decimal totalCompra = 0;
             if (TempData["TotalFinal"] != null)
             {
-                decimal.TryParse(TempData["TotalFinal"].ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out totalCompra);
+                decimal.TryParse(TempData["TotalFinal"]!.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out totalCompra);
             }
 
             var vm = new ResumenCompraViewModel

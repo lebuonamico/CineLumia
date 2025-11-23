@@ -31,7 +31,7 @@ namespace Cine_Lumia.Controllers
         /// </summary>
         /// <returns>Vista del formulario de login.</returns>
         [HttpGet]
-        public IActionResult Login(string returnUrl = null)
+        public IActionResult Login(string? returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
             return View();
@@ -45,7 +45,7 @@ namespace Cine_Lumia.Controllers
         /// <returns>Redirecciona a la página principal si el login es exitoso, de lo contrario, vuelve a mostrar el formulario con errores.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken] // Protege contra ataques CSRF
-        public async Task<IActionResult> Login(LoginViewModel model, string returnUrl = null)
+        public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl; // Pass returnUrl back to view if model state is invalid
             if (ModelState.IsValid)
@@ -199,7 +199,7 @@ namespace Cine_Lumia.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        private Espectador GetCurrentUser()
+        private Espectador? GetCurrentUser()
         {
             var userEmail = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
             if (string.IsNullOrEmpty(userEmail))
@@ -438,16 +438,16 @@ namespace Cine_Lumia.Controllers
 
         [HttpGet]
         [Authorize]
-        public IActionResult CambioReembolso(int id)
+        public IActionResult CambioReembolso(string ids)
         {
-            ViewData["EntradaId"] = id;
+            ViewData["EntradaIds"] = ids;
             return View();
         }
 
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ProcesarCambioDeEntrada(int id)
+        public async Task<IActionResult> ProcesarCambioDeEntradas(string ids)
         {
             var user = GetCurrentUser();
             if (user == null)
@@ -455,14 +455,38 @@ namespace Cine_Lumia.Controllers
                 return Unauthorized();
             }
 
-            var entrada = await _context.Entradas.FirstOrDefaultAsync(e => e.Id_Entrada == id && e.Id_Espectador == user.Id_Espectador);
-
-            if (entrada == null)
+            if (string.IsNullOrEmpty(ids))
             {
-                return NotFound();
+                return BadRequest(new { success = false, message = "No se proporcionaron IDs de entrada." });
             }
 
-            _context.Entradas.Remove(entrada);
+            var idList = ids.Split(',').Select(id => int.TryParse(id.Trim(), out var parsedId) ? parsedId : -1).Where(id => id != -1).ToList();
+
+            if (!idList.Any())
+            {
+                return BadRequest(new { success = false, message = "Los IDs proporcionados no son válidos." });
+            }
+
+            var entradas = await _context.Entradas
+                .Where(e => idList.Contains(e.Id_Entrada) && e.Id_Espectador == user.Id_Espectador)
+                .Include(e => e.Asiento) // Cargar los asientos asociados
+                .ToListAsync();
+
+            if (entradas.Count != idList.Count)
+            {
+                return Json(new { success = false, message = "Algunas de las entradas no se encontraron o no te pertenecen." });
+            }
+
+            // Liberar los asientos
+            foreach (var entrada in entradas)
+            {
+                if (entrada.Asiento != null)
+                {
+                    entrada.Asiento.Disponible = true;
+                }
+            }
+
+            _context.Entradas.RemoveRange(entradas);
             var recordsAffected = await _context.SaveChangesAsync();
 
             if (recordsAffected > 0)

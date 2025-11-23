@@ -16,10 +16,10 @@ namespace Cine_Lumia.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            if (!TempData.ContainsKey("IdProyeccionSeleccionado"))
+            if (!TempData.ContainsKey("IdProyeccionSeleccionado") || TempData["IdProyeccionSeleccionado"] == null)
                 return RedirectToAction("Index", "Funciones");
 
-            int idProyeccion = (int)TempData["IdProyeccionSeleccionado"];
+            int idProyeccion = (int)TempData["IdProyeccionSeleccionado"]!;
 
             var proyeccion = await _context.Proyecciones
                 .Include(p => p.Sala).ThenInclude(s => s.Formato)
@@ -61,13 +61,13 @@ namespace Cine_Lumia.Controllers
                 TempData.Remove("FormatoEntrada");
                 TempData.Remove("DesdeFunciones"); // eliminamos la bandera para futuras visitas
             }
-            else if (TempData.ContainsKey("CantidadEntradas") && TempData.ContainsKey("TotalCompra"))
+            else if (TempData.ContainsKey("CantidadEntradas") && TempData["CantidadEntradas"] != null && TempData.ContainsKey("TotalCompra") && TempData["TotalCompra"] != null)
             {
                 // Viene de Selección de Asientos o regreso a VentaEntradas → conservamos los valores
-                vm.Total = decimal.Parse(TempData["TotalCompra"].ToString()!, CultureInfo.InvariantCulture);
+                vm.Total = decimal.Parse(TempData["TotalCompra"]!.ToString()!, CultureInfo.InvariantCulture);
                 vm.CantidadesSeleccionadas = new Dictionary<int, int>
         {
-            { tiposEntrada.First().Id_TipoEntrada, int.Parse(TempData["CantidadEntradas"].ToString()!) }
+            { tiposEntrada.First().Id_TipoEntrada, int.Parse(TempData["CantidadEntradas"]!.ToString()!) }
         };
             }
             else
@@ -109,7 +109,7 @@ namespace Cine_Lumia.Controllers
             TempData["HoraSeleccionada"] = horaSeleccionada;
             TempData.Keep();
 
-            if (!User.Identity.IsAuthenticated)
+            if (User.Identity == null || !User.Identity.IsAuthenticated)
             {
                 var returnUrl = Url.Action("Index", "VentaEntradas", new { idProyeccion });
                 return RedirectToAction("Login", "Account", new { returnUrl });

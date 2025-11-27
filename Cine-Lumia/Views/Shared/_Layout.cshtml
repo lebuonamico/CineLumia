@@ -10,6 +10,29 @@
         controller == "Asientos" || 
         (controller == "Consumibles" && action == "EntradaSnaks") ||
         controller == "Pago";
+
+    // Obtener nombre de cine desde Session/DB para renderizado inicial en el navbar
+    string selectedCineName = "Seleccionar Cine";
+    try
+    {
+        var selectedId = Context.Session.GetInt32("CineSeleccionado");
+        if (selectedId.HasValue)
+        {
+            var db = Context.RequestServices.GetService(typeof(Cine_Lumia.Models.CineDbContext)) as Cine_Lumia.Models.CineDbContext;
+            if (db != null)
+            {
+                var cine = db.Cines.FirstOrDefault(c => c.Id_Cine == selectedId.Value);
+                if (cine != null)
+                {
+                    selectedCineName = cine.Nombre;
+                }
+            }
+        }
+    }
+    catch
+    {
+        // no bloquear render si falla
+    }
 }
 
 <style>
@@ -86,7 +109,7 @@
                                    data-bs-toggle="offcanvas"
                                    data-bs-target="#offcanvasCines"
                                    aria-controls="offcanvasCines">
-                                    <i class="bi bi-geo-alt"></i> Seleccionar Cine
+                                    <i class="bi bi-geo-alt"></i> <span id="navCineNombre">@selectedCineName</span>
                                 </a>
                             </li>
                         }
@@ -143,6 +166,29 @@
             </div>
         </nav>
     </header>
+    <script>
+        // Init navbar cine name immediately after header renders
+        (function(){
+            try {
+                var nav = document.getElementById('navCineNombre');
+                if (!nav) return;
+                var sel = localStorage.getItem('cineSeleccionado');
+                if (!sel) { nav.textContent = 'Seleccionar Cine'; return; }
+
+                // Try to use cache if already available
+                if (window.cinesCache && Array.isArray(window.cinesCache)) {
+                    var f = window.cinesCache.find(function(c){ return c.id == sel; });
+                    if (f) { nav.textContent = f.nombre; return; }
+                }
+
+                // Fallback: request list and update nav
+                fetch('/Cines/Listar')
+                    .then(function(r){ return r.json(); })
+                    .then(function(list){ if (!list) { nav.textContent = 'Seleccionar Cine'; return; } window.cinesCache = list; var found = list.find(function(c){ return c.id == sel; }); if (found) nav.textContent = found.nombre; else nav.textContent = 'Seleccionar Cine'; })
+                    .catch(function(){ nav.textContent = 'Seleccionar Cine'; });
+            } catch (e) { /* noop */ }
+        })();
+    </script>
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()
@@ -195,11 +241,11 @@
             `).join('');
 
             // Si ya hay cine seleccionado en localStorage, marcarlo
-            const seleccionadoLocal = localStorage.getItem('cineSeleccionado');
-            if (seleccionadoLocal) {
-                const input = document.querySelector(`input[name="cine"][value="${seleccionadoLocal}"]`);
+            const elegidoLocal = localStorage.getItem('cineSeleccionado');
+            if (elegidoLocal) {
+                const input = document.querySelector(`input[name="cine"][value="${elegidoLocal}"]`);
                 if (input) input.checked = true;
-                setFooter(seleccionadoLocal);
+                setFooter(elegidoLocal);
             } else {
                 setFooter(null);
             }
@@ -210,14 +256,17 @@
         }
     });
 
+    // Asegurar que setFooter actualice también el texto del nav
     function setFooter(cineId) {
         var nombreEl = document.getElementById('footerCineNombre');
         var direccionEl = document.getElementById('footerCineDireccion');
+        var navNombreEl = document.getElementById('navCineNombre');
         if (!nombreEl || !direccionEl) return;
 
         if (!cineId) {
             nombreEl.textContent = 'Cine no seleccionado';
             direccionEl.textContent = '';
+            if (navNombreEl) navNombreEl.textContent = 'Seleccionar Cine';
             return;
         }
 
@@ -225,6 +274,7 @@
         if (cine) {
             nombreEl.textContent = cine.nombre;
             direccionEl.textContent = cine.direccion;
+            if (navNombreEl) navNombreEl.textContent = cine.nombre;
         } else {
             // Si no está en cache, intentar pedir al servidor
             fetch(`/Cines/Listar`).then(r => r.json()).then(list => {
@@ -233,21 +283,24 @@
                 if (found) {
                     nombreEl.textContent = found.nombre;
                     direccionEl.textContent = found.direccion;
+                    if (navNombreEl) navNombreEl.textContent = found.nombre;
                 } else {
                     nombreEl.textContent = 'Cine no seleccionado';
                     direccionEl.textContent = '';
+                    if (navNombreEl) navNombreEl.textContent = 'Seleccionar Cine';
                 }
             }).catch(() => {
                 nombreEl.textContent = 'Cine no seleccionado';
                 direccionEl.textContent = '';
+                if (navNombreEl) navNombreEl.textContent = 'Seleccionar Cine';
             });
         }
     }
 
     document.getElementById('btnSeleccionar').addEventListener('click', async () => {
-        const seleccionado = document.querySelector('input[name="cine"]:checked');
-        if (seleccionado) {
-            const cineId = seleccionado.value;
+        const elegido = document.querySelector('input[name="cine"]:checked');
+        if (elegido) {
+            const cineId = elegido.value;
             // Guardamos en localStorage para validaciones cliente
             localStorage.setItem('cineSeleccionado', cineId);
 
@@ -339,7 +392,7 @@
                 snowflake.style.animationDuration = `${fallDuration}s`;
                 snowflake.style.animationDelay = `${fallDelay}s`;
 
-                // Animación con requestAnimationFrame para evitar keyframes
+                // Animación with requestAnimationFrame para evitar keyframes
 
                 animateSnowflake(snowflake, randomX, randomXEnd, randomScale, fallDuration);
 
@@ -379,5 +432,37 @@
         });
     </script>
 
+    <script>
+        // Fallback robusto: asegura que el nombre del cine en el navbar se inicialice siempre al cargar.
+        (function () {
+            try {
+                document.addEventListener('DOMContentLoaded', function () {
+                    try {
+                        var navEl = document.getElementById('navCineNombre');
+                        if (!navEl) return;
+                        var seleccionado = localStorage.getItem('cineSeleccionado');
+                        if (!seleccionado) {
+                            navEl.textContent = 'Seleccionar Cine';
+                            return;
+                        }
+
+                        // Intentar obtener nombre desde la cache global si existe
+                        if (window.cinesCache && Array.isArray(window.cinesCache)) {
+                            var found = window.cinesCache.find(c => c.id == seleccionado);
+                            if (found) { navEl.textContent = found.nombre; return; }
+                        }
+
+                        // Si no está en cache, pedir al servidor por la lista y actualizar nav
+                        fetch('/Cines/Listar').then(function (r) { return r.json(); }).then(function (list) {
+                            if (!list) { navEl.textContent = 'Seleccionar Cine'; return; }
+                            try { window.cinesCache = list; } catch (e) { }
+                            var f = list.find(function (c) { return c.id == seleccionado; });
+                            if (f) navEl.textContent = f.nombre; else navEl.textContent = 'Seleccionar Cine';
+                        }).catch(function () { navEl.textContent = 'Seleccionar Cine'; });
+                    } catch (e) { /* noop */ }
+                });
+            } catch (e) { /* noop */ }
+        })();
+    </script>
 </body>
 </html>

@@ -16,6 +16,9 @@ namespace Cine_Lumia.Entities
         public DateTime Fecha_Estreno { get; set; }
         public string PosterUrl { get; set; } = "";
 
+        [StringLength(50)]
+        public string Idioma { get; set; } = "Español"; // Nuevo: idioma original / disponible
+
         // Relaciones
         public ICollection<PeliculaGenero> PeliculaGeneros { get; set; } = new HashSet<PeliculaGenero>();
         public ICollection<Proyeccion> Proyecciones { get; set; } = new HashSet<Proyeccion>();

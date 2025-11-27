@@ -1,5 +1,98 @@
 ﻿@model Cine_Lumia.Models.ViewModel.FuncionesViewModel
 
+@{
+    // Helper para resolver poster similar al usado en Home (más robusto)
+    Func<string, string, string> ResolvePoster = (path, titulo) =>
+    {
+        var placeholder = Url.Content("~/images/placeholder-movie.png");
+        try
+        {
+            var env = Context.RequestServices.GetService(typeof(Microsoft.AspNetCore.Hosting.IWebHostEnvironment)) as Microsoft.AspNetCore.Hosting.IWebHostEnvironment;
+            var folder = env != null ? System.IO.Path.Combine(env.WebRootPath, "images", "peliculas") : null;
+
+            // Normalizar título en varias formas para comparar con nombres de archivo
+            var titleRaw = (titulo ?? "").ToLowerInvariant();
+            var titleOnlyAlnum = System.Text.RegularExpressions.Regex.Replace(titleRaw, "[^a-z0-9]", ""); // sin espacios ni signos
+            var titleKeepSpaces = System.Text.RegularExpressions.Regex.Replace(titleRaw, "[^a-z0-9\\s]", ""); // mantiene espacios
+            var slug = System.Text.RegularExpressions.Regex.Replace(titleKeepSpaces, "\\s+", "-");
+
+            // 1) intentar encontrar por título en filenames locales (contenga slug, contenga words, o compact match)
+            if (!string.IsNullOrWhiteSpace(titulo) && folder != null && System.IO.Directory.Exists(folder))
+            {
+                var files = System.IO.Directory.GetFiles(folder);
+                var match = files.FirstOrDefault(f =>
+                {
+                    var name = System.IO.Path.GetFileNameWithoutExtension(f).ToLowerInvariant();
+                    var nameCompact = System.Text.RegularExpressions.Regex.Replace(name, "[^a-z0-9]", "");
+
+                    if (!string.IsNullOrWhiteSpace(slug) && name.Contains(slug)) return true;
+                    if (!string.IsNullOrWhiteSpace(titleKeepSpaces) && name.Contains(titleKeepSpaces)) return true;
+                    if (!string.IsNullOrWhiteSpace(titleOnlyAlnum) && nameCompact.Contains(titleOnlyAlnum)) return true;
+                    return false;
+                });
+
+                if (match != null)
+                    return Url.Content("~/images/peliculas/" + System.IO.Path.GetFileName(match));
+            }
+
+            // 2) si path es vacío devolvemos placeholder
+            if (string.IsNullOrWhiteSpace(path)) return placeholder;
+
+            // 3) si path es absoluta (http/https) devolverla pero antes intentar localizar archivo local por basename
+            if (path.StartsWith("http://") || path.StartsWith("https://"))
+            {
+                if (folder != null && System.IO.Directory.Exists(folder))
+                {
+                    var baseNoExt = System.IO.Path.GetFileNameWithoutExtension(path).ToLowerInvariant();
+                    var matches = System.IO.Directory.GetFiles(folder)
+                        .Where(f => System.IO.Path.GetFileNameWithoutExtension(f).ToLowerInvariant() == baseNoExt)
+                        .ToList();
+                    if (matches.Any()) return Url.Content("~/images/peliculas/" + System.IO.Path.GetFileName(matches.First()));
+                }
+
+                return path;
+            }
+
+            // 4) normalizar ruta relativa y comprobar existencia física
+            string relative = path;
+            if (relative.StartsWith("~")) relative = relative.Substring(1);
+            if (relative.StartsWith("/")) relative = relative.Substring(1);
+
+            if (env != null)
+            {
+                var physical = System.IO.Path.Combine(env.WebRootPath, relative.Replace('/', System.IO.Path.DirectorySeparatorChar));
+                if (System.IO.File.Exists(physical))
+                {
+                    return Url.Content("~/" + relative);
+                }
+            }
+
+            // 5) intentar por nombre de archivo dentro de images/peliculas a partir del valor de path
+            if (folder != null && System.IO.Directory.Exists(folder))
+            {
+                var fileNameNoExt = System.IO.Path.GetFileNameWithoutExtension(relative).ToLowerInvariant();
+                var matches = System.IO.Directory.GetFiles(folder)
+                    .Where(f => System.IO.Path.GetFileNameWithoutExtension(f).ToLowerInvariant() == fileNameNoExt)
+                    .ToList();
+
+                if (matches.Any())
+                {
+                    return Url.Content("~/images/peliculas/" + System.IO.Path.GetFileName(matches.First()));
+                }
+            }
+
+            // 6) fallback
+            return placeholder;
+        }
+        catch
+        {
+            return placeholder;
+        }
+    };
+
+    // calcular posterUrl para reusar
+    var posterUrlResolved = ResolvePoster(Model.Pelicula?.PosterUrl, Model.Pelicula?.Nombre ?? "");
+}
 
 <style>
     body {
@@ -178,7 +271,7 @@
 </style>
 
 <!-- Fondo difuminado -->
-<div class="backdrop" style="background-image: url('@Model.Pelicula.PosterUrl')"></div>
+<div class="backdrop" style="background-image: url('@posterUrlResolved')"></div>
 
 <!-- Botón Volver -->
 <button class="btn-volver-top" id="btnVolver">
@@ -188,7 +281,7 @@
 <div class="container">
     <!-- Panel izquierdo -->
     <div class="left-panel">
-        <img src="@Model.Pelicula.PosterUrl" class="movie-poster" />
+        <img src="@posterUrlResolved" class="movie-poster" />
         <div class="movie-title">@Model.Pelicula.Nombre</div>
         <div class="details">@Model.Cine.Nombre – @Model.Cine.Direccion</div>
         <div class="details">@Model.Pelicula.Duracion min</div>
@@ -212,10 +305,11 @@
 <button id="buyButton" class="buy-button">Comprar Entrada</button>
 
 <script>
+    console.log('Funciones: script start');
     let proyeccionesPorFecha = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
-                                Model.ProyeccionesPorFecha,
-                                new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = null }
-                ));
+                                 Model.ProyeccionesPorFecha,
+                                 new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = null }
+                 ));
 
     let fechaSeleccionada = null;
     let horaSeleccionada = null;
@@ -225,6 +319,7 @@
     function renderHorarios(fecha) {
         const container = document.getElementById('horariosContainer');
         container.innerHTML = '';
+        console.log('renderHorarios for', fecha);
 
         const salas = proyeccionesPorFecha[fecha] || [];
 
@@ -290,6 +385,7 @@
 
                 if (h.Disponibles > 0) {
                     btn.addEventListener('click', () => {
+                        console.log('hour button clicked', { hora: h.Hora, idProyeccion: h.IdProyeccion, sala: sala.Sala });
                         document.querySelectorAll('.hour-button').forEach(b => b.classList.remove('selected'));
                         btn.classList.add('selected');
                         horaSeleccionada = h.Hora;
@@ -327,19 +423,30 @@
 
     function checkShowBuyButton() {
         const btn = document.getElementById('buyButton');
-        btn.style.display = (fechaSeleccionada && horaSeleccionada) ? 'block' : 'none';
-    }
+        const shouldShow = (fechaSeleccionada && horaSeleccionada);
+        btn.style.display = shouldShow ? 'block' : 'none';
+        console.log('checkShowBuyButton', { fechaSeleccionada, horaSeleccionada, idProyeccionSeleccionado, shouldShow });
+     }
+ 
+    (function attachBuy() {
+        const buyBtn = document.getElementById('buyButton');
+        if (!buyBtn) { console.warn('buyButton not found'); return; }
+        buyBtn.addEventListener('click', (ev) => {
+            console.log('buyButton clicked', { idProyeccionSeleccionado, fechaSeleccionada, horaSeleccionada });
+            if (!idProyeccionSeleccionado) {
+                console.warn('No proyeccion selected, aborting');
+                return;
+            }
 
-    document.getElementById('buyButton').addEventListener('click', () => {
-        if (!idProyeccionSeleccionado) return;
             const form = document.createElement('form');
-    form.method = 'post';
-    form.action = '/Funciones/SeleccionarProyeccionOculta';
-    form.innerHTML = `<input type="hidden" name="idProyeccion" value="${idProyeccionSeleccionado}">`;
-    document.body.appendChild(form);
-    form.submit();
-
-    });
+            form.method = 'post';
+            form.action = '/Funciones/SeleccionarProyeccionOculta';
+            form.innerHTML = `<input type="hidden" name="idProyeccion" value="${idProyeccionSeleccionado}">`;
+            document.body.appendChild(form);
+            console.log('Submitting hidden form to', form.action);
+            form.submit();
+        });
+    })();
 
         window.addEventListener("DOMContentLoaded", () => {
         const desdeVenta = "@(ViewBag.DesdeVenta ?? false)".toLowerCase() === "true";
@@ -395,5 +502,5 @@
     document.getElementById("btnVolver").addEventListener("click", () => {
         window.location.href = "/";
     });
-</script>
+ </script>
 

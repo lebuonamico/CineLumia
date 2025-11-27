@@ -5,7 +5,41 @@
 @{
     ViewData["Title"] = "Método de Pago";
 
-    var posterUrl = Model.Proyeccion?.Pelicula?.PosterUrl ?? Url.Content("~/images/default-poster.png");
+    // Helper para resolver poster (mismo que en Home)
+    Func<string, string, string> ResolvePoster = (path, titulo) =>
+    {
+        var placeholder = Url.Content("~/images/placeholder-movie.png");
+        try
+        {
+            if (string.IsNullOrWhiteSpace(path)) return placeholder;
+            if (path.StartsWith("http://") || path.StartsWith("https://")) return path;
+            var env = Context.RequestServices.GetService(typeof(Microsoft.AspNetCore.Hosting.IWebHostEnvironment)) as Microsoft.AspNetCore.Hosting.IWebHostEnvironment;
+            if (env == null) return Url.Content(path.StartsWith("~") ? path : (path.StartsWith("/") ? "~" + path : "~/" + path));
+            string relative = path;
+            if (relative.StartsWith("~")) relative = relative.Substring(1);
+            if (relative.StartsWith("/")) relative = relative.Substring(1);
+            var physical = System.IO.Path.Combine(env.WebRootPath, relative.Replace('/', System.IO.Path.DirectorySeparatorChar));
+            if (System.IO.File.Exists(physical)) return Url.Content("~/" + relative);
+            var folder = System.IO.Path.Combine(env.WebRootPath, "images", "peliculas");
+            if (System.IO.Directory.Exists(folder))
+            {
+                var fileNameNoExt = System.IO.Path.GetFileNameWithoutExtension(relative).ToLowerInvariant();
+                var matches = System.IO.Directory.GetFiles(folder).Where(f => System.IO.Path.GetFileNameWithoutExtension(f).ToLowerInvariant() == fileNameNoExt).ToList();
+                if (matches.Any()) return Url.Content("~/images/peliculas/" + System.IO.Path.GetFileName(matches.First()));
+                if (!string.IsNullOrWhiteSpace(titulo))
+                {
+                    var slug = System.Text.RegularExpressions.Regex.Replace(titulo.ToLowerInvariant(), "[^a-z0-9\\s-]", "");
+                    slug = System.Text.RegularExpressions.Regex.Replace(slug, "\\s+", "-");
+                    var partialMatches = System.IO.Directory.GetFiles(folder).Where(f => System.IO.Path.GetFileNameWithoutExtension(f).ToLowerInvariant().Contains(slug)).ToList();
+                    if (partialMatches.Any()) return Url.Content("~/images/peliculas/" + System.IO.Path.GetFileName(partialMatches.First()));
+                }
+            }
+            return placeholder;
+        }
+        catch { return placeholder; }
+    };
+
+    var posterUrl = ResolvePoster(Model.Proyeccion?.Pelicula?.PosterUrl, Model.Proyeccion?.Pelicula?.Nombre);
 
     var peliculaNombre = Model.Proyeccion?.Pelicula?.Nombre ?? "Película";
     var cineNombre = Model.Proyeccion?.Sala?.Cine?.Nombre ?? "Cine";

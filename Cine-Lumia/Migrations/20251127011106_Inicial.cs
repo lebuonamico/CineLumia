@@ -97,7 +97,8 @@ namespace Cine_Lumia.Migrations
                     Duracion = table.Column<int>(type: "int", nullable: false),
                     Nombre = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Fecha_Estreno = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    PosterUrl = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    PosterUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Idioma = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
                 },
                 constraints: table =>
                 {

@@ -5,17 +5,122 @@
     ViewData["Title"] = "Inicio - Cine Lumia";
 
     // Helper para resolver la URL del poster (acepta rutas que empiecen con ~ o / o rutas completas)
-    Func<string, string> ResolvePoster = path =>
+    Func<string, string, string> ResolvePoster = (path, titulo) =>
     {
         var placeholder = Url.Content("~/images/placeholder-movie.png");
-        if (string.IsNullOrWhiteSpace(path)) return placeholder;
-        if (path.StartsWith("~")) return Url.Content(path);
-        return path; // ya es /ruta o url absoluta
+        try
+        {
+            var env = Context.RequestServices.GetService(typeof(Microsoft.AspNetCore.Hosting.IWebHostEnvironment)) as Microsoft.AspNetCore.Hosting.IWebHostEnvironment;
+            var folder = env != null ? System.IO.Path.Combine(env.WebRootPath, "images", "peliculas") : null;
+
+            // Normalizar título en varias formas para comparar con nombres de archivo
+            var titleRaw = (titulo ?? "").ToLowerInvariant();
+            var titleOnlyAlnum = System.Text.RegularExpressions.Regex.Replace(titleRaw, "[^a-z0-9]", ""); // sin espacios ni signos
+            var titleKeepSpaces = System.Text.RegularExpressions.Regex.Replace(titleRaw, "[^a-z0-9\\s]", ""); // mantiene espacios
+            var slug = System.Text.RegularExpressions.Regex.Replace(titleKeepSpaces, "\\s+", "-");
+
+            // 1) intentar encontrar por título en filenames locales (contenga slug, contenga words, o compact match)
+            if (!string.IsNullOrWhiteSpace(titulo) && folder != null && System.IO.Directory.Exists(folder))
+            {
+                var files = System.IO.Directory.GetFiles(folder);
+                var match = files.FirstOrDefault(f =>
+                {
+                    var name = System.IO.Path.GetFileNameWithoutExtension(f).ToLowerInvariant();
+                    var nameCompact = System.Text.RegularExpressions.Regex.Replace(name, "[^a-z0-9]", "");
+
+                    if (!string.IsNullOrWhiteSpace(slug) && name.Contains(slug)) return true;
+                    if (!string.IsNullOrWhiteSpace(titleKeepSpaces) && name.Contains(titleKeepSpaces)) return true;
+                    if (!string.IsNullOrWhiteSpace(titleOnlyAlnum) && nameCompact.Contains(titleOnlyAlnum)) return true;
+                    return false;
+                });
+
+                if (match != null)
+                    return Url.Content("~/images/peliculas/" + System.IO.Path.GetFileName(match));
+            }
+
+            // 2) si path es vacío devolvemos placeholder
+            if (string.IsNullOrWhiteSpace(path)) return placeholder;
+
+            // 3) si path es absoluta (http/https) devolverla pero antes intentar localizar archivo local por basename
+            if (path.StartsWith("http://") || path.StartsWith("https://"))
+            {
+                if (folder != null && System.IO.Directory.Exists(folder))
+                {
+                    var baseNoExt = System.IO.Path.GetFileNameWithoutExtension(path).ToLowerInvariant();
+                    var matches = System.IO.Directory.GetFiles(folder)
+                        .Where(f => System.IO.Path.GetFileNameWithoutExtension(f).ToLowerInvariant() == baseNoExt)
+                        .ToList();
+                    if (matches.Any()) return Url.Content("~/images/peliculas/" + System.IO.Path.GetFileName(matches.First()));
+                }
+
+                return path;
+            }
+
+            // 4) normalizar ruta relativa y comprobar existencia física
+            string relative = path;
+            if (relative.StartsWith("~")) relative = relative.Substring(1);
+            if (relative.StartsWith("/")) relative = relative.Substring(1);
+
+            if (env != null)
+            {
+                var physical = System.IO.Path.Combine(env.WebRootPath, relative.Replace('/', System.IO.Path.DirectorySeparatorChar));
+                if (System.IO.File.Exists(physical))
+                {
+                    return Url.Content("~/" + relative);
+                }
+            }
+
+            // 5) intentar por nombre de archivo dentro de images/peliculas a partir del valor de path
+            if (folder != null && System.IO.Directory.Exists(folder))
+            {
+                var fileNameNoExt = System.IO.Path.GetFileNameWithoutExtension(relative).ToLowerInvariant();
+                var matches = System.IO.Directory.GetFiles(folder)
+                    .Where(f => System.IO.Path.GetFileNameWithoutExtension(f).ToLowerInvariant() == fileNameNoExt)
+                    .ToList();
+
+                if (matches.Any())
+                {
+                    return Url.Content("~/images/peliculas/" + System.IO.Path.GetFileName(matches.First()));
+                }
+            }
+
+            // 6) fallback
+            return placeholder;
+        }
+        catch
+        {
+            return placeholder;
+        }
     };
 
-    // Usar los banners provistos por el controlador (Model.BannerUrls)
-    var banners = Model.BannerUrls ?? new List<string>();
+    // Determinar banners a mostrar (se mantiene lógica previa)
+    var banners = new List<string>();
+    try
+    {
+        var env = Context.RequestServices.GetService(typeof(Microsoft.AspNetCore.Hosting.IWebHostEnvironment)) as Microsoft.AspNetCore.Hosting.IWebHostEnvironment;
+        if (env != null)
+        {
+            var bannerDir = System.IO.Path.Combine(env.WebRootPath, "images", "banner");
+            if (System.IO.Directory.Exists(bannerDir))
+            {
+                banners = System.IO.Directory.GetFiles(bannerDir)
+                    .Where(f => new[] { ".png", ".jpg", ".jpeg", ".webp", ".gif" }
+                        .Contains(System.IO.Path.GetExtension(f).ToLowerInvariant()))
+                    .Select(f => "/images/banner/" + System.IO.Path.GetFileName(f))
+                    .ToList();
+            }
+        }
+    }
+    catch { }
+
     var bannerCount = Math.Min(3, banners.Count);
+
+    // Generos disponibles para filtro
+    var generosDisponibles = Model.Cartelera
+        .SelectMany(p => p.PeliculaGeneros.Select(pg => pg.Genero.GeneroNombre))
+        .Distinct()
+        .OrderBy(g => g)
+        .ToList();
 }
 
 <style>
@@ -26,10 +131,29 @@
     #carouselBanner .carousel-inner img { width: 100%; height: 420px; object-fit: cover; }
     #carouselBanner .carousel-control-prev-icon, #carouselBanner .carousel-control-next-icon { filter: invert(1) brightness(2) !important; }
 
+    /* Filtro genero */
+    .genre-filter { margin: 12px 0 18px; display: flex; align-items: center; gap: 12px; }
+    .genre-filter select { background:#111; color:#fff; border:1px solid rgba(255,255,255,0.08); padding:8px 12px; border-radius:8px; }
+
     /* Salas badges */
     .salas-list { margin-bottom: 0.75rem; }
     .salas-list .badge-sala { display: inline-block; background: transparent; border: 1px solid rgba(255,255,255,0.12); color: #fff; padding: 4px 8px; border-radius: 999px; font-size: 0.8rem; margin-right: 6px; }
     .movie-meta { color: #bdb6b0; font-size: 0.95rem; margin-bottom: .5rem; }
+
+    /* Card clickable */
+    .card-clickable {
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+    .card-clickable:hover {
+        transform: scale(1.02);
+    }
+
+    /* Poster image in card */
+    .poster-card {
+        height: 360px;
+        object-fit: cover;
+    }
 </style>
 
 <div class="container">
@@ -62,34 +186,43 @@
 
     <!-- CARTELERA -->
     <section class="mt-5">
-        <h3 class="mb-4">Cartelera</h3>
-        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+        <h3 class="mb-2">Cartelera</h3>
+
+        <!-- Filtro por género -->
+        <div class="genre-filter">
+            <label class="small text-muted mb-0">Género</label>
+            <select id="filterGenero">
+                <option value="">Todos</option>
+                @foreach (var g in generosDisponibles)
+                {
+                    <option value="@g">@g</option>
+                }
+            </select>
+        </div>
+
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4" id="carteleraGrid">
             @foreach (var pelicula in Model.Cartelera)
             {
-                var posterUrl = ResolvePoster(pelicula.PosterUrl);
-                <div class="col">
-                    <div class="card h-100 shadow-sm">
-                        <img src="@posterUrl" onerror="this.onerror=null;this.src='@Url.Content("~/images/placeholder-movie.png")';" class="card-img-top" alt="@pelicula.Nombre" style="height:300px; object-fit:cover;"/>
-                        <div class="card-body d-flex flex-column">
-                            <!-- Nombre de la pelicula -->
-                            <h5 class="card-title mb-1">@pelicula.Nombre</h5>
+                var posterUrl = ResolvePoster(pelicula.PosterUrl, pelicula.Nombre);
+                var generosAttr = string.Join(",", pelicula.PeliculaGeneros.Select(pg => pg.Genero.GeneroNombre));
+                <div class="col pelicula-card" data-generos="@generosAttr">
+                    <form method="post" action="@Url.Action("VerFunciones", "Peliculas")" class="card-form" data-pelicula="@pelicula.Id_Pelicula">
+                        <input type="hidden" name="peliculaId" value="@pelicula.Id_Pelicula" />
+                        <div class="card h-100 shadow-sm card-clickable" role="button" tabindex="0">
+                            <img src="@posterUrl" onerror="this.onerror=null;this.src='@Url.Content("~/images/placeholder-movie.png")';" class="card-img-top poster-card" alt="@pelicula.Nombre" style="height:360px; object-fit:cover;" />
+                            <div class="card-body d-flex flex-column">
+                                <!-- Nombre de la pelicula -->
+                                <h5 class="card-title mb-1">@pelicula.Nombre</h5>
 
-                            <!-- Genero - Duracion -->
-                            <div class="movie-meta">@string.Join(", ", pelicula.PeliculaGeneros.Select(pg => pg.Genero.GeneroNombre)) - @pelicula.Duracion min</div>
+                                <!-- Genero - Duracion -->
+                                <div class="movie-meta">@string.Join(", ", pelicula.PeliculaGeneros.Select(pg => pg.Genero.GeneroNombre)) - @pelicula.Duracion min</div>
 
-                            <!-- Salas disponibles para esta pelicula (rellenado por JS) -->
-                            <div class="salas-list mt-2" data-pelicula-id="@pelicula.Id_Pelicula">&nbsp;</div>
+                                <!-- Salas disponibles para esta pelicula (rellenado por JS) -->
+                                <div class="salas-list mt-2" data-pelicula-id="@pelicula.Id_Pelicula">&nbsp;</div>
 
-                            <div class="mt-auto">
-                                <!-- Ahora usamos un boton que hara POST al servidor para que se use TempData y no se expongan parametros manipulables -->
-                                <form method="post" action="@Url.Action("VerFunciones", "Peliculas")" class="d-block ver-mas-form">
-                                    <input type="hidden" name="peliculaId" value="@pelicula.Id_Pelicula" />
-                                    <!-- cineId se anadira desde JS tomando el valor de localStorage antes de enviar -->
-                                    <button type="submit" onclick="return handleVerMas(this.form);" class="btn btn-outline-primary w-100 ver-mas-btn" data-pelicula="@pelicula.Id_Pelicula">Ver más</button>
-                                </form>
                             </div>
                         </div>
-                    </div>
+                    </form>
                 </div>
             }
         </div>
@@ -102,6 +235,25 @@
         if (myCarousel) {
             var carousel = new bootstrap.Carousel(myCarousel, { interval: 5000 });
         }
+
+        // Filtrado cliente por género
+        const filterGenero = document.getElementById('filterGenero');
+        const carteleraGrid = document.getElementById('carteleraGrid');
+
+        function matchesGenero(card) {
+            const genFilter = (filterGenero.value || '').toLowerCase();
+            if (!genFilter) return true;
+            const generos = (card.dataset.generos || '').toLowerCase();
+            return generos.split(',').map(g => g.trim()).includes(genFilter);
+        }
+
+        function applyGeneroFilter() {
+            document.querySelectorAll('#carteleraGrid .pelicula-card').forEach(card => {
+                card.style.display = matchesGenero(card) ? 'block' : 'none';
+            });
+        }
+
+        filterGenero?.addEventListener('change', applyGeneroFilter);
 
         // Cache de salas por pelicula+cine para evitar llamadas repetidas
         var salasCache = {};
@@ -181,30 +333,7 @@
         }
 
         function escapeHtml(unsafe) {
-            return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-        }
-
-        function handleVerMas(form) {
-            var cineSeleccionado = localStorage.getItem('cineSeleccionado');
-            if (!cineSeleccionado) {
-                var offcanvasEl = document.getElementById('offcanvasCines');
-                if (offcanvasEl) {
-                    var off = bootstrap.Offcanvas.getOrCreateInstance(offcanvasEl);
-                    off.show();
-                }
-                return false;
-            }
-
-            var inputCine = form.querySelector('input[name="cineId"]');
-            if (!inputCine) {
-                inputCine = document.createElement('input');
-                inputCine.type = 'hidden';
-                inputCine.name = 'cineId';
-                form.appendChild(inputCine);
-            }
-            inputCine.value = cineSeleccionado;
-            form.submit();
-            return false;
+            return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;").replace(/'/g, "&#039;");
         }
 
         (function () {
@@ -229,6 +358,42 @@
             if (e.target && (e.target.id === 'btnSeleccionar' || e.target.closest('#btnSeleccionar'))) {
                 setTimeout(function () { renderSalasForAll(); }, 150);
             }
+        });
+
+        // Submit form on card click
+        document.querySelectorAll('.card-clickable').forEach(function (card) {
+            card.addEventListener('click', function () {
+                var form = this.closest('form.card-form');
+                if (!form) return;
+
+                var cineSeleccionado = localStorage.getItem('cineSeleccionado');
+                if (!cineSeleccionado) {
+                    var offcanvasEl = document.getElementById('offcanvasCines');
+                    if (offcanvasEl) {
+                        var off = bootstrap.Offcanvas.getOrCreateInstance(offcanvasEl);
+                        off.show();
+                    }
+                    return;
+                }
+
+                var inputCine = form.querySelector('input[name="cineId"]');
+                if (!inputCine) {
+                    inputCine = document.createElement('input');
+                    inputCine.type = 'hidden';
+                    inputCine.name = 'cineId';
+                    form.appendChild(inputCine);
+                }
+                inputCine.value = cineSeleccionado;
+                form.submit();
+            });
+
+            // Allow keyboard activation (Enter / Space)
+            card.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    this.click();
+                }
+            });
         });
     </script>
 }

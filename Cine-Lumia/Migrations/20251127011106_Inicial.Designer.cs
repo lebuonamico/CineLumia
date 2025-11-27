@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Cine_Lumia.Migrations
 {
     [DbContext(typeof(CineDbContext))]
-    [Migration("20251122154834_Inicial")]
+    [Migration("20251127011106_Inicial")]
     partial class Inicial
     {
         /// <inheritdoc />
@@ -326,6 +326,11 @@ namespace Cine_Lumia.Migrations
 
                     b.Property<DateTime>("Fecha_Estreno")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("Idioma")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Nombre")
                         .IsRequired()

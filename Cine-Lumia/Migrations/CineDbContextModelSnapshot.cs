@@ -324,6 +324,11 @@ namespace Cine_Lumia.Migrations
                     b.Property<DateTime>("Fecha_Estreno")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("Idioma")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(100)

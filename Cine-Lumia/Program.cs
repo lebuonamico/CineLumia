@@ -70,7 +70,7 @@ app.Use(async (context, next) =>
 });
 
 app.UseStaticFiles();
-app.MapStaticAssets();
+// app.MapStaticAssets();
 
 app.UseRouting();
 
@@ -80,8 +80,8 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets();
+    pattern: "{controller=Home}/{action=Index}/{id?}");
+    // .WithStaticAssets();
 
 // ============================
 // SEEDING Y MIGRACIONES

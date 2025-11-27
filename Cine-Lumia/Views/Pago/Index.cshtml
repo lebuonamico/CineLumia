@@ -6,7 +6,7 @@
     ViewData["Title"] = "Método de Pago";
 
     // Helper para resolver poster (mismo que en Home)
-    Func<string, string, string> ResolvePoster = (path, titulo) =>
+    Func<string?, string?, string> ResolvePoster = (string? path, string? titulo) =>
     {
         var placeholder = Url.Content("~/images/placeholder-movie.png");
         try

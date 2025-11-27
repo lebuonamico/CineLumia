@@ -2,7 +2,7 @@
 
 @{
     // Helper para resolver poster similar al usado en Home (más robusto)
-    Func<string, string, string> ResolvePoster = (path, titulo) =>
+    Func<string?, string, string> ResolvePoster = (posterUrl, movieTitle) =>
     {
         var placeholder = Url.Content("~/images/placeholder-movie.png");
         try
@@ -11,13 +11,13 @@
             var folder = env != null ? System.IO.Path.Combine(env.WebRootPath, "images", "peliculas") : null;
 
             // Normalizar título en varias formas para comparar con nombres de archivo
-            var titleRaw = (titulo ?? "").ToLowerInvariant();
+            var titleRaw = (movieTitle ?? "").ToLowerInvariant();
             var titleOnlyAlnum = System.Text.RegularExpressions.Regex.Replace(titleRaw, "[^a-z0-9]", ""); // sin espacios ni signos
             var titleKeepSpaces = System.Text.RegularExpressions.Regex.Replace(titleRaw, "[^a-z0-9\\s]", ""); // mantiene espacios
             var slug = System.Text.RegularExpressions.Regex.Replace(titleKeepSpaces, "\\s+", "-");
 
             // 1) intentar encontrar por título en filenames locales (contenga slug, contenga words, o compact match)
-            if (!string.IsNullOrWhiteSpace(titulo) && folder != null && System.IO.Directory.Exists(folder))
+            if (!string.IsNullOrWhiteSpace(movieTitle) && folder != null && System.IO.Directory.Exists(folder))
             {
                 var files = System.IO.Directory.GetFiles(folder);
                 var match = files.FirstOrDefault(f =>
@@ -36,25 +36,25 @@
             }
 
             // 2) si path es vacío devolvemos placeholder
-            if (string.IsNullOrWhiteSpace(path)) return placeholder;
+            if (string.IsNullOrWhiteSpace(posterUrl)) return placeholder;
 
             // 3) si path es absoluta (http/https) devolverla pero antes intentar localizar archivo local por basename
-            if (path.StartsWith("http://") || path.StartsWith("https://"))
+            if (posterUrl.StartsWith("http://") || posterUrl.StartsWith("https://"))
             {
                 if (folder != null && System.IO.Directory.Exists(folder))
                 {
-                    var baseNoExt = System.IO.Path.GetFileNameWithoutExtension(path).ToLowerInvariant();
+                    var baseNoExt = System.IO.Path.GetFileNameWithoutExtension(posterUrl).ToLowerInvariant();
                     var matches = System.IO.Directory.GetFiles(folder)
                         .Where(f => System.IO.Path.GetFileNameWithoutExtension(f).ToLowerInvariant() == baseNoExt)
                         .ToList();
                     if (matches.Any()) return Url.Content("~/images/peliculas/" + System.IO.Path.GetFileName(matches.First()));
                 }
 
-                return path;
+                return posterUrl;
             }
 
             // 4) normalizar ruta relativa y comprobar existencia física
-            string relative = path;
+            string relative = posterUrl;
             if (relative.StartsWith("~")) relative = relative.Substring(1);
             if (relative.StartsWith("/")) relative = relative.Substring(1);
 
@@ -282,9 +282,9 @@
     <!-- Panel izquierdo -->
     <div class="left-panel">
         <img src="@posterUrlResolved" class="movie-poster" />
-        <div class="movie-title">@Model.Pelicula.Nombre</div>
+        <div class="movie-title">@(Model.Pelicula?.Nombre ?? "Título desconocido")</div>
         <div class="details">@Model.Cine.Nombre – @Model.Cine.Direccion</div>
-        <div class="details">@Model.Pelicula.Duracion min</div>
+        <div class="details">@(Model.Pelicula?.Duracion ?? 0) min</div>
     </div>
 
     <!-- Panel derecho -->

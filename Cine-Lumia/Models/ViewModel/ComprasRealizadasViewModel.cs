@@ -16,10 +16,10 @@ namespace Cine_Lumia.Models.ViewModel
 
     public class SnackComboViewModel
     {
-        public string ImagenUrl { get; set; } = "/images/snack/000-COMBO.jpg";
+        public string ImagenUrl { get; set; } = "/images/snacks/000-COMBO.jpg";
         public decimal PrecioTotal { get; set; }
         public int CantidadTotalItems { get; set; }
-        public string DescripcionItems { get; set; }
+        public string DescripcionItems { get; set; } = string.Empty;
         public DateTime FechaCompra { get; set; }
     }
 

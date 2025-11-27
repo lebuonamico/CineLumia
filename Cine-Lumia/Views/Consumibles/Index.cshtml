@@ -20,7 +20,7 @@
         .Where(c => c != null && c.Consumible != null)
         .Select(c => new {
             Item = c,
-            Categoria = categorias.FirstOrDefault(cat => !string.IsNullOrEmpty(c.Consumible.PosterUrl) && System.IO.Path.GetFileName(c.Consumible.PosterUrl).StartsWith(cat.Key, StringComparison.OrdinalIgnoreCase)).Value ?? "Otros"
+            Categoria = categorias.FirstOrDefault(cat => !string.IsNullOrEmpty(c.Consumible.PosterUrl) && c.Consumible.PosterUrl.Contains(cat.Key, StringComparison.OrdinalIgnoreCase)).Value ?? "General"
         })
         .GroupBy(x => x.Categoria)
         .OrderBy(g => {

@@ -79,16 +79,6 @@ namespace Cine_Lumia.Controllers
                 .Where(a => idsAsientos.Contains(a.Id_Asiento))
                 .ToList();
 
-            // Crear VM
-            var vm = new PagoViewModel
-            {
-                Proyeccion = proy,
-                AsientosSeleccionados = asientosSeleccionados,
-                CantidadEntradas = idsAsientos.Count,
-                TotalCompra = decimal.Parse(TempData["TotalCompra"]?.ToString() ?? "0", CultureInfo.InvariantCulture),
-                FormatoEntrada = TempData["FormatoEntrada"]?.ToString() ?? ""
-            };
-
             decimal totalSnacks = snacks.Sum(s => s.Precio * s.Cantidad);
             decimal subtotalEntradas = decimal.Parse(TempData["TotalCompra"]?.ToString() ?? "0", CultureInfo.InvariantCulture);
 
@@ -114,6 +104,18 @@ namespace Cine_Lumia.Controllers
             ViewBag.CargoSnacks = cargoSnacks;
             ViewBag.TotalSnacks = totalSnacks;
             ViewBag.SubtotalEntradas = subtotalEntradas;
+
+
+
+            // Crear VM
+            var vm = new PagoViewModel
+            {
+                Proyeccion = proy,
+                AsientosSeleccionados = asientosSeleccionados,
+                CantidadEntradas = idsAsientos.Count,
+                TotalCompra = totalFinal,
+                FormatoEntrada = TempData["FormatoEntrada"]?.ToString() ?? ""
+            };
 
 
 

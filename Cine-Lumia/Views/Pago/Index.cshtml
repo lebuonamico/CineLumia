@@ -457,17 +457,7 @@
         <hr class="resumen-hr" />
 
         <div class="total-box">
-            @{
-                decimal total = Model.TotalCompra; // default
-                if (TempData["TotalFinal"] != null)
-                {
-                    decimal.TryParse(TempData["TotalFinal"]?.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out total);
-                }
-            }
-            <div class="total-box">
-                Total: $@total.ToString("N0", CultureInfo.InvariantCulture)
-            </div>
-
+            Total: $@Model.TotalCompra.ToString("N0", new CultureInfo("es-AR"))
         </div>
 
     </div>

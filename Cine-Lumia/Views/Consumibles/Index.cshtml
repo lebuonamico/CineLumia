@@ -2,11 +2,31 @@
 
 @{
     ViewData["Title"] = "Snacks disponibles por cine";
-    var agrupado = Model
-    .Where(c => c != null && c.Cine != null)
-    .GroupBy(c => c.Cine.Nombre)
-    .ToList();
 
+    var categorias = new Dictionary<string, string>
+    {
+        { "BE_", "Bebidas" },
+        { "CAF_", "Cafeteria" },
+        { "CO_", "Combos" },
+        { "COL_", "Coleccionables" },
+        { "GO_", "Golosinas" },
+        { "PO_", "Pochoclos" },
+        { "SNA_", "Snacks" }
+    };
+
+    var customOrder = new List<string> { "Coleccionables", "Combos", "Pochoclos", "Bebidas", "Snacks", "Golosinas", "Cafeteria" };
+
+    var consumiblesPorCategoria = Model
+        .Where(c => c != null && c.Consumible != null)
+        .Select(c => new {
+            Item = c,
+            Categoria = categorias.FirstOrDefault(cat => !string.IsNullOrEmpty(c.Consumible.PosterUrl) && System.IO.Path.GetFileName(c.Consumible.PosterUrl).StartsWith(cat.Key, StringComparison.OrdinalIgnoreCase)).Value ?? "Otros"
+        })
+        .GroupBy(x => x.Categoria)
+        .OrderBy(g => {
+            var index = customOrder.IndexOf(g.Key);
+            return index == -1 ? int.MaxValue : index;
+        });
 }
 @{
     string modo = ViewBag.Modo ?? "Normal";
@@ -123,39 +143,34 @@
 
     <div class="row">
         <div class="col-12">
-            @foreach (var grupo in agrupado)
+            @foreach (var grupoCategoria in consumiblesPorCategoria)
             {
-                <div class="card mb-4 shadow-sm cine-section">
-                    <div class="card-header bg-danger text-white">
-                        <h4 class="mb-0">🍿 @grupo.Key</h4>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            @foreach (var item in grupo)
-                            {
-                                <div class="col-md-3 mb-3 snack-item">
-                                    <div class="card h-100">
-                                        <img src="@(string.IsNullOrEmpty(item.Consumible.PosterUrl) ? Url.Content("~/images/snack_placeholder.png") : item.Consumible.PosterUrl)"
-                                             class="card-img-top" alt="@item.Consumible.Nombre" />
-                                        <div class="card-body d-flex flex-column">
-                                            <h5 class="card-title snack-name">@item.Consumible.Nombre</h5>
-                                            <p class="card-text flex-grow-1 snack-desc">@item.Consumible.Descripcion</p>
-                                            <p class="card-text"><strong class="text-body-secondary">@item.Consumible.Precio.ToString("C")</strong></p>
-                                            <button class="btn btn-sm btn-danger mt-2 btn-agregar-carrito btn-lg" style="font-size:1.70rem!important"
-                                                    data-snack="@item.Consumible.Nombre"
-                                                    data-precio="@item.Consumible.Precio"
-                                                    data-stock="@item.Stock"
-                                                    data-cine-id="@item.Id_Cine"
-                                                    data-consumible-id="@item.Id_Consumible"
-                                                    data-img-url="@item.Consumible.PosterUrl">
-                                                +
-                                            </button>
-                                        </div>
-                                    </div>
+                <h3 class="mt-4" style="color: #ff253c; border-bottom: 1px solid #ff253c; padding-bottom: 10px; margin-bottom: 20px;">@grupoCategoria.Key</h3>
+                <div class="row">
+                    @foreach (var item in grupoCategoria)
+                    {
+                        var consumibleItem = item.Item;
+                        <div class="col-md-3 mb-3 snack-item">
+                            <div class="card h-100">
+                                <img src="@(string.IsNullOrEmpty(consumibleItem.Consumible.PosterUrl) ? Url.Content("~/images/snack_placeholder.png") : consumibleItem.Consumible.PosterUrl)"
+                                     class="card-img-top" alt="@consumibleItem.Consumible.Nombre" />
+                                <div class="card-body d-flex flex-column">
+                                    <h5 class="card-title snack-name">@consumibleItem.Consumible.Nombre</h5>
+                                    <p class="card-text flex-grow-1 snack-desc">@consumibleItem.Consumible.Descripcion</p>
+                                    <p class="card-text"><strong class="text-body-secondary">@consumibleItem.Consumible.Precio.ToString("C")</strong></p>
+                                    <button class="btn btn-sm btn-danger mt-2 btn-agregar-carrito btn-lg" style="font-size:1.70rem!important"
+                                            data-snack="@consumibleItem.Consumible.Nombre"
+                                            data-precio="@consumibleItem.Consumible.Precio"
+                                            data-stock="@consumibleItem.Stock"
+                                            data-cine-id="@consumibleItem.Id_Cine"
+                                            data-consumible-id="@consumibleItem.Id_Consumible"
+                                            data-img-url="@consumibleItem.Consumible.PosterUrl">
+                                        +
+                                    </button>
                                 </div>
-                            }
+                            </div>
                         </div>
-                    </div>
+                    }
                 </div>
             }
         </div>

@@ -34,40 +34,16 @@ namespace Cine_Lumia.Controllers
 
             var viewModel = new ComprasRealizadasViewModel();
 
-            // Entradas
+            // 1. Fetch all tickets and snacks for the user
             var allUserTickets = await _context.Entradas
                 .Where(e => e.Id_Espectador == user.Id_Espectador)
                 .Include(e => e.Proyeccion.Pelicula)
                 .Include(e => e.Proyeccion.Sala.Cine)
                 .Include(e => e.Asiento)
-                .Include(e => e.TipoEntrada) // Incluir TipoEntrada para obtener el precio
+                .Include(e => e.TipoEntrada)
                 .OrderByDescending(e => e.FechaCompra)
                 .ToListAsync();
 
-            var groupedTickets = allUserTickets.GroupBy(e => e.Id_Proyeccion)
-                .Select(g =>
-                {
-                    var firstTicket = g.First();
-                    var totalEntradas = g.Sum(t => t.TipoEntrada.Precio); // Sumar el precio de cada entrada
-                    return new TicketPurchaseViewModel
-                    {
-                        EntradasIds = g.Select(t => t.Id_Entrada).ToList(),
-                        PeliculaNombre = firstTicket.Proyeccion.Pelicula.Nombre,
-                        PeliculaAnio = firstTicket.Proyeccion.Pelicula.Fecha_Estreno.Year,
-                        PeliculaDuracion = firstTicket.Proyeccion.Pelicula.Duracion,
-                        Horario = firstTicket.Proyeccion.Hora.ToString(@"hh\:mm"),
-                        FechaHoraProyeccion = firstTicket.Proyeccion.Fecha.Add(firstTicket.Proyeccion.Hora),
-                        CineNombre = firstTicket.Proyeccion.Sala.Cine.Nombre,
-                        CineDireccion = firstTicket.Proyeccion.Sala.Cine.Direccion,
-                        ImagenUrl = firstTicket.Proyeccion.Pelicula.PosterUrl,
-                        FechaCompra = firstTicket.FechaCompra,
-                        Cantidad = g.Count(),
-                        Asientos = g.Select(t => $"{t.Asiento.Fila}{t.Asiento.Columna}").ToList(),
-                        TotalEntradas = totalEntradas
-                    };
-                }).ToList();
-
-            // Snacks
             var allUserSnacks = await _context.EspectadorConsumibles
                 .Where(ec => ec.Id_Espectador == user.Id_Espectador)
                 .Include(ec => ec.Consumible)
@@ -82,49 +58,72 @@ namespace Cine_Lumia.Controllers
                 })
                 .ToListAsync();
 
-            var snacksSinEntrada = new List<SnackPurchaseViewModel>(allUserSnacks);
-
-            const decimal TicketSurcharge = 1600m;
-            const decimal SnackSurcharge = 700m;
-
-            foreach (var ticketGroup in groupedTickets)
-            {
-                var snacksAsociados = snacksSinEntrada
-                    .Where(snack => Math.Abs((snack.FechaCompra - ticketGroup.FechaCompra).TotalMinutes) < 2)
-                    .ToList();
-
-                if (snacksAsociados.Any())
+            // 2. Group tickets by purchase time (down to the second)
+            var ticketPurchases = allUserTickets
+                .GroupBy(e => e.FechaCompra.ToString("yyyy-MM-dd HH:mm:ss"))
+                .Select(g =>
                 {
-                    ticketGroup.ConsumiblesAsociados.AddRange(snacksAsociados);
-                    snacksSinEntrada.RemoveAll(snack => snacksAsociados.Contains(snack));
-                }
+                    var firstTicket = g.First();
+                    var totalEntradas = g.Sum(t => t.TipoEntrada.Precio);
 
-                // Calcular explícitamente los totales
-                ticketGroup.TotalSnacks = ticketGroup.ConsumiblesAsociados.Sum(s => s.Precio * s.Cantidad);
+                    // Find associated snacks
+                    var associatedSnacks = allUserSnacks
+                        .Where(s => s.FechaCompra.ToString("yyyy-MM-dd HH:mm:ss") == g.Key)
+                        .ToList();
 
-                decimal total = ticketGroup.TotalEntradas + ticketGroup.TotalSnacks;
-                if (ticketGroup.TotalEntradas > 0)
-                {
-                    total += TicketSurcharge;
-                }
-                if (ticketGroup.TotalSnacks > 0)
-                {
-                    total += SnackSurcharge;
-                }
-                ticketGroup.TotalCompra = total;
-            }
+                    var totalSnacks = associatedSnacks.Sum(s => s.Precio * s.Cantidad);
 
-            // Paginación para Entradas
-            viewModel.TicketsTotalPages = (int)Math.Ceiling(groupedTickets.Count / (double)PageSize);
-            viewModel.Tickets = groupedTickets.Skip((ticketsPage - 1) * PageSize).Take(PageSize).ToList();
+                    // Calculate final total with surcharges
+                    const decimal TicketSurcharge = 1600m;
+                    const decimal SnackSurcharge = 700m;
+                    decimal total = totalEntradas + totalSnacks;
+                    if (totalEntradas > 0)
+                    {
+                        total += TicketSurcharge;
+                    }
+                    if (totalSnacks > 0)
+                    {
+                        total += SnackSurcharge;
+                    }
+
+                    return new TicketPurchaseViewModel
+                    {
+                        EntradasIds = g.Select(t => t.Id_Entrada).ToList(),
+                        PeliculaNombre = firstTicket.Proyeccion.Pelicula.Nombre,
+                        PeliculaAnio = firstTicket.Proyeccion.Pelicula.Fecha_Estreno.Year,
+                        PeliculaDuracion = firstTicket.Proyeccion.Pelicula.Duracion,
+                        Horario = firstTicket.Proyeccion.Hora.ToString(@"hh\:mm"),
+                        FechaHoraProyeccion = firstTicket.Proyeccion.Fecha.Add(firstTicket.Proyeccion.Hora),
+                        CineNombre = firstTicket.Proyeccion.Sala.Cine.Nombre,
+                        CineDireccion = firstTicket.Proyeccion.Sala.Cine.Direccion,
+                        ImagenUrl = firstTicket.Proyeccion.Pelicula.PosterUrl,
+                        FechaCompra = firstTicket.FechaCompra,
+                        Cantidad = g.Count(),
+                        Asientos = g.Select(t => $"{t.Asiento.Fila}{t.Asiento.Columna}").ToList(),
+                        TotalEntradas = totalEntradas,
+                        ConsumiblesAsociados = associatedSnacks,
+                        TotalSnacks = totalSnacks,
+                        TotalCompra = total
+                    };
+                })
+                .ToList();
+
+            // 3. Identify snacks that were NOT associated with any ticket purchase
+            var associatedSnacksSet = new HashSet<SnackPurchaseViewModel>(ticketPurchases.SelectMany(p => p.ConsumiblesAsociados));
+            var snacksSinEntrada = allUserSnacks.Where(s => !associatedSnacksSet.Contains(s)).ToList();
+
+
+            // Paginación para Entradas (Compras combinadas)
+            viewModel.TicketsTotalPages = (int)Math.Ceiling(ticketPurchases.Count / (double)PageSize);
+            viewModel.Tickets = ticketPurchases.Skip((ticketsPage - 1) * PageSize).Take(PageSize).ToList();
             viewModel.TicketsPage = ticketsPage;
 
             // Agrupar los snacks sin entrada en combos
             var snackCombos = snacksSinEntrada
-                .GroupBy(s => new DateTime(s.FechaCompra.Year, s.FechaCompra.Month, s.FechaCompra.Day, s.FechaCompra.Hour, s.FechaCompra.Minute, s.FechaCompra.Second))
+                .GroupBy(s => s.FechaCompra.ToString("yyyy-MM-dd HH:mm:ss"))
                 .Select(g => new SnackComboViewModel
                 {
-                    FechaCompra = g.Key,
+                    FechaCompra = DateTime.Parse(g.Key),
                     PrecioTotal = g.Sum(s => s.Cantidad * s.Precio),
                     CantidadTotalItems = g.Sum(s => s.Cantidad),
                     DescripcionItems = string.Join(" + ", g

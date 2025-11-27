@@ -8,7 +8,7 @@ namespace Cine_Lumia.Entities
         [Key]
         public int Id_Consumible { get; set; }
 
-        [Required, StringLength(50)]
+        [Required, StringLength(100)]
         public string Nombre { get; set; } = string.Empty;
 
         [StringLength(400)]

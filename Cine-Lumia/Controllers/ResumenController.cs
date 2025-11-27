@@ -78,12 +78,6 @@ public class ResumenCompraController : Controller
 
         try
         {
-            decimal precioPorEntrada = 0;
-            if (CantidadEntradas > 0)
-            {
-                precioPorEntrada = TotalCompra / CantidadEntradas;
-            }
-
             // Guardar entradas
             foreach (var idAsiento in AsientosSeleccionadosIds)
             {
@@ -100,7 +94,7 @@ public class ResumenCompraController : Controller
                     Id_Espectador = espectador.Id_Espectador,
                     Id_TipoEntrada = tipoEntrada.Id_TipoEntrada,
                     FechaCompra = DateTime.Now,
-                    PrecioTotal = precioPorEntrada // Asignar el precio total por entrada
+                    PrecioTotal = tipoEntrada.Precio // Asignar el precio correcto del tipo de entrada
                 };
 
                 _context.Entradas.Add(entrada);

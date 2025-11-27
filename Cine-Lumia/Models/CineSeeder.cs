@@ -99,7 +99,7 @@ namespace Cine_Lumia.Data
             {
                 new Pelicula { Nombre = "Avatar", Duracion = 162, PosterUrl = "/images/peliculas/avatar.jpg" },
                 new Pelicula { Nombre = "Avengers: Endgame", Duracion = 181, PosterUrl = "/images/peliculas/avengers_endgame.jpg" },
-                new Pelicula { Nombre = "The Dark Knight", Duracion = 152, PosterUrl = "https://upload.wikimedia.org/wikipedia/en/8/8a/Dark_Knight.jpg" },
+                new Pelicula { Nombre = "The Dark Knight", Duracion = 152, PosterUrl = "/images/peliculas/• the-dark-knight.jpg" },
                 new Pelicula { Nombre = "Dune", Duracion = 155, PosterUrl = "/images/peliculas/dune.webp" },
                 new Pelicula { Nombre = "Frozen", Duracion = 102, PosterUrl = "/images/peliculas/frozen.jpg" }
             };
@@ -264,10 +264,10 @@ namespace Cine_Lumia.Data
             // =====================
             // CONSUMIBLES - Lote 1 simplificado
             // =====================
-    if (!context.Consumibles.Any(c => c.Nombre.StartsWith("COMBO"))) // Comprobación más específica
-    {
-        // Usar un inicializador de colección para agregar todos los objetos de una sola vez
-        var nuevosConsumibles = new List<Consumible>
+            if (!context.Consumibles.Any(c => c.Nombre.StartsWith("COMBO"))) // Comprobación más específica
+            {
+                // Usar un inicializador de colección para agregar todos los objetos de una sola vez
+                var nuevosConsumibles = new List<Consumible>
         {
 new Consumible { Nombre = "Agua", Descripcion = "1 Agua. Disponibilidad de marca según el cine, sujeto a disponibilidad.", Precio = 4200, PosterUrl = "/images/snacks/BE_A000000013.png" },
 new Consumible { Nombre = "Bebida Mediana", Descripcion = "1 Gaseosa 21 oz.", Precio = 7500, PosterUrl = "/images/snacks/BE_A000000027.png" },
@@ -331,10 +331,10 @@ new Consumible { Nombre = "Pan de Queso", Descripcion = "1 porción de pan de qu
 new Consumible { Nombre = "Tequeños", Descripcion = "Porcion de tequeños x4 unidades + salsa tártara.", Precio = 12900, PosterUrl = "/images/snacks/SNA_A000003375.png" },
 new Consumible { Nombre = "Nuggets de Pollo(X8)", Descripcion = "Porcion de 8 unidades.", Precio = 12900, PosterUrl = "/images/snacks/SNA_A000003467.png" } };
 
-        context.Consumibles.AddRange(nuevosConsumibles);
-        context.SaveChanges();
-        context.ChangeTracker.Clear();
-    }
+                context.Consumibles.AddRange(nuevosConsumibles);
+                context.SaveChanges();
+                context.ChangeTracker.Clear();
+            }
 
 
             // =====================
@@ -348,7 +348,7 @@ new Consumible { Nombre = "Nuggets de Pollo(X8)", Descripcion = "Porcion de 8 un
                 // Obtener los cines de la base de datos para asegurar que existan
                 var cinesLote = context.Cines.AsNoTracking().ToList();
 
-                if(cinesLote.Any() && consumiblesLote1.Any())
+                if (cinesLote.Any() && consumiblesLote1.Any())
                 {
                     // Creamos todas las relaciones CineConsumible en una sola lista
                     var todasLasRelaciones = cinesLote

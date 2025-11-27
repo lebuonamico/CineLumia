@@ -95,13 +95,34 @@ namespace Cine_Lumia.Data
             // =====================
             // PELICULAS
             // =====================
-            var peliculas = new List<Pelicula>
-            {
-                new Pelicula { Nombre = "Avatar", Duracion = 162, PosterUrl = "/images/peliculas/avatar.jpg" },
-                new Pelicula { Nombre = "Avengers: Endgame", Duracion = 181, PosterUrl = "/images/peliculas/avengers_endgame.jpg" },
-                new Pelicula { Nombre = "The Dark Knight", Duracion = 152, PosterUrl = "/images/peliculas/• the-dark-knight.jpg" },
-                new Pelicula { Nombre = "Dune", Duracion = 155, PosterUrl = "/images/peliculas/dune.webp" },
-                new Pelicula { Nombre = "Frozen", Duracion = 102, PosterUrl = "/images/peliculas/frozen.jpg" }
+                        var peliculas = new List<Pelicula>{
+    new Pelicula { Nombre = "Avatar", Duracion = 162, PosterUrl = "/images/peliculas/avatar.jpg" },
+    new Pelicula { Nombre = "Avengers: Endgame", Duracion = 181, PosterUrl = "/images/peliculas/avengers_endgame.jpeg" },
+    new Pelicula { Nombre = "The Dark Knight", Duracion = 152, PosterUrl = "/images/peliculas/dark-knight.jpg" },
+    new Pelicula { Nombre = "Dune", Duracion = 155, PosterUrl = "/images/peliculas/dune.jpeg" },
+    new Pelicula { Nombre = "Frozen", Duracion = 102, PosterUrl = "/images/peliculas/frozen.jpg" },
+    new Pelicula { Nombre = "Anaconda", Duracion = 89, PosterUrl = "/images/peliculas/anaconda.png" },
+    new Pelicula { Nombre = "Avatar Fuego", Duracion = 175, PosterUrl = "/images/peliculas/avatar-fuego.jpg" },
+    new Pelicula { Nombre = "Chainsaw Man", Duracion = 90, PosterUrl = "/images/peliculas/chainsawman.jpeg" },
+    new Pelicula { Nombre = "Conecta", Duracion = 110, PosterUrl = "/images/peliculas/conecta.jpeg" },
+    new Pelicula { Nombre = "Depredador: Tierras Salvajes", Duracion = 105, PosterUrl = "/images/peliculas/depredador-tierras-salvajes.png" },
+    new Pelicula { Nombre = "Dreams", Duracion = 119, PosterUrl = "/images/peliculas/dreams.jpeg" },
+    new Pelicula { Nombre = "El Beso", Duracion = 98, PosterUrl = "/images/peliculas/el-beso.jpeg" },
+    new Pelicula { Nombre = "El Conjuro 4", Duracion = 112, PosterUrl = "/images/peliculas/el-conjuro-4.png" },
+    new Pelicula { Nombre = "Escape Explosivo", Duracion = 125, PosterUrl = "/images/peliculas/escape-explosivo.jpeg" },
+    new Pelicula { Nombre = "Frankenstein", Duracion = 130, PosterUrl = "/images/peliculas/frankenstein.jpeg" },
+    new Pelicula { Nombre = "Freddy's 2", Duracion = 105, PosterUrl = "/images/peliculas/freddys2.jpg" },
+    new Pelicula { Nombre = "Jujutsu Kaisen", Duracion = 108, PosterUrl = "/images/peliculas/jujutsu-kaisen.jpeg" },
+    new Pelicula { Nombre = "La Herida", Duracion = 95, PosterUrl = "/images/peliculas/la-herida.jpeg" },
+    new Pelicula { Nombre = "Mascotas al Rescate", Duracion = 91, PosterUrl = "/images/peliculas/mascotas-al-rescate.jpeg" },
+    new Pelicula { Nombre = "One-Ina-A-Million", Duracion = 100, PosterUrl = "/images/peliculas/one-ina-a-million.jpg" },
+    new Pelicula { Nombre = "Songs Ung Blue", Duracion = 104, PosterUrl = "/images/peliculas/songsungblue.jpeg" },
+    new Pelicula { Nombre = "Teléfono Negro 2", Duracion = 107, PosterUrl = "/images/peliculas/telefono-negro-2.jpeg" },
+    new Pelicula { Nombre = "Templo", Duracion = 135, PosterUrl = "/images/peliculas/templo.jpeg" },
+    new Pelicula { Nombre = "The Storm", Duracion = 140, PosterUrl = "/images/peliculas/the-storm.jpeg" },
+    new Pelicula { Nombre = "Wicked", Duracion = 145, PosterUrl = "/images/peliculas/wicked.jpg" },
+    new Pelicula { Nombre = "Zoopocalipsis", Duracion = 96, PosterUrl = "/images/peliculas/zoopocalipsis.jpeg" },
+    new Pelicula { Nombre = "Zootopia 2", Duracion = 103, PosterUrl = "/images/peliculas/zootopia2.jpg" }
             };
             context.Peliculas.AddRange(peliculas);
             context.SaveChanges();
@@ -110,12 +131,37 @@ namespace Cine_Lumia.Data
             // PELICULA-GENERO
             // =====================
             context.PeliculaGeneros.AddRange(
-                new PeliculaGenero { Pelicula = peliculas[0], Genero = genero1 },
-                new PeliculaGenero { Pelicula = peliculas[1], Genero = genero1 },
-                new PeliculaGenero { Pelicula = peliculas[2], Genero = genero4 },
-                new PeliculaGenero { Pelicula = peliculas[3], Genero = genero1 },
-                new PeliculaGenero { Pelicula = peliculas[4], Genero = genero2 }
-            );
+    // Las 5 películas iniciales
+    new PeliculaGenero { Pelicula = peliculas[0], Genero = genero1 }, // Avatar (Ciencia Ficción)
+    new PeliculaGenero { Pelicula = peliculas[1], Genero = genero1 }, // Avengers: Endgame (Acción)
+    new PeliculaGenero { Pelicula = peliculas[2], Genero = genero4 }, // The Dark Knight (Crimen/Thriller)
+    new PeliculaGenero { Pelicula = peliculas[3], Genero = genero1 }, // Dune (Ciencia Ficción)
+    new PeliculaGenero { Pelicula = peliculas[4], Genero = genero2 }, // Frozen (Animación/Musical)
+    new PeliculaGenero { Pelicula = peliculas[5], Genero = genero1 }, // Anaconda (Aventura)
+    new PeliculaGenero { Pelicula = peliculas[5], Genero = genero3 }, // Anaconda (Terror - Asignado doble género)
+    new PeliculaGenero { Pelicula = peliculas[6], Genero = genero1 }, // Avatar Fuego (Ciencia Ficción/Aventura)
+    new PeliculaGenero { Pelicula = peliculas[7], Genero = genero1 }, // Chainsaw Man (Acción - Asumiendo que es una adaptación)
+    new PeliculaGenero { Pelicula = peliculas[7], Genero = genero4 }, // Chainsaw Man (Thriller)
+    new PeliculaGenero { Pelicula = peliculas[8], Genero = genero4 }, // Conecta (Drama/Thriller)
+    new PeliculaGenero { Pelicula = peliculas[9], Genero = genero1 }, // Depredador: Tierras Salvajes (Acción/Ciencia Ficción)
+    new PeliculaGenero { Pelicula = peliculas[10], Genero = genero4 }, // Dreams (Drama)
+    new PeliculaGenero { Pelicula = peliculas[11], Genero = genero4 }, // El Beso (Drama/Romance)
+    new PeliculaGenero { Pelicula = peliculas[12], Genero = genero3 }, // El Conjuro 4 (Terror)
+    new PeliculaGenero { Pelicula = peliculas[13], Genero = genero1 }, // Escape Explosivo (Acción/Thriller)
+    new PeliculaGenero { Pelicula = peliculas[14], Genero = genero3 }, // Frankenstein (Terror)
+    new PeliculaGenero { Pelicula = peliculas[15], Genero = genero3 }, // Freddy's 2 (Terror)
+    new PeliculaGenero { Pelicula = peliculas[16], Genero = genero1 }, // Jujutsu Kaisen (Acción/Fantasía)
+    new PeliculaGenero { Pelicula = peliculas[17], Genero = genero4 }, // La Herida (Drama)
+    new PeliculaGenero { Pelicula = peliculas[18], Genero = genero2 }, // Mascotas al Rescate (Animación/Familiar)
+    new PeliculaGenero { Pelicula = peliculas[19], Genero = genero4 }, // One-Ina-A-Million (Drama/Biográfica)
+    new PeliculaGenero { Pelicula = peliculas[20], Genero = genero4 }, // Songs Ung Blue (Drama)
+    new PeliculaGenero { Pelicula = peliculas[21], Genero = genero3 }, // Teléfono Negro 2 (Terror/Suspenso)
+    new PeliculaGenero { Pelicula = peliculas[22], Genero = genero1 }, // Templo (Aventura/Acción)
+    new PeliculaGenero { Pelicula = peliculas[23], Genero = genero4 }, // The Storm (Thriller/Drama)
+    new PeliculaGenero { Pelicula = peliculas[24], Genero = genero2 }, // Wicked (Fantasía/Musical)
+    new PeliculaGenero { Pelicula = peliculas[25], Genero = genero2 }, // Zoopalipsis (Animación/Aventura)
+    new PeliculaGenero { Pelicula = peliculas[26], Genero = genero2 }  // Zootopia 2 (Animación/Familiar)
+);
             context.SaveChanges();
 
             // =====================

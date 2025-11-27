@@ -90,7 +90,10 @@ using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<CineDbContext>();
     dbContext.Database.Migrate();
-    CineSeeder.Seed(dbContext);
+    if (app.Environment.IsDevelopment())
+    {
+        CineSeeder.Seed(dbContext);
+    }
 }
 
 // ============================

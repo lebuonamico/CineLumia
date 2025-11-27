@@ -99,7 +99,7 @@ namespace Cine_Lumia.Data
             {
                 new Pelicula { Nombre = "Avatar", Duracion = 162, PosterUrl = "/images/peliculas/avatar.jpg" },
                 new Pelicula { Nombre = "Avengers: Endgame", Duracion = 181, PosterUrl = "/images/peliculas/avengers_endgame.jpg" },
-                new Pelicula { Nombre = "The Dark Knight", Duracion = 152, PosterUrl = "https://upload.wikimedia.org/wikipedia/en/8/8a/Dark_Knight.jpg" },
+                new Pelicula { Nombre = "The Dark Knight", Duracion = 152, PosterUrl = "/images/peliculas/• the-dark-knight.jpg" },
                 new Pelicula { Nombre = "Dune", Duracion = 155, PosterUrl = "/images/peliculas/dune.webp" },
                 new Pelicula { Nombre = "Frozen", Duracion = 102, PosterUrl = "/images/peliculas/frozen.jpg" }
             };
@@ -264,10 +264,10 @@ namespace Cine_Lumia.Data
             // =====================
             // CONSUMIBLES - Lote 1 simplificado
             // =====================
-    if (!context.Consumibles.Any(c => c.Nombre.StartsWith("COMBO"))) // Comprobación más específica
-    {
-        // Usar un inicializador de colección para agregar todos los objetos de una sola vez
-        var nuevosConsumibles = new List<Consumible>
+            if (!context.Consumibles.Any(c => c.Nombre.StartsWith("COMBO"))) // Comprobación más específica
+            {
+                // Usar un inicializador de colección para agregar todos los objetos de una sola vez
+                var nuevosConsumibles = new List<Consumible>
         {
             new Consumible { Nombre = "COMBO TOY STORY 30 ANIVERSARIO", Descripcion = "1 Vaso metálico \"Toy Story 30 Aniversario\" (sin contenido) + 1 vaso de gaseosa grande + 1 Balde de pochoclos. UNIDADES LIMITADAS.", Precio = 44900, PosterUrl = "https://static.cinemarkhoyts.com.ar/Images/ConcessionItemImageN/A000004243.png?v=00002639" },
             new Consumible { Nombre = "COMBO TRON: ARES", Descripcion = "1 ()Vaso \"Tron: Ares\" con gaseosa + 1 Balde de pochoclos. ()Con Luz LED. UNIDADES LIMITADAS.", Precio = 44900, PosterUrl = "https://static.cinemarkhoyts.com.ar/Images/ConcessionItemImageN/A000004261PR.png?v=00002639" },
@@ -281,10 +281,10 @@ namespace Cine_Lumia.Data
             new Consumible { Nombre = "COMBO MEGA EL CONJURO 4", Descripcion = "1 Vaso \"El Conjuro 4\" sin contenido + 1 Balde de pochoclos + 2 gaseosas grandes. UNIDADES LIMITADAS.", Precio = 29900, PosterUrl = "https://static.cinemarkhoyts.com.ar/Images/ConcessionItemImageN/A000004272.png?v=00002639" },
         };
 
-        context.Consumibles.AddRange(nuevosConsumibles);
-        context.SaveChanges();
-        context.ChangeTracker.Clear();
-    }
+                context.Consumibles.AddRange(nuevosConsumibles);
+                context.SaveChanges();
+                context.ChangeTracker.Clear();
+            }
 
 
             // =====================
@@ -298,7 +298,7 @@ namespace Cine_Lumia.Data
                 // Obtener los cines de la base de datos para asegurar que existan
                 var cinesLote = context.Cines.AsNoTracking().ToList();
 
-                if(cinesLote.Any() && consumiblesLote1.Any())
+                if (cinesLote.Any() && consumiblesLote1.Any())
                 {
                     // Creamos todas las relaciones CineConsumible en una sola lista
                     var todasLasRelaciones = cinesLote
